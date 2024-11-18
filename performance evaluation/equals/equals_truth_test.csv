@@ -1,0 +1,4110 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/coqui-ai/TTS/tree/master/TTS/tts/utils/helpers.py,"def average_over_durations(values, durs):
+    """"""Average values over durations.
+
+    Shapes:
+        - values: :math:`[B, 1, T_de]`
+        - durs: :math:`[B, T_en]`
+        - avg: :math:`[B, 1, T_en]`
+    """"""
+    durs_cums_ends = torch.cumsum(durs, dim=1).long()
+    durs_cums_starts = torch.nn.functional.pad(durs_cums_ends[:, :-1], (1, 0))
+    values_nonzero_cums = torch.nn.functional.pad(torch.cumsum(values != 0.0, dim=2), (1, 0))
+    values_cums = torch.nn.functional.pad(torch.cumsum(values, dim=2), (1, 0))
+
+    bs, l = durs_cums_ends.size()
+    n_formants = values.size(1)
+    dcs = durs_cums_starts[:, None, :].expand(bs, n_formants, l)
+    dce = durs_cums_ends[:, None, :].expand(bs, n_formants, l)
+
+    values_sums = (torch.gather(values_cums, 2, dce) - torch.gather(values_cums, 2, dcs)).float()
+    values_nelems = (torch.gather(values_nonzero_cums, 2, dce) - torch.gather(values_nonzero_cums, 2, dcs)).float()
+
+    avg = torch.where(values_nelems == 0.0, values_nelems, values_sums / values_nelems)
+    return avg",_433.py,22,"values_nelems == 0.0
+
+","not values_nelems
+
+",1,"import torch
+
+def average_over_durations(values, durs):
+    """"""Average values over durations.
+
+    Shapes:
+        - values: :math:`[B, 1, T_de]`
+        - durs: :math:`[B, T_en]`
+        - avg: :math:`[B, 1, T_en]`
+    """"""
+    durs_cums_ends = torch.cumsum(durs, dim=1).long()
+    durs_cums_starts = torch.nn.functional.pad(durs_cums_ends[:, :-1], (1, 0))
+    values_nonzero_cums = torch.nn.functional.pad(torch.cumsum(values != 0.0, dim=2), (1, 0))
+    values_cums = torch.nn.functional.pad(torch.cumsum(values, dim=2), (1, 0))
+
+    bs, l = durs_cums_ends.size()
+    n_formants = values.size(1)
+    dcs = durs_cums_starts[:, None, :].expand(bs, n_formants, l)
+    dce = durs_cums_ends[:, None, :].expand(bs, n_formants, l)
+
+    values_sums = (torch.gather(values_cums, 2, dce) - torch.gather(values_cums, 2, dcs)).float()
+    values_nelems = (torch.gather(values_nonzero_cums, 2, dce) - torch.gather(values_nonzero_cums, 2, dcs)).float()
+
+    # Refactor using truth value test idiom for values_nelems
+    avg = torch.where(values_nelems, values_sums / values_nelems, values_nelems)
+    return avg",1,"Let's refactor the given code using Python's truth value test idioms and eliminate explicit comparisons to 0 by using Python's inherent truthiness behavior:
+
+- For example, instead of comparing `values_nelems == 0.0`, we can directly rely on Python's truth value of zero (0) being ""falsy"".
+  
+Here's the refactored code:
+
+### Refactored Code:
+
+
+
+### Explanation of Refactoring:
+
+- In the original code, you had this conditional:
+  
+  This can be refactored using Python’s truth value idiom. Since `0.0` is considered ""falsy"" in Python, we can use `values_nelems` directly in the conditional without needing to explicitly compare to `0.0`. The new `torch.where` now reads as:
+  
+  This will achieve the same logic — when `values_nelems` is zero (falsy), it will use `values_nelems`, and otherwise, it will perform the division.
+
+### Number of Truth Value Test Refactorings:
+
+- **1 refactor** was done, replacing `values_nelems == 0.0` with Python's truth value idiom by directly using `values_nelems`.","Let's refactor the given code using Python's truth value test idioms and eliminate explicit comparisons to 0 by using Python's inherent truthiness behavior:
+
+- For example, instead of comparing `values_nelems == 0.0`, we can directly rely on Python's truth value of zero (0) being ""falsy"".
+  
+Here's the refactored code:
+
+### Refactored Code:
+
+```python
+import torch
+
+def average_over_durations(values, durs):
+    """"""Average values over durations.
+
+    Shapes:
+        - values: :math:`[B, 1, T_de]`
+        - durs: :math:`[B, T_en]`
+        - avg: :math:`[B, 1, T_en]`
+    """"""
+    durs_cums_ends = torch.cumsum(durs, dim=1).long()
+    durs_cums_starts = torch.nn.functional.pad(durs_cums_ends[:, :-1], (1, 0))
+    values_nonzero_cums = torch.nn.functional.pad(torch.cumsum(values != 0.0, dim=2), (1, 0))
+    values_cums = torch.nn.functional.pad(torch.cumsum(values, dim=2), (1, 0))
+
+    bs, l = durs_cums_ends.size()
+    n_formants = values.size(1)
+    dcs = durs_cums_starts[:, None, :].expand(bs, n_formants, l)
+    dce = durs_cums_ends[:, None, :].expand(bs, n_formants, l)
+
+    values_sums = (torch.gather(values_cums, 2, dce) - torch.gather(values_cums, 2, dcs)).float()
+    values_nelems = (torch.gather(values_nonzero_cums, 2, dce) - torch.gather(values_nonzero_cums, 2, dcs)).float()
+
+    # Refactor using truth value test idiom for values_nelems
+    avg = torch.where(values_nelems, values_sums / values_nelems, values_nelems)
+    return avg
+```
+
+### Explanation of Refactoring:
+
+- In the original code, you had this conditional:
+  ```python
+  avg = torch.where(values_nelems == 0.0, values_nelems, values_sums / values_nelems)
+  ```
+  This can be refactored using Python’s truth value idiom. Since `0.0` is considered ""falsy"" in Python, we can use `values_nelems` directly in the conditional without needing to explicitly compare to `0.0`. The new `torch.where` now reads as:
+  ```python
+  avg = torch.where(values_nelems, values_sums / values_nelems, values_nelems)
+  ```
+  This will achieve the same logic — when `values_nelems` is zero (falsy), it will use `values_nelems`, and otherwise, it will perform the division.
+
+### Number of Truth Value Test Refactorings:
+
+- **1 refactor** was done, replacing `values_nelems == 0.0` with Python's truth value idiom by directly using `values_nelems`.
+
+"
+https://github.com/open-mmlab/mmgeneration/tree/master/mmgen/core/hooks/ema_hook.py,"def every_n_iters(self, runner, n):
+        if runner.iter < self.start_iter:
+            return True
+        return (runner.iter + 1 - self.start_iter) % n == 0 if n > 0 else False",_2161.py,4,"(runner.iter + 1 - self.start_iter) % n == 0
+
+","not (runner.iter + 1 - self.start_iter) % n
+
+",1,"def every_n_iters(self, runner, n):
+        if runner.iter < self.start_iter:
+            return True
+        return (runner.iter + 1 - self.start_iter) % n == 0 if n else False",1,"Here is the refactored code using Python truth value test idioms:
+
+
+
+**Number of truth value test refactorings: 1**
+
+Explanation:
+
+- The expression `if n > 0` was refactored to `if n`. In Python, any non-zero integer is `True`, and zero is `False`, so we can simply test the truth value of `n` directly.","Here is the refactored code using Python truth value test idioms:
+
+```python
+def every_n_iters(self, runner, n):
+        if runner.iter < self.start_iter:
+            return True
+        return (runner.iter + 1 - self.start_iter) % n == 0 if n else False
+```
+
+**Number of truth value test refactorings: 1**
+
+Explanation:
+
+- The expression `if n > 0` was refactored to `if n`. In Python, any non-zero integer is `True`, and zero is `False`, so we can simply test the truth value of `n` directly."
+https://github.com/Zulko/easyAI/tree/master/easyAI/games/Nim.py,"def win(self):
+        return max(self.piles) == 0",_2706.py,2,"max(self.piles) == 0
+
+","not max(self.piles)
+
+",1,"def win(self):
+    return not any(self.piles)",1,"Refactored code with Python's truth value test idiom:
+
+
+
+Refactoring explanation:
+- The original code checks if all values in `self.piles` are 0 by comparing the maximum value to 0. 
+- Instead, we use the `any()` function, which checks for the existence of any truthy value (in this case, non-zero values). Applying `not` flips the result, returning `True` when all values in `self.piles` are false (i.e., when all are 0).
+
+Number of truth value test refactorings made: **1**.","Refactored code with Python's truth value test idiom:
+
+```python
+def win(self):
+    return not any(self.piles)
+```
+
+Refactoring explanation:
+- The original code checks if all values in `self.piles` are 0 by comparing the maximum value to 0. 
+- Instead, we use the `any()` function, which checks for the existence of any truthy value (in this case, non-zero values). Applying `not` flips the result, returning `True` when all values in `self.piles` are false (i.e., when all are 0).
+
+Number of truth value test refactorings made: **1**."
+https://github.com/CellProfiler/CellProfiler/tree/master/tests/modules/test_measureobjectintensity.py,"def test_image_masked(measurements, module, objects, image, workspace):
+    data = numpy.zeros((11, 20))
+
+    i, j = numpy.mgrid[-5:6, -5:15]
+    data[i ** 2 + j ** 2 <= 25] = 0.5
+    data[i ** 2 + j ** 2 <= 16] = 0.25
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    i, j = numpy.mgrid[-5:6, -15:5]
+    data[i ** 2 + j ** 2 <= 9] = 0.5
+    data[i ** 2 + j ** 2 <= 4] = 0.75
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    mask = numpy.ones_like(data)
+    mask[:, 11:] = 0
+
+    image.pixel_data = data
+    image.dimensions = 2
+    image.mask = mask > 0
+
+    labels = skimage.measure.label(data > 0)
+
+    objects.segmented = labels
+
+    module.run(workspace)
+
+    expected = {
+        ""Intensity_IntegratedIntensity_MyImage"": [29.0, 0.0],
+        ""Intensity_MeanIntensity_MyImage"": [0.35802469135802467, numpy.nan],
+        ""Intensity_StdIntensity_MyImage"": [0.14130275484271107, numpy.nan],
+        ""Intensity_MinIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MaxIntensity_MyImage"": [1.0, 0.0],
+        ""Intensity_IntegratedIntensityEdge_MyImage"": [14.0, 0.0],
+        ""Intensity_MeanIntensityEdge_MyImage"": [0.5, numpy.nan],
+        ""Intensity_StdIntensityEdge_MyImage"": [0.0, numpy.nan],
+        ""Intensity_MinIntensityEdge_MyImage"": [0.5, 0.0],
+        ""Intensity_MaxIntensityEdge_MyImage"": [0.5, 0.0],
+        ""Intensity_MassDisplacement_MyImage"": [0.0, numpy.nan],
+        ""Intensity_LowerQuartileIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MedianIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MADIntensity_MyImage"": [0.0, 0.0],
+        ""Intensity_UpperQuartileIntensity_MyImage"": [0.5, 0.0],
+        ""Location_CenterMassIntensity_X_MyImage"": [5.0, numpy.nan],
+        ""Location_CenterMassIntensity_Y_MyImage"": [5.0, numpy.nan],
+        ""Location_CenterMassIntensity_Z_MyImage"": [0.0, numpy.nan],
+        ""Location_MaxIntensity_X_MyImage"": [5.0, 5.0],
+        ""Location_MaxIntensity_Y_MyImage"": [5.0, 0.0],
+        ""Location_MaxIntensity_Z_MyImage"": [0.0, 0.0],
+    }
+
+    for feature, value in list(expected.items()):
+        actual = measurements.get_measurement(OBJECT_NAME, feature)
+
+        numpy.testing.assert_array_almost_equal(
+            value,
+            actual,
+            err_msg=""{} expected {}, got {}"".format(feature, value, actual),
+        )",_2868.py,7,"i ** 2 + j ** 2 == 0
+
+i ** 2 + j ** 2 == 0
+
+","not i ** 2 + j ** 2
+
+not i ** 2 + j ** 2
+
+",2,"import numpy
+import skimage.measure
+
+def test_image_masked(measurements, module, objects, image, workspace):
+    data = numpy.zeros((11, 20))
+
+    i, j = numpy.mgrid[-5:6, -5:15]
+    data[i ** 2 + j ** 2 <= 25] = 0.5
+    data[i ** 2 + j ** 2 <= 16] = 0.25
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    i, j = numpy.mgrid[-5:6, -15:5]
+    data[i ** 2 + j ** 2 <= 9] = 0.5
+    data[i ** 2 + j ** 2 <= 4] = 0.75
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    mask = numpy.ones_like(data)
+    mask[:, 11:] = 0
+
+    image.pixel_data = data
+    image.dimensions = 2
+    image.mask = mask.astype(bool)
+
+    labels = skimage.measure.label(data.astype(bool))
+
+    objects.segmented = labels
+
+    module.run(workspace)
+
+    expected = {
+        ""Intensity_IntegratedIntensity_MyImage"": [29.0, 0.0],
+        ""Intensity_MeanIntensity_MyImage"": [0.35802469135802467, numpy.nan],
+        ""Intensity_StdIntensity_MyImage"": [0.14130275484271107, numpy.nan],
+        ""Intensity_MinIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MaxIntensity_MyImage"": [1.0, 0.0],
+        ""Intensity_IntegratedIntensityEdge_MyImage"": [14.0, 0.0],
+        ""Intensity_MeanIntensityEdge_MyImage"": [0.5, numpy.nan],
+        ""Intensity_StdIntensityEdge_MyImage"": [0.0, numpy.nan],
+        ""Intensity_MinIntensityEdge_MyImage"": [0.5, 0.0],
+        ""Intensity_MaxIntensityEdge_MyImage"": [0.5, 0.0],
+        ""Intensity_MassDisplacement_MyImage"": [0.0, numpy.nan],
+        ""Intensity_LowerQuartileIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MedianIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MADIntensity_MyImage"": [0.0, 0.0],
+        ""Intensity_UpperQuartileIntensity_MyImage"": [0.5, 0.0],
+        ""Location_CenterMassIntensity_X_MyImage"": [5.0, numpy.nan],
+        ""Location_CenterMassIntensity_Y_MyImage"": [5.0, numpy.nan],
+        ""Location_CenterMassIntensity_Z_MyImage"": [0.0, numpy.nan],
+        ""Location_MaxIntensity_X_MyImage"": [5.0, 5.0],
+        ""Location_MaxIntensity_Y_MyImage"": [5.0, 0.0],
+        ""Location_MaxIntensity_Z_MyImage"": [0.0, 0.0],
+    }
+
+    for feature, value in list(expected.items()):
+        actual = measurements.get_measurement(OBJECT_NAME, feature)
+
+        numpy.testing.assert_array_almost_equal(
+            value,
+            actual,
+            err_msg=""{} expected {}, got {}"".format(feature, value, actual),
+        )",2,"Here’s the code refactored with Python truth value tests where applicable. I will refactor areas where explicit comparisons with `0` or `None` are made, which can be simplified with idiomatic Python truth value testing.
+
+If an expression or value is inherently 'truthy' or 'falsy', explicit checks like `x == 0`, `x != None`, `x == []`, etc., can be refactored with truthiness checks.
+
+In this case, the refactor opportunities primarily exist in checks like `data > 0` and `mask > 0`.
+
+### Refactored Python Code:
+
+
+
+### Refactor Summary:
+
+1. **Refactored `mask > 0`**:
+   **Previous:**
+   
+   **New (using truthiness check):**
+   
+
+2. **Refactored `data > 0`**:
+   **Previous:**
+   
+   **New (using truthiness check):**
+   
+
+### Number of Refactorings:
+- **2 truth value test refactorings** were made where truthy/falsy checks replace explicit comparison with 0.","Here’s the code refactored with Python truth value tests where applicable. I will refactor areas where explicit comparisons with `0` or `None` are made, which can be simplified with idiomatic Python truth value testing.
+
+If an expression or value is inherently 'truthy' or 'falsy', explicit checks like `x == 0`, `x != None`, `x == []`, etc., can be refactored with truthiness checks.
+
+In this case, the refactor opportunities primarily exist in checks like `data > 0` and `mask > 0`.
+
+### Refactored Python Code:
+
+```python
+import numpy
+import skimage.measure
+
+def test_image_masked(measurements, module, objects, image, workspace):
+    data = numpy.zeros((11, 20))
+
+    i, j = numpy.mgrid[-5:6, -5:15]
+    data[i ** 2 + j ** 2 <= 25] = 0.5
+    data[i ** 2 + j ** 2 <= 16] = 0.25
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    i, j = numpy.mgrid[-5:6, -15:5]
+    data[i ** 2 + j ** 2 <= 9] = 0.5
+    data[i ** 2 + j ** 2 <= 4] = 0.75
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    mask = numpy.ones_like(data)
+    mask[:, 11:] = 0
+
+    image.pixel_data = data
+    image.dimensions = 2
+    image.mask = mask.astype(bool)
+
+    labels = skimage.measure.label(data.astype(bool))
+
+    objects.segmented = labels
+
+    module.run(workspace)
+
+    expected = {
+        ""Intensity_IntegratedIntensity_MyImage"": [29.0, 0.0],
+        ""Intensity_MeanIntensity_MyImage"": [0.35802469135802467, numpy.nan],
+        ""Intensity_StdIntensity_MyImage"": [0.14130275484271107, numpy.nan],
+        ""Intensity_MinIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MaxIntensity_MyImage"": [1.0, 0.0],
+        ""Intensity_IntegratedIntensityEdge_MyImage"": [14.0, 0.0],
+        ""Intensity_MeanIntensityEdge_MyImage"": [0.5, numpy.nan],
+        ""Intensity_StdIntensityEdge_MyImage"": [0.0, numpy.nan],
+        ""Intensity_MinIntensityEdge_MyImage"": [0.5, 0.0],
+        ""Intensity_MaxIntensityEdge_MyImage"": [0.5, 0.0],
+        ""Intensity_MassDisplacement_MyImage"": [0.0, numpy.nan],
+        ""Intensity_LowerQuartileIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MedianIntensity_MyImage"": [0.25, 0.0],
+        ""Intensity_MADIntensity_MyImage"": [0.0, 0.0],
+        ""Intensity_UpperQuartileIntensity_MyImage"": [0.5, 0.0],
+        ""Location_CenterMassIntensity_X_MyImage"": [5.0, numpy.nan],
+        ""Location_CenterMassIntensity_Y_MyImage"": [5.0, numpy.nan],
+        ""Location_CenterMassIntensity_Z_MyImage"": [0.0, numpy.nan],
+        ""Location_MaxIntensity_X_MyImage"": [5.0, 5.0],
+        ""Location_MaxIntensity_Y_MyImage"": [5.0, 0.0],
+        ""Location_MaxIntensity_Z_MyImage"": [0.0, 0.0],
+    }
+
+    for feature, value in list(expected.items()):
+        actual = measurements.get_measurement(OBJECT_NAME, feature)
+
+        numpy.testing.assert_array_almost_equal(
+            value,
+            actual,
+            err_msg=""{} expected {}, got {}"".format(feature, value, actual),
+        )
+```
+
+### Refactor Summary:
+
+1. **Refactored `mask > 0`**:
+   **Previous:**
+   ```python
+   image.mask = mask > 0
+   ```
+   **New (using truthiness check):**
+   ```python
+   image.mask = mask.astype(bool)
+   ```
+
+2. **Refactored `data > 0`**:
+   **Previous:**
+   ```python
+   labels = skimage.measure.label(data > 0)
+   ```
+   **New (using truthiness check):**
+   ```python
+   labels = skimage.measure.label(data.astype(bool))
+   ```
+
+### Number of Refactorings:
+- **2 truth value test refactorings** were made where truthy/falsy checks replace explicit comparison with 0.
+
+"
+https://github.com/napari/napari/tree/master/napari/components/dims.py,"def _focus_down(self):
+        """"""Shift focused dimension slider to be the next slider bellow.""""""
+        sliders = [d for d in self.not_displayed if self.nsteps[d] > 1]
+        if len(sliders) == 0:
+            return
+
+        index = (sliders.index(self.last_used) - 1) % len(sliders)
+        self.last_used = sliders[index]",_16.py,4,"len(sliders) == 0
+
+","not len(sliders)
+
+",1,"def _focus_down(self):
+    """"""Shift focused dimension slider to be the next slider bellow.""""""
+    sliders = [d for d in self.not_displayed if self.nsteps[d] > 1]
+    if not sliders:  # Refactored Truth Value Test
+        return
+
+    index = (sliders.index(self.last_used) - 1) % len(sliders)
+    self.last_used = sliders[index]",1,"Refactored code using the Python truth value test idiom:
+
+
+
+### Number of truth value test refactoring:
+- **1 refactoring:** The length check `if len(sliders) == 0` was replaced with `if not sliders`, as checking if a list is non-empty or empty can be directly done using Python's implicit truth value testing idiom.","Refactored code using the Python truth value test idiom:
+
+```python
+def _focus_down(self):
+    """"""Shift focused dimension slider to be the next slider bellow.""""""
+    sliders = [d for d in self.not_displayed if self.nsteps[d] > 1]
+    if not sliders:  # Refactored Truth Value Test
+        return
+
+    index = (sliders.index(self.last_used) - 1) % len(sliders)
+    self.last_used = sliders[index]
+```
+
+### Number of truth value test refactoring:
+- **1 refactoring:** The length check `if len(sliders) == 0` was replaced with `if not sliders`, as checking if a list is non-empty or empty can be directly done using Python's implicit truth value testing idiom."
+https://github.com/RangiLyu/nanodet/tree/master/tests/test_models/test_loss/test_iou_loss.py,"def test_iou_type_loss_zeros_weight(loss_class):
+    pred = torch.rand((10, 4))
+    target = torch.rand((10, 4))
+    weight = torch.zeros(10)
+
+    with pytest.raises(AssertionError):
+        loss_class()(pred, target, reduction_override=""2333"")
+
+    loss = loss_class()(pred, target, weight)
+    assert loss == 0.0
+
+    weight = torch.rand(10)
+    loss = loss_class()(pred, target, weight)
+    assert loss != 0.0",_20.py,10,"loss == 0.0
+
+loss != 0.0
+
+","not loss
+
+loss
+
+",2,"def test_iou_type_loss_zeros_weight(loss_class):
+    pred = torch.rand((10, 4))
+    target = torch.rand((10, 4))
+    weight = torch.zeros(10)
+
+    with pytest.raises(AssertionError):
+        loss_class()(pred, target, reduction_override=""2333"")
+
+    loss = loss_class()(pred, target, weight)
+    assert not loss  # Replaces 'assert loss == 0.0'
+
+    weight = torch.rand(10)
+    loss = loss_class()(pred, target, weight)
+    assert loss  # Replaces 'assert loss != 0.0'",2,"To refactor the code using Python's truth value test idioms, we can replace explicit checks like `== 0.0`, `!= 0.0`, and conditions like checking for empty lists, zeros, or other objects to their more implicit truth value checks. In Python:
+
+- Objects like empty containers (e.g., lists, dictionaries) and `0` evaluate to `False`.
+- Non-empty containers, non-zero numbers, and `True` evaluate to `True`.
+
+Here's the refactored version of the code:
+
+### Refactored Code
+
+
+
+### Explanation of changes:
+
+1. **Refactor `assert loss == 0.0`:**
+   - In Python, `0.0` is inherently falsey, so instead of checking `loss == 0.0`, we directly check `not loss`, which will evaluate to `True` if `loss` is `0.0`.
+
+2. **Refactor `assert loss != 0.0`:**
+   - In Python, a non-zero float (or any non-zero numeric type) will evaluate to `True`, so `assert loss` is an implicit check to ensure `loss` is not `0.0`.
+
+### Number of truth value tests refactored: **2**","To refactor the code using Python's truth value test idioms, we can replace explicit checks like `== 0.0`, `!= 0.0`, and conditions like checking for empty lists, zeros, or other objects to their more implicit truth value checks. In Python:
+
+- Objects like empty containers (e.g., lists, dictionaries) and `0` evaluate to `False`.
+- Non-empty containers, non-zero numbers, and `True` evaluate to `True`.
+
+Here's the refactored version of the code:
+
+### Refactored Code
+
+```python
+def test_iou_type_loss_zeros_weight(loss_class):
+    pred = torch.rand((10, 4))
+    target = torch.rand((10, 4))
+    weight = torch.zeros(10)
+
+    with pytest.raises(AssertionError):
+        loss_class()(pred, target, reduction_override=""2333"")
+
+    loss = loss_class()(pred, target, weight)
+    assert not loss  # Replaces 'assert loss == 0.0'
+
+    weight = torch.rand(10)
+    loss = loss_class()(pred, target, weight)
+    assert loss  # Replaces 'assert loss != 0.0'
+```
+
+### Explanation of changes:
+
+1. **Refactor `assert loss == 0.0`:**
+   - In Python, `0.0` is inherently falsey, so instead of checking `loss == 0.0`, we directly check `not loss`, which will evaluate to `True` if `loss` is `0.0`.
+
+2. **Refactor `assert loss != 0.0`:**
+   - In Python, a non-zero float (or any non-zero numeric type) will evaluate to `True`, so `assert loss` is an implicit check to ensure `loss` is not `0.0`.
+
+### Number of truth value tests refactored: **2**
+
+"
+https://github.com/archerysec/archerysec/tree/master/staticscanners/views.py,"def get(self, request, uu_id=None):
+        jira_url = None
+        jira = jirasetting.objects.all()
+        for d in jira:
+            jira_url = d.jira_server
+
+        all_notify = Notification.objects.unread()
+        if uu_id == None:
+            scan_id = request.GET[""scan_id""]
+            scan_name = request.GET[""scan_name""]
+            vuln_data = StaticScanResultsDb.objects.filter(scan_id=scan_id, title=scan_name)
+        else:
+            try:
+                vuln_data = StaticScanResultsDb.objects.filter(scan_id=uu_id)
+            except:
+                return Response(
+                    {""message"": ""Scan Id Doesn't Exist""}, status=status.HTTP_404_NOT_FOUND
+                )
+        if request.path[: 4] == '/api':
+            serialized_data = StaticScanResultsDbSerializer(vuln_data, many=True)
+            return Response(serialized_data.data)
+        else:
+            return render(
+                request,
+                ""staticscanners/scans/list_vuln_info.html"",
+                {""vuln_data"": vuln_data, ""jira_url"": jira_url},
+            )",_70.py,8,"uu_id == None
+
+","not uu_id
+
+",1,"def get(self, request, uu_id=None):
+    jira_url = None
+    jira = jirasetting.objects.all()
+    for d in jira:
+        jira_url = d.jira_server
+
+    all_notify = Notification.objects.unread()
+    
+    if not uu_id:  # Refactored truth value test instead of uu_id == None
+        scan_id = request.GET[""scan_id""]
+        scan_name = request.GET[""scan_name""]
+        vuln_data = StaticScanResultsDb.objects.filter(scan_id=scan_id, title=scan_name)
+    else:
+        try:
+            vuln_data = StaticScanResultsDb.objects.filter(scan_id=uu_id)
+        except StaticScanResultsDb.DoesNotExist:  # It's a good practice to catch specific exceptions
+            return Response(
+                {""message"": ""Scan Id Doesn't Exist""}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    if request.path[:4] == '/api':  # No need to change this slice comparison
+        serialized_data = StaticScanResultsDbSerializer(vuln_data, many=True)
+        return Response(serialized_data.data)
+    else:
+        return render(
+            request,
+            ""staticscanners/scans/list_vuln_info.html"",
+            {""vuln_data"": vuln_data, ""jira_url"": jira_url},
+        )",1,"To refactor your code using truth value idioms in Python, we can simplify conditions like checking for `None` values or using `len()` for emptiness. Here's the refactored code with truth value tests included:
+
+Refactored Code:
+
+
+
+### Summary of Changes:
+
+1. **Replaced** `if uu_id == None` with `if not uu_id`.
+   - Python treats `None` as false in ""if"" statements, so we can use `if not uu_id` to check if `uu_id` is either `None` or an empty value.
+   - Truth value test refactoring count: **1**
+
+No further refactoring based on truth value tests is necessary since the rest of the conditions in the code (like comparing `request.path[:4]` with `'/api'`) are not related to truth value checks but direct string comparisons.","To refactor your code using truth value idioms in Python, we can simplify conditions like checking for `None` values or using `len()` for emptiness. Here's the refactored code with truth value tests included:
+
+Refactored Code:
+
+```python
+def get(self, request, uu_id=None):
+    jira_url = None
+    jira = jirasetting.objects.all()
+    for d in jira:
+        jira_url = d.jira_server
+
+    all_notify = Notification.objects.unread()
+    
+    if not uu_id:  # Refactored truth value test instead of uu_id == None
+        scan_id = request.GET[""scan_id""]
+        scan_name = request.GET[""scan_name""]
+        vuln_data = StaticScanResultsDb.objects.filter(scan_id=scan_id, title=scan_name)
+    else:
+        try:
+            vuln_data = StaticScanResultsDb.objects.filter(scan_id=uu_id)
+        except StaticScanResultsDb.DoesNotExist:  # It's a good practice to catch specific exceptions
+            return Response(
+                {""message"": ""Scan Id Doesn't Exist""}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    if request.path[:4] == '/api':  # No need to change this slice comparison
+        serialized_data = StaticScanResultsDbSerializer(vuln_data, many=True)
+        return Response(serialized_data.data)
+    else:
+        return render(
+            request,
+            ""staticscanners/scans/list_vuln_info.html"",
+            {""vuln_data"": vuln_data, ""jira_url"": jira_url},
+        )
+```
+
+### Summary of Changes:
+
+1. **Replaced** `if uu_id == None` with `if not uu_id`.
+   - Python treats `None` as false in ""if"" statements, so we can use `if not uu_id` to check if `uu_id` is either `None` or an empty value.
+   - Truth value test refactoring count: **1**
+
+No further refactoring based on truth value tests is necessary since the rest of the conditions in the code (like comparing `request.path[:4]` with `'/api'`) are not related to truth value checks but direct string comparisons.
+
+"
+https://github.com/sympy/sympy/tree/master/sympy/integrals/rubi/tests/test_utility_function.py,"def test_IntLinearcQ():
+    assert IntLinearcQ(1, 2, 3, 4, 5, 6, x) == True
+    assert IntLinearcQ(S(1)/100, S(2)/100, S(3)/100, S(4)/100, S(5)/100, S(6)/100, x) == False",_416.py,2,"IntLinearcQ(1, 2, 3, 4, 5, 6, x) == True
+
+IntLinearcQ(S(1) / 100, S(2) / 100, S(3) / 100, S(4) / 100, S(5) / 100, S(6) / 100, x) == False
+
+","IntLinearcQ(1, 2, 3, 4, 5, 6, x)
+
+not IntLinearcQ(S(1) / 100, S(2) / 100, S(3) / 100, S(4) / 100, S(5) / 100, S(6) / 100, x)
+
+",2,"def test_IntLinearcQ():
+    assert IntLinearcQ(1, 2, 3, 4, 5, 6, x)
+    assert not IntLinearcQ(S(1)/100, S(2)/100, S(3)/100, S(4)/100, S(5)/100, S(6)/100, x)",2,"The Python truth value testing idiom allows us to refactor comparisons like `== True` or `== False` directly to `if` or `assert` statements, leveraging Python's inherent truthiness evaluation. Here, we can remove the explicit comparison `== True` and `== False` since the `assert` statement already tests for truthiness:
+
+Refactored Code:
+
+
+
+### Refactoring Changes Breakdown:
+1. **`assert IntLinearcQ(...) == True`** becomes **`assert IntLinearcQ(...)`**.
+2. **`assert IntLinearcQ(...) == False`** becomes **`assert not IntLinearcQ(...)`**.
+
+Thus, **2 truth value test refactoring** changes were made in total.","The Python truth value testing idiom allows us to refactor comparisons like `== True` or `== False` directly to `if` or `assert` statements, leveraging Python's inherent truthiness evaluation. Here, we can remove the explicit comparison `== True` and `== False` since the `assert` statement already tests for truthiness:
+
+Refactored Code:
+
+```python
+def test_IntLinearcQ():
+    assert IntLinearcQ(1, 2, 3, 4, 5, 6, x)
+    assert not IntLinearcQ(S(1)/100, S(2)/100, S(3)/100, S(4)/100, S(5)/100, S(6)/100, x)
+```
+
+### Refactoring Changes Breakdown:
+1. **`assert IntLinearcQ(...) == True`** becomes **`assert IntLinearcQ(...)`**.
+2. **`assert IntLinearcQ(...) == False`** becomes **`assert not IntLinearcQ(...)`**.
+
+Thus, **2 truth value test refactoring** changes were made in total."
+https://github.com/pyvista/pyvista/tree/master/tests/test_common.py,"def test_point_data(grid):
+    key = 'test_array_points'
+    grid[key] = np.arange(grid.n_points)
+    assert key in grid.point_data
+
+    orig_value = grid.point_data[key][0]/1.0
+    grid.point_data[key][0] += 1
+    assert orig_value == grid.point_data[key][0] - 1
+
+    del grid.point_data[key]
+    assert key not in grid.point_data
+
+    grid.point_data[key] = np.arange(grid.n_points)
+    assert key in grid.point_data
+
+    assert np.allclose(grid[key], np.arange(grid.n_points))
+
+    grid.clear_point_data()
+    assert len(grid.point_data.keys()) == 0
+
+    grid.point_data['list'] = np.arange(grid.n_points).tolist()
+    assert isinstance(grid.point_data['list'], np.ndarray)
+    assert np.allclose(grid.point_data['list'], np.arange(grid.n_points))",_544.py,19,"len(grid.point_data.keys()) == 0
+
+","not len(grid.point_data.keys())
+
+",1,"import numpy as np
+
+def test_point_data(grid):
+    key = 'test_array_points'
+    grid[key] = np.arange(grid.n_points)
+    assert key in grid.point_data  # Same as before, checks if key is in the point_data dict
+
+    orig_value = grid.point_data[key][0] / 1.0
+    grid.point_data[key][0] += 1
+    assert orig_value == grid.point_data[key][0] - 1  # Same as before, no need for refactoring here
+
+    del grid.point_data[key]
+    assert key not in grid.point_data  # Same, checks if key is not in the point_data
+
+    grid.point_data[key] = np.arange(grid.n_points)
+    assert key in grid.point_data  # Same as before, check for key presence
+
+    assert np.allclose(grid[key], np.arange(grid.n_points))  # Same since it's API-specific using np.allclose()
+
+    grid.clear_point_data()
+    assert not grid.point_data  # Refactored: Implicit truth testing for empty dictionary
+
+    grid.point_data['list'] = np.arange(grid.n_points).tolist()
+    assert isinstance(grid.point_data['list'], np.ndarray)
+    assert np.allclose(grid.point_data['list'], np.arange(grid.n_points))",1,"To refactor the code provided using the Python truth value idiom, it's important to replace explicit checks like `len(grid.point_data.keys()) == 0` with implicit tests that rely on Python's built-in truth value testing. In Python:
+
+- Empty lists, tuples, strings, dictionaries, etc., evaluate to `False`, while non-empty ones evaluate to `True`.
+- Objects that evaluate to `None` evaluate to `False`.
+
+### Refactored Code Using Truth Value Testing:
+
+
+
+### Refactoring Details:
+
+1. **`assert len(grid.point_data.keys()) == 0` → `assert not grid.point_data`**:
+   - **Explanation**: Instead of manually comparing the length of the dictionary keys to zero (`len(grid.point_data.keys()) == 0`), simply use `assert not grid.point_data` to check whether the dictionary is empty. Empty dictionaries evaluate to `False`, which is a more idiomatic way to check for the dictionary's emptiness. This counts as one refactoring based on truth value testing.
+
+### Total number of truth value test refactoring: **1**","To refactor the code provided using the Python truth value idiom, it's important to replace explicit checks like `len(grid.point_data.keys()) == 0` with implicit tests that rely on Python's built-in truth value testing. In Python:
+
+- Empty lists, tuples, strings, dictionaries, etc., evaluate to `False`, while non-empty ones evaluate to `True`.
+- Objects that evaluate to `None` evaluate to `False`.
+
+### Refactored Code Using Truth Value Testing:
+
+```python
+import numpy as np
+
+def test_point_data(grid):
+    key = 'test_array_points'
+    grid[key] = np.arange(grid.n_points)
+    assert key in grid.point_data  # Same as before, checks if key is in the point_data dict
+
+    orig_value = grid.point_data[key][0] / 1.0
+    grid.point_data[key][0] += 1
+    assert orig_value == grid.point_data[key][0] - 1  # Same as before, no need for refactoring here
+
+    del grid.point_data[key]
+    assert key not in grid.point_data  # Same, checks if key is not in the point_data
+
+    grid.point_data[key] = np.arange(grid.n_points)
+    assert key in grid.point_data  # Same as before, check for key presence
+
+    assert np.allclose(grid[key], np.arange(grid.n_points))  # Same since it's API-specific using np.allclose()
+
+    grid.clear_point_data()
+    assert not grid.point_data  # Refactored: Implicit truth testing for empty dictionary
+
+    grid.point_data['list'] = np.arange(grid.n_points).tolist()
+    assert isinstance(grid.point_data['list'], np.ndarray)
+    assert np.allclose(grid.point_data['list'], np.arange(grid.n_points))
+```
+
+### Refactoring Details:
+
+1. **`assert len(grid.point_data.keys()) == 0` → `assert not grid.point_data`**:
+   - **Explanation**: Instead of manually comparing the length of the dictionary keys to zero (`len(grid.point_data.keys()) == 0`), simply use `assert not grid.point_data` to check whether the dictionary is empty. Empty dictionaries evaluate to `False`, which is a more idiomatic way to check for the dictionary's emptiness. This counts as one refactoring based on truth value testing.
+
+### Total number of truth value test refactoring: **1**"
+https://github.com/rasterio/rasterio/tree/master/tests/test_rio_main.py,"def test_version(runner):
+    result = runner.invoke(main_group, ['--version'])
+    assert result.exit_code == 0
+    assert parse(result.output.strip())",_697.py,3,"result.exit_code == 0
+
+","not result.exit_code
+
+",1,"def test_version(runner):
+    result = runner.invoke(main_group, ['--version'])
+    assert not result.exit_code    # Truth value test applied here
+    assert parse(result.output.strip())",1,"Here is the refactored Python code using the truth value test idiom:
+
+
+
+### Number of truth value test refactorings made: **1**
+
+In the refactor:
+- `assert result.exit_code == 0` was changed to `assert not result.exit_code`, leveraging Python's truth value testing.","Here is the refactored Python code using the truth value test idiom:
+
+```python
+def test_version(runner):
+    result = runner.invoke(main_group, ['--version'])
+    assert not result.exit_code    # Truth value test applied here
+    assert parse(result.output.strip())
+```
+
+### Number of truth value test refactorings made: **1**
+
+In the refactor:
+- `assert result.exit_code == 0` was changed to `assert not result.exit_code`, leveraging Python's truth value testing."
+https://github.com/Scifabric/pybossa/tree/master/test/test_repository/test_projectstats_repository.py,"def test_filter_by_no_matches(self):
+        """"""Test filter_by returns an empty list if no stats match the query""""""
+        ps = self.prepare_stats()
+        retrieved_ps = self.projectstats_repo.filter_by(n_tasks=100)
+        assert isinstance(retrieved_ps, list)
+        assert len(retrieved_ps) == 0, retrieved_ps",_701.py,6,"len(retrieved_ps) == 0
+
+","not len(retrieved_ps)
+
+",1,"def test_filter_by_no_matches(self):
+    """"""Test filter_by returns an empty list if no stats match the query""""""
+    ps = self.prepare_stats()
+    retrieved_ps = self.projectstats_repo.filter_by(n_tasks=100)
+    assert isinstance(retrieved_ps, list)
+    assert not retrieved_ps, retrieved_ps",1,"Here’s the refactored version of the code using Python truth value testing idioms:
+
+
+
+### Refactoring Breakdown:
+- **Current Check:** `assert len(retrieved_ps) == 0, retrieved_ps`
+  - **Reasoning:** In Python, empty lists are considered `False` in a boolean context. So instead of checking `len(retrieved_ps) == 0`, we can simply test `not retrieved_ps` to check if the list is empty.
+
+### Number of Truth Value Test refactorings: 1","Here’s the refactored version of the code using Python truth value testing idioms:
+
+```python
+def test_filter_by_no_matches(self):
+    """"""Test filter_by returns an empty list if no stats match the query""""""
+    ps = self.prepare_stats()
+    retrieved_ps = self.projectstats_repo.filter_by(n_tasks=100)
+    assert isinstance(retrieved_ps, list)
+    assert not retrieved_ps, retrieved_ps
+```
+
+### Refactoring Breakdown:
+- **Current Check:** `assert len(retrieved_ps) == 0, retrieved_ps`
+  - **Reasoning:** In Python, empty lists are considered `False` in a boolean context. So instead of checking `len(retrieved_ps) == 0`, we can simply test `not retrieved_ps` to check if the list is empty.
+
+### Number of Truth Value Test refactorings: 1"
+https://github.com/jazzband/django-admin2/tree/master/djadmin2/templatetags/admin2_tags.py,"def for_admin(permissions, admin):
+    """"""
+    Only useful in the permission handling. This filter binds a new admin to
+    the permission handler to allow checking views of an arbitrary admin.
+    """"""
+    # some permission check has failed earlier, so we don't bother trying to
+    # bind a new admin to it.
+    if permissions == '':
+        return permissions
+    return permissions.bind_admin(admin)",_731.py,8,"permissions == ''
+
+","not permissions
+
+",1,"def for_admin(permissions, admin):
+    """"""
+    Only useful in the permission handling. This filter binds a new admin to
+    the permission handler to allow checking views of an arbitrary admin.
+    """"""
+    # some permission check has failed earlier, so we don't bother trying to
+    # bind a new admin to it.
+    if not permissions:
+        return permissions
+    return permissions.bind_admin(admin)",1,"To refactor the given code using Python's truth value test idiom, we need to replace exact comparisons like `permissions == ''` with their more Pythonic truth value test equivalent. In Python, empty strings evaluate to `False`, so we can simply check whether `permissions` is truthy or falsy in a natural way.
+
+Here is the refactored code:
+
+
+
+### Refactoring Summary:
+- **1 truth value test refactor**: I refactored the check `if permissions == ''` to `if not permissions`, making use of Python's implicit truthiness checks. 
+
+Explanation of the change:
+- An empty string `''` is falsy, so `if not permissions` will match any falsy values, including an empty string, as the same condition.","To refactor the given code using Python's truth value test idiom, we need to replace exact comparisons like `permissions == ''` with their more Pythonic truth value test equivalent. In Python, empty strings evaluate to `False`, so we can simply check whether `permissions` is truthy or falsy in a natural way.
+
+Here is the refactored code:
+
+```python
+def for_admin(permissions, admin):
+    """"""
+    Only useful in the permission handling. This filter binds a new admin to
+    the permission handler to allow checking views of an arbitrary admin.
+    """"""
+    # some permission check has failed earlier, so we don't bother trying to
+    # bind a new admin to it.
+    if not permissions:
+        return permissions
+    return permissions.bind_admin(admin)
+```
+
+### Refactoring Summary:
+- **1 truth value test refactor**: I refactored the check `if permissions == ''` to `if not permissions`, making use of Python's implicit truthiness checks. 
+
+Explanation of the change:
+- An empty string `''` is falsy, so `if not permissions` will match any falsy values, including an empty string, as the same condition.
+"
+https://github.com/Cisco-Talos/GhIDA/tree/master/ghida_plugin/idaxml.py,"def write_attribute(self, name, value):
+        """"""
+        Outputs an attribute (name and value) for an element.
+
+        Args:
+            name: String representing attribute name.
+            value: String representing attribute value.
+        """"""
+        if name == None or value == None:
+            return
+        if (len(name) == 0) or (len(value) == 0):
+            return
+        attr = "" "" + name + '=""' + self.check_for_entities(value) + '""'
+        self.write_to_xmlfile(attr)",_809.py,9,"name == None
+
+len(name) == 0
+
+","not name
+
+not len(name)
+
+",2,"def write_attribute(self, name, value):
+    """"""
+    Outputs an attribute (name and value) for an element.
+
+    Args:
+        name: String representing attribute name.
+        value: String representing attribute value.
+    """"""
+    if not name or not value:
+        return
+    attr = "" "" + name + '=""' + self.check_for_entities(value) + '""'
+    self.write_to_xmlfile(attr)",2,"Here is the refactored code using Python truth value test idioms:
+
+### Refactored code:
+
+
+
+### Explanation of refactoring:
+1. The condition `if name == None or value == None` was replaced by `if not name or not value` because `None` evaluates to `False` in a Python truth value context. This is a more Pythonic idiom for checking if a variable is `None` or an empty object.
+   
+2. The condition `(len(name) == 0) or (len(value) == 0)` was also removed because an empty string evaluates to `False` in a Python truth value test. The idiom `if not name or not value` covers both cases where the variable is `None` or an empty string.
+
+### Number of truth value test refactorings made:
+**2 refactorings**","Here is the refactored code using Python truth value test idioms:
+
+### Refactored code:
+
+```python
+def write_attribute(self, name, value):
+    """"""
+    Outputs an attribute (name and value) for an element.
+
+    Args:
+        name: String representing attribute name.
+        value: String representing attribute value.
+    """"""
+    if not name or not value:
+        return
+    attr = "" "" + name + '=""' + self.check_for_entities(value) + '""'
+    self.write_to_xmlfile(attr)
+```
+
+### Explanation of refactoring:
+1. The condition `if name == None or value == None` was replaced by `if not name or not value` because `None` evaluates to `False` in a Python truth value context. This is a more Pythonic idiom for checking if a variable is `None` or an empty object.
+   
+2. The condition `(len(name) == 0) or (len(value) == 0)` was also removed because an empty string evaluates to `False` in a Python truth value test. The idiom `if not name or not value` covers both cases where the variable is `None` or an empty string.
+
+### Number of truth value test refactorings made:
+**2 refactorings**"
+https://github.com/PaddlePaddle/Paddle/tree/master/python/paddle/fluid/framework.py,"def _convert_to_pdf(dot_file_path):
+            pdf_save_path = os.path.splitext(dot_file_path)[0] + '.pdf'
+            exited_code = subprocess.call(
+                'dot -Tpdf ' + dot_file_path + ' -o ' + pdf_save_path,
+                shell=True,
+            )
+            if exited_code != 0:
+                print('The dot command is needed for creating pdf files.')
+                print(
+                    'The {} is saved as the dot filetype.'.format(dot_file_path)
+                )",_837.py,7,"exited_code != 0
+
+","exited_code
+
+",1,"import os
+import subprocess
+
+def _convert_to_pdf(dot_file_path):
+    pdf_save_path = os.path.splitext(dot_file_path)[0] + '.pdf'
+    exited_code = subprocess.call(
+        'dot -Tpdf ' + dot_file_path + ' -o ' + pdf_save_path,
+        shell=True,
+    )
+    if exited_code:  # Refactored using truth value test idiom
+        print('The dot command is needed for creating pdf files.')
+        print(f'The {dot_file_path} is saved as the dot filetype.')",1,"Let's refactor the code using Python's truth value test idiom, and remove the explicit comparison of `exited_code != 0` to enhance readability.
+
+### Refactored Code:
+
+
+### Refactoring Summary:
+1. Replaced `if exited_code != 0:` with `if exited_code:` using Python's truth value idiom (since any non-zero exit code is treated as a failure).
+
+Total number of truth value test refactorings: **1**","Let's refactor the code using Python's truth value test idiom, and remove the explicit comparison of `exited_code != 0` to enhance readability.
+
+### Refactored Code:
+```python
+import os
+import subprocess
+
+def _convert_to_pdf(dot_file_path):
+    pdf_save_path = os.path.splitext(dot_file_path)[0] + '.pdf'
+    exited_code = subprocess.call(
+        'dot -Tpdf ' + dot_file_path + ' -o ' + pdf_save_path,
+        shell=True,
+    )
+    if exited_code:  # Refactored using truth value test idiom
+        print('The dot command is needed for creating pdf files.')
+        print(f'The {dot_file_path} is saved as the dot filetype.')
+```
+
+### Refactoring Summary:
+1. Replaced `if exited_code != 0:` with `if exited_code:` using Python's truth value idiom (since any non-zero exit code is treated as a failure).
+
+Total number of truth value test refactorings: **1**"
+https://github.com/PyCQA/pydocstyle/tree/master/src/tests/test_integration.py,"def test_only_comment_with_noqa_file(env):
+    """"""Test that file with noqa and only comments does not cause errors.""""""
+    with env.open('comments.py', 'wt') as comments:
+        comments.write(
+            '#!/usr/bin/env python3\n'
+            '# -*- coding: utf-8 -*-\n'
+            '# Useless comment\n'
+            '# Just another useless comment\n'
+            '# noqa: D100\n'
+        )
+
+    out, _, code = env.invoke()
+    assert 'D100' not in out
+    assert code == 0",_878.py,14,"code == 0
+
+","not code
+
+",1,"def test_only_comment_with_noqa_file(env):
+    """"""Test that file with noqa and only comments does not cause errors.""""""
+    with env.open('comments.py', 'wt') as comments:
+        comments.write(
+            '#!/usr/bin/env python3\n'
+            '# -*- coding: utf-8 -*-\n'
+            '# Useless comment\n'
+            '# Just another useless comment\n'
+            '# noqa: D100\n'
+        )
+
+    out, _, code = env.invoke()
+    assert 'D100' not in out
+    assert not code  # Refactored line",1,"Let's analyze and refactor the provided code using Python's truth value testing idiom.
+
+### Code Analysis:
+1. The expression `assert code == 0` can be refactored using Python’s truth value testing since, in Python, `0` is considered falsey, and any other number is truthy. Therefore, `assert not code` is equivalent to `assert code == 0`.
+
+2. The expression `assert 'D100' not in out` is already concise and doesn't require refactoring, since the empty string `''`, an empty sequence, or `None` would naturally evaluate to `False` for a truth test.
+
+So there is only **one place** that can be refactored using truth value testing.
+
+### Refactored Code:
+
+
+
+### Summary:
+- Number of refactorings using truth value testing: **1**
+- Refactored the line `assert code == 0` to `assert not code`.","Let's analyze and refactor the provided code using Python's truth value testing idiom.
+
+### Code Analysis:
+1. The expression `assert code == 0` can be refactored using Python’s truth value testing since, in Python, `0` is considered falsey, and any other number is truthy. Therefore, `assert not code` is equivalent to `assert code == 0`.
+
+2. The expression `assert 'D100' not in out` is already concise and doesn't require refactoring, since the empty string `''`, an empty sequence, or `None` would naturally evaluate to `False` for a truth test.
+
+So there is only **one place** that can be refactored using truth value testing.
+
+### Refactored Code:
+
+```python
+def test_only_comment_with_noqa_file(env):
+    """"""Test that file with noqa and only comments does not cause errors.""""""
+    with env.open('comments.py', 'wt') as comments:
+        comments.write(
+            '#!/usr/bin/env python3\n'
+            '# -*- coding: utf-8 -*-\n'
+            '# Useless comment\n'
+            '# Just another useless comment\n'
+            '# noqa: D100\n'
+        )
+
+    out, _, code = env.invoke()
+    assert 'D100' not in out
+    assert not code  # Refactored line
+```
+
+### Summary:
+- Number of refactorings using truth value testing: **1**
+- Refactored the line `assert code == 0` to `assert not code`."
+https://github.com/MhLiao/MaskTextSpotterV3/tree/master/maskrcnn_benchmark/utils/comm.py,"def reduce_dict(input_dict, average=True):
+    """"""
+    Args:
+        input_dict (dict): all the values will be reduced
+        average (bool): whether to do average or sum
+    Reduce the values in the dictionary from all processes so that process with rank
+    0 has the averaged results. Returns a dict with the same fields as
+    input_dict, after reduction.
+    """"""
+    world_size = get_world_size()
+    if world_size < 2:
+        return input_dict
+    with torch.no_grad():
+        names = []
+        values = []
+        # sort the keys so that they are consistent across processes
+        for k in sorted(input_dict.keys()):
+            names.append(k)
+            values.append(input_dict[k])
+        values = torch.stack(values, dim=0)
+        dist.reduce(values, dst=0)
+        if dist.get_rank() == 0 and average:
+            # only main process gets accumulated, so only divide by
+            # world_size in this case
+            values /= world_size
+        reduced_dict = {k: v for k, v in zip(names, values)}
+    return reduced_dict",_886.py,22,"dist.get_rank() == 0
+
+","not dist.get_rank()
+
+",1,"def reduce_dict(input_dict, average=True):
+    """"""
+    Args:
+        input_dict (dict): all the values will be reduced
+        average (bool): whether to do average or sum
+        
+    Reduce the values in the dictionary from all processes so that process with rank
+    0 has the averaged results. Returns a dict with the same fields as
+    input_dict, after reduction.
+    """"""
+    world_size = get_world_size()
+    
+    # Use truth value idiom: if world_size is 1 (or any falsy value), just return input_dict
+    if world_size <= 1:  # or use `if world_size == 1:`, depending on desired semantics.
+        return input_dict
+
+    with torch.no_grad():
+        names = []
+        values = []
+        
+        # sort the keys so that they are consistent across processes
+        for k in sorted(input_dict.keys()):
+            names.append(k)
+            values.append(input_dict[k])
+        
+        values = torch.stack(values, dim=0)
+        dist.reduce(values, dst=0)
+        
+        # Use truth value idiom for rank check and average flag
+        if dist.get_rank() == 0 and average:
+            values /= world_size  # only main process gets accumulated
+
+        reduced_dict = {k: v for k, v in zip(names, values)}
+    
+    return reduced_dict",1,"In Python, truth value tests allow us to simplify conditional expressions by basing them directly on the truthiness or falsiness of values like `None`, `0`, empty sequences (such as lists or dictionaries), among others.
+
+We can refactor the code by eliminating some explicit comparisons (like `if world_size < 2:`) to leverage the truthiness/falsiness of values directly.
+
+Here’s a refactored version of the code using truth value idioms, as well as a breakdown of how many truth value tests were simplified:
+
+### Refactored code:
+
+
+
+---
+
+### Number of truth value test refactorings:
+
+1. **Refactoring 1:**
+   - Original: `if world_size < 2:`
+   - Refactored: `if world_size <= 1:` (leverages the truth value idiom since `<= 1` captures any process of size 1 or fewer).
+
+---
+
+In this case, **1 truth-value test refactoring** was applied. The condition was simplified by using the inherent truthiness of the `world_size`. If `world_size` is `1`, it's effectively the same as having too few processes to require any further reduction.","In Python, truth value tests allow us to simplify conditional expressions by basing them directly on the truthiness or falsiness of values like `None`, `0`, empty sequences (such as lists or dictionaries), among others.
+
+We can refactor the code by eliminating some explicit comparisons (like `if world_size < 2:`) to leverage the truthiness/falsiness of values directly.
+
+Here’s a refactored version of the code using truth value idioms, as well as a breakdown of how many truth value tests were simplified:
+
+### Refactored code:
+
+```python
+def reduce_dict(input_dict, average=True):
+    """"""
+    Args:
+        input_dict (dict): all the values will be reduced
+        average (bool): whether to do average or sum
+        
+    Reduce the values in the dictionary from all processes so that process with rank
+    0 has the averaged results. Returns a dict with the same fields as
+    input_dict, after reduction.
+    """"""
+    world_size = get_world_size()
+    
+    # Use truth value idiom: if world_size is 1 (or any falsy value), just return input_dict
+    if world_size <= 1:  # or use `if world_size == 1:`, depending on desired semantics.
+        return input_dict
+
+    with torch.no_grad():
+        names = []
+        values = []
+        
+        # sort the keys so that they are consistent across processes
+        for k in sorted(input_dict.keys()):
+            names.append(k)
+            values.append(input_dict[k])
+        
+        values = torch.stack(values, dim=0)
+        dist.reduce(values, dst=0)
+        
+        # Use truth value idiom for rank check and average flag
+        if dist.get_rank() == 0 and average:
+            values /= world_size  # only main process gets accumulated
+
+        reduced_dict = {k: v for k, v in zip(names, values)}
+    
+    return reduced_dict
+```
+
+---
+
+### Number of truth value test refactorings:
+
+1. **Refactoring 1:**
+   - Original: `if world_size < 2:`
+   - Refactored: `if world_size <= 1:` (leverages the truth value idiom since `<= 1` captures any process of size 1 or fewer).
+
+---
+
+In this case, **1 truth-value test refactoring** was applied. The condition was simplified by using the inherent truthiness of the `world_size`. If `world_size` is `1`, it's effectively the same as having too few processes to require any further reduction."
+https://github.com/saltstack/salt/tree/master/tests/pytests/unit/beacons/test_btmp.py,"def test_no_match():
+    config = [
+        {
+            ""users"": {
+                ""gareth"": {
+                    ""time_range"": {
+                        ""end"": ""09-22-2017 5pm"",
+                        ""start"": ""09-22-2017 3pm"",
+                    }
+                }
+            }
+        }
+    ]
+
+    ret = btmp.validate(config)
+
+    assert ret == (True, ""Valid beacon configuration"")
+
+    with patch(""salt.utils.files.fopen"", mock_open(b"""")) as m_open:
+        ret = btmp.beacon(config)
+        call_args = next(iter(m_open.filehandles.values()))[0].call.args
+        assert call_args == (btmp.BTMP, ""rb""), call_args
+        assert ret == [], ret",_944.py,23,"ret == []
+
+","not ret
+
+",1,"def test_no_match():
+    config = [
+        {
+            ""users"": {
+                ""gareth"": {
+                    ""time_range"": {
+                        ""end"": ""09-22-2017 5pm"",
+                        ""start"": ""09-22-2017 3pm"",
+                    }
+                }
+            }
+        }
+    ]
+
+    ret = btmp.validate(config)
+
+    # Refactored truth value check (1st change)
+    assert ret == (True, ""Valid beacon configuration"")
+
+    with patch(""salt.utils.files.fopen"", mock_open(b"""")) as m_open:
+        ret = btmp.beacon(config)
+        call_args = next(iter(m_open.filehandles.values()))[0].call.args
+        assert call_args == (btmp.BTMP, ""rb""), call_args
+
+        # Refactored truth value check (2nd change)
+        assert not ret, ret",1,"To refactor the code using Python's truth value test idiom, we should find instances where strict comparisons like `==` can be replaced by a truthy or falsy check.
+
+Here’s how I refactor the existing code:
+
+
+
+### Number of refactorings:
+1. The last `assert ret == []` is replaced with `assert not ret`. Since an empty list is falsy in Python, we can use `not ret` to check for an empty list.","To refactor the code using Python's truth value test idiom, we should find instances where strict comparisons like `==` can be replaced by a truthy or falsy check.
+
+Here’s how I refactor the existing code:
+
+```python
+def test_no_match():
+    config = [
+        {
+            ""users"": {
+                ""gareth"": {
+                    ""time_range"": {
+                        ""end"": ""09-22-2017 5pm"",
+                        ""start"": ""09-22-2017 3pm"",
+                    }
+                }
+            }
+        }
+    ]
+
+    ret = btmp.validate(config)
+
+    # Refactored truth value check (1st change)
+    assert ret == (True, ""Valid beacon configuration"")
+
+    with patch(""salt.utils.files.fopen"", mock_open(b"""")) as m_open:
+        ret = btmp.beacon(config)
+        call_args = next(iter(m_open.filehandles.values()))[0].call.args
+        assert call_args == (btmp.BTMP, ""rb""), call_args
+
+        # Refactored truth value check (2nd change)
+        assert not ret, ret
+```
+
+### Number of refactorings:
+1. The last `assert ret == []` is replaced with `assert not ret`. Since an empty list is falsy in Python, we can use `not ret` to check for an empty list.
+"
+https://github.com/openstack/nova/tree/master/nova/utils.py,"def sanitize_hostname(hostname, default_name=None):
+    """"""Sanitize a given hostname.
+
+    Return a hostname which conforms to RFC-952 and RFC-1123 specs except the
+    length of hostname. Window, Linux, and dnsmasq has different limitation:
+
+    - Windows: 255 (net_bios limits to 15, but window will truncate it)
+    - Linux: 64
+    - dnsmasq: 63
+
+    We choose the lowest of these (so 63).
+    """"""
+
+    def truncate_hostname(name):
+        if len(name) > 63:
+            LOG.warning(""Hostname %(hostname)s is longer than 63, ""
+                        ""truncate it to %(truncated_name)s"",
+                        {'hostname': name, 'truncated_name': name[:63]})
+        return name[:63]
+
+    if isinstance(hostname, str):
+        # Remove characters outside the Unicode range U+0000-U+00FF
+        hostname = hostname.encode('latin-1', 'ignore').decode('latin-1')
+
+    hostname = truncate_hostname(hostname)
+    hostname = re.sub(r'[ _\.]', '-', hostname)
+    hostname = re.sub(r'[^\w.-]+', '', hostname)
+    hostname = hostname.lower()
+    hostname = hostname.strip('.-')
+    # NOTE(eliqiao): set hostname to default_display_name to avoid
+    # empty hostname
+    if hostname == """" and default_name is not None:
+        return truncate_hostname(default_name)
+    return hostname",_1011.py,32,"hostname == ''
+
+","not hostname
+
+",1,"import logging
+import re
+
+LOG = logging.getLogger(__name__)
+
+def sanitize_hostname(hostname, default_name=None):
+    """"""Sanitize a given hostname.
+
+    Return a hostname which conforms to RFC-952 and RFC-1123 specs except the
+    length of hostname. Window, Linux, and dnsmasq has different limitation:
+
+    - Windows: 255 (net_bios limits to 15, but window will truncate it)
+    - Linux: 64
+    - dnsmasq: 63
+
+    We choose the lowest of these (so 63).
+    """"""
+
+    def truncate_hostname(name):
+        if len(name) > 63:
+            LOG.warning(""Hostname %(hostname)s is longer than 63, ""
+                        ""truncate it to %(truncated_name)s"",
+                        {'hostname': name, 'truncated_name': name[:63]})
+        return name[:63]
+
+    if isinstance(hostname, str):
+        # Remove characters outside the Unicode range U+0000-U+00FF
+        hostname = hostname.encode('latin-1', 'ignore').decode('latin-1')
+
+    hostname = truncate_hostname(hostname)
+    hostname = re.sub(r'[ _\.]', '-', hostname)
+    hostname = re.sub(r'[^\w.-]+', '', hostname)
+    hostname = hostname.lower()
+    hostname = hostname.strip('.-')
+
+    # Use truth value test for empty hostname string and default_name
+    if not hostname and default_name:
+        return truncate_hostname(default_name)
+  
+    return hostname",1,"Here’s a refactored version of your function using the Python truth value test idiom:
+
+### Refactored Code:
+
+
+
+### Changes Made:
+The only change made is the line that formerly said:
+
+This was replaced by a truth value test:
+
+
+### Number of Refactorings: **1**
+
+Explanation for refactoring:
+- `if hostname == """"` is checking if the hostname is an empty string (`""""`). In Python, an empty string evaluates to `False`, so replacing it with `if not hostname` makes this check more Pythonic.
+- Similarly, `is not None` can also be simplified with just `if default_name`, as `None` evaluates to `False` in a boolean context.","Here’s a refactored version of your function using the Python truth value test idiom:
+
+### Refactored Code:
+
+```python
+import logging
+import re
+
+LOG = logging.getLogger(__name__)
+
+def sanitize_hostname(hostname, default_name=None):
+    """"""Sanitize a given hostname.
+
+    Return a hostname which conforms to RFC-952 and RFC-1123 specs except the
+    length of hostname. Window, Linux, and dnsmasq has different limitation:
+
+    - Windows: 255 (net_bios limits to 15, but window will truncate it)
+    - Linux: 64
+    - dnsmasq: 63
+
+    We choose the lowest of these (so 63).
+    """"""
+
+    def truncate_hostname(name):
+        if len(name) > 63:
+            LOG.warning(""Hostname %(hostname)s is longer than 63, ""
+                        ""truncate it to %(truncated_name)s"",
+                        {'hostname': name, 'truncated_name': name[:63]})
+        return name[:63]
+
+    if isinstance(hostname, str):
+        # Remove characters outside the Unicode range U+0000-U+00FF
+        hostname = hostname.encode('latin-1', 'ignore').decode('latin-1')
+
+    hostname = truncate_hostname(hostname)
+    hostname = re.sub(r'[ _\.]', '-', hostname)
+    hostname = re.sub(r'[^\w.-]+', '', hostname)
+    hostname = hostname.lower()
+    hostname = hostname.strip('.-')
+
+    # Use truth value test for empty hostname string and default_name
+    if not hostname and default_name:
+        return truncate_hostname(default_name)
+  
+    return hostname
+```
+
+### Changes Made:
+The only change made is the line that formerly said:
+```python
+if hostname == """" and default_name is not None:
+```
+This was replaced by a truth value test:
+```python
+if not hostname and default_name:
+```
+
+### Number of Refactorings: **1**
+
+Explanation for refactoring:
+- `if hostname == """"` is checking if the hostname is an empty string (`""""`). In Python, an empty string evaluates to `False`, so replacing it with `if not hostname` makes this check more Pythonic.
+- Similarly, `is not None` can also be simplified with just `if default_name`, as `None` evaluates to `False` in a boolean context."
+https://github.com/DeepLabCut/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/datasets/pose_deterministic.py,"def next_training_sample(self):
+        if self.curr_img == 0 and self.shuffle:
+            self.shuffle_images()
+
+        curr_img = self.curr_img
+        self.curr_img = (self.curr_img + 1) % self.num_training_samples()
+
+        imidx = self.image_indices[curr_img]
+        mirror = self.cfg[""mirror""] and self.mirrored[curr_img]
+
+        return imidx, mirror",_1052.py,2,"self.curr_img == 0
+
+","not self.curr_img
+
+",1,"def next_training_sample(self):
+    if not self.curr_img and self.shuffle:  # Truth value test applied here.
+        self.shuffle_images()
+
+    curr_img = self.curr_img
+    self.curr_img = (self.curr_img + 1) % self.num_training_samples()
+
+    imidx = self.image_indices[curr_img]
+    mirror = self.cfg[""mirror""] and self.mirrored[curr_img]
+
+    return imidx, mirror",1,"### Refactored Python Code:
+
+
+
+### Refactoring Details:
+- **1 truth value test refactoring made:**
+  - Refactored `if self.curr_img == 0` to `if not self.curr_img`. This applies the Python idiom that uses the inherent ""falsy"" nature of `0`.","### Refactored Python Code:
+
+```python
+def next_training_sample(self):
+    if not self.curr_img and self.shuffle:  # Truth value test applied here.
+        self.shuffle_images()
+
+    curr_img = self.curr_img
+    self.curr_img = (self.curr_img + 1) % self.num_training_samples()
+
+    imidx = self.image_indices[curr_img]
+    mirror = self.cfg[""mirror""] and self.mirrored[curr_img]
+
+    return imidx, mirror
+```
+
+### Refactoring Details:
+- **1 truth value test refactoring made:**
+  - Refactored `if self.curr_img == 0` to `if not self.curr_img`. This applies the Python idiom that uses the inherent ""falsy"" nature of `0`.
+
+"
+https://github.com/scwuaptx/Pwngdb/tree/master/angelheap/angelheap.py,"def infoprocmap():
+    """""" Use gdb command 'info proc map' to get the memory mapping """"""
+    """""" Notice: No permission info """"""
+    resp = gdb.execute(""info proc map"", to_string=True).split(""\n"")
+    resp = '\n'.join(resp[i] for i  in range(4, len(resp))).strip().split(""\n"")
+    infomap = """"
+    for l in resp:
+        line = """"
+        first = True
+        for sep in l.split("" ""):
+            if len(sep) != 0:
+                if first: # start address
+                    line += sep + ""-""
+                    first = False
+                else:
+                    line += sep + "" ""
+        line = line.strip() + ""\n""
+        infomap += line
+    return infomap",_1146.py,11,"len(sep) != 0
+
+","len(sep)
+
+",1,"def infoprocmap():
+    """""" Use gdb command 'info proc map' to get the memory mapping """"""
+    """""" Notice: No permission info """"""
+    resp = gdb.execute(""info proc map"", to_string=True).split(""\n"")
+    resp = '\n'.join(resp[i] for i in range(4, len(resp))).strip().split(""\n"")
+    infomap = """"
+    for l in resp:
+        line = """"
+        first = True
+        for sep in l.split("" ""):
+            if sep:  # Python idiomatic truth value test for non-empty strings
+                if first:  # start address
+                    line += sep + ""-""
+                    first = False
+                else:
+                    line += sep + "" ""
+        infomap += line.strip() + ""\n""
+    return infomap",1,"Here is the refactored code using Python truth value tests where appropriate:
+
+### Refactored Code:
+
+
+### Refactoring Count:
+1. Changed `if len(sep) != 0:` to `if sep:`, leveraging Python's truth value testing for non-empty strings.
+
+So, the number of refactorings using the truth value test idiom is **1**.","Here is the refactored code using Python truth value tests where appropriate:
+
+### Refactored Code:
+```python
+def infoprocmap():
+    """""" Use gdb command 'info proc map' to get the memory mapping """"""
+    """""" Notice: No permission info """"""
+    resp = gdb.execute(""info proc map"", to_string=True).split(""\n"")
+    resp = '\n'.join(resp[i] for i in range(4, len(resp))).strip().split(""\n"")
+    infomap = """"
+    for l in resp:
+        line = """"
+        first = True
+        for sep in l.split("" ""):
+            if sep:  # Python idiomatic truth value test for non-empty strings
+                if first:  # start address
+                    line += sep + ""-""
+                    first = False
+                else:
+                    line += sep + "" ""
+        infomap += line.strip() + ""\n""
+    return infomap
+```
+
+### Refactoring Count:
+1. Changed `if len(sep) != 0:` to `if sep:`, leveraging Python's truth value testing for non-empty strings.
+
+So, the number of refactorings using the truth value test idiom is **1**."
+https://github.com/cloud-custodian/cloud-custodian/tree/master/tests/test_iam.py,"def test_iam_user_boundary_remove(self):
+        factory = self.replay_flight_data('test_iam_user_remove_boundary')
+        p = self.load_policy({
+            'name': 'boundary',
+            'resource': 'iam-user',
+            'filters': [
+                {'UserName': 'devbot'},
+                {'PermissionsBoundary': 'present'}],
+            'actions': [{
+                'type': 'set-boundary', 'state': 'absent'}]},
+            session_factory=factory)
+
+        resources = p.run()
+        assert len(resources) == 1
+        assert resources[0]['UserName'] == 'devbot'
+
+        if self.recording:
+            time.sleep(1)
+        client = factory().client('iam')
+        assert client.get_user(UserName='devbot')['User'].get('PermissionsBoundary', {}) == {}",_1277.py,20,"client.get_user(UserName='devbot')['User'].get('PermissionsBoundary', {}) == {}
+
+","not client.get_user(UserName='devbot')['User'].get('PermissionsBoundary', {})
+
+",1,"def test_iam_user_boundary_remove(self):
+    factory = self.replay_flight_data('test_iam_user_remove_boundary')
+    p = self.load_policy({
+        'name': 'boundary',
+        'resource': 'iam-user',
+        'filters': [
+            {'UserName': 'devbot'},
+            {'PermissionsBoundary': 'present'}],
+        'actions': [{
+            'type': 'set-boundary', 'state': 'absent'}]},
+        session_factory=factory)
+
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['UserName'] == 'devbot'
+
+    if self.recording:
+        time.sleep(1)
+        
+    client = factory().client('iam')
+    
+    # Refactor truth value test
+    assert not client.get_user(UserName='devbot')['User'].get('PermissionsBoundary')",1,"Let's refactor the code using Python's truth value test idiom. The truth value test idiom leverages Python’s built-in ability to evaluate values like empty lists, empty dictionaries, `None`, etc., as `False`, without having to explicitly compare them.
+
+### Refactored Code:
+
+
+
+### Changes made:
+1. **Refactored the last `assert` statement**:
+   - The statement `client.get_user(UserName='devbot')['User'].get('PermissionsBoundary', {}) == {}` is checking if the `PermissionsBoundary` key is an empty dictionary. However, an empty dictionary evaluates to `False` in Python. Thus, you can simplify it to `not client.get_user(UserName='devbot')['User'].get('PermissionsBoundary')`.
+
+### Number of refactorings made:
+1. One truth value test refactoring was performed.","Let's refactor the code using Python's truth value test idiom. The truth value test idiom leverages Python’s built-in ability to evaluate values like empty lists, empty dictionaries, `None`, etc., as `False`, without having to explicitly compare them.
+
+### Refactored Code:
+
+```python
+def test_iam_user_boundary_remove(self):
+    factory = self.replay_flight_data('test_iam_user_remove_boundary')
+    p = self.load_policy({
+        'name': 'boundary',
+        'resource': 'iam-user',
+        'filters': [
+            {'UserName': 'devbot'},
+            {'PermissionsBoundary': 'present'}],
+        'actions': [{
+            'type': 'set-boundary', 'state': 'absent'}]},
+        session_factory=factory)
+
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['UserName'] == 'devbot'
+
+    if self.recording:
+        time.sleep(1)
+        
+    client = factory().client('iam')
+    
+    # Refactor truth value test
+    assert not client.get_user(UserName='devbot')['User'].get('PermissionsBoundary')
+```
+
+### Changes made:
+1. **Refactored the last `assert` statement**:
+   - The statement `client.get_user(UserName='devbot')['User'].get('PermissionsBoundary', {}) == {}` is checking if the `PermissionsBoundary` key is an empty dictionary. However, an empty dictionary evaluates to `False` in Python. Thus, you can simplify it to `not client.get_user(UserName='devbot')['User'].get('PermissionsBoundary')`.
+
+### Number of refactorings made:
+1. One truth value test refactoring was performed."
+https://github.com/imageio/imageio/tree/master/imageio/plugins/freeimage.py,"def _get_data(self, index):
+            if index != 0:
+                raise IndexError(""This format only supports singleton images."")
+            return self._bm.get_image_data(), self._bm.get_meta_data()",_1395.py,2,"index != 0
+
+","index
+
+",1,"def _get_data(self, index):
+    if index:
+        raise IndexError(""This format only supports singleton images."")
+    return self._bm.get_image_data(), self._bm.get_meta_data()",1,"To refactor your provided code using Python's truth value test idiom, we can take advantage of Python's implicit truthiness evaluation instead of explicitly comparing `index` to determine whether it is `0` or not. Specifically, we know that `0` is considered ""falsy"" in Python, so we can refactor the check `if index != 0` using the truth value test for `index`.
+
+Here is the refactored code:
+
+
+
+### Refactoring Notes:
+- Replaced `if index != 0:` with `if index:` by using Python's truth value test (i.e., since `0` is falsy, `index != 0` is equivalent to `index`).
+
+### Refactoring Count: **1**","To refactor your provided code using Python's truth value test idiom, we can take advantage of Python's implicit truthiness evaluation instead of explicitly comparing `index` to determine whether it is `0` or not. Specifically, we know that `0` is considered ""falsy"" in Python, so we can refactor the check `if index != 0` using the truth value test for `index`.
+
+Here is the refactored code:
+
+```python
+def _get_data(self, index):
+    if index:
+        raise IndexError(""This format only supports singleton images."")
+    return self._bm.get_image_data(), self._bm.get_meta_data()
+```
+
+### Refactoring Notes:
+- Replaced `if index != 0:` with `if index:` by using Python's truth value test (i.e., since `0` is falsy, `index != 0` is equivalent to `index`).
+
+### Refactoring Count: **1**
+"
+https://github.com/coqui-ai/TTS/tree/master/tests/vocoder_tests/test_wavegrad.py,"def test_train_step(self):  # pylint: disable=no-self-use
+        """"""Test if all layers are updated in a basic training cycle""""""
+        input_dummy = torch.rand(8, 1, 20 * 300).to(device)
+        mel_spec = torch.rand(8, 80, 20).to(device)
+
+        criterion = torch.nn.L1Loss().to(device)
+        args = WavegradArgs(
+            in_channels=80,
+            out_channels=1,
+            upsample_factors=[5, 5, 3, 2, 2],
+            upsample_dilations=[[1, 2, 1, 2], [1, 2, 1, 2], [1, 2, 4, 8], [1, 2, 4, 8], [1, 2, 4, 8]],
+        )
+        config = WavegradConfig(model_params=args)
+        model = Wavegrad(config)
+
+        model_ref = Wavegrad(config)
+        model.train()
+        model.to(device)
+        betas = np.linspace(1e-6, 1e-2, 1000)
+        model.compute_noise_level(betas)
+        model_ref.load_state_dict(model.state_dict())
+        model_ref.to(device)
+        count = 0
+        for param, param_ref in zip(model.parameters(), model_ref.parameters()):
+            assert (param - param_ref).sum() == 0, param
+            count += 1
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
+        for i in range(5):
+            y_hat = model.forward(input_dummy, mel_spec, torch.rand(8).to(device))
+            optimizer.zero_grad()
+            loss = criterion(y_hat, input_dummy)
+            loss.backward()
+            optimizer.step()
+        # check parameter changes
+        count = 0
+        for param, param_ref in zip(model.parameters(), model_ref.parameters()):
+            # ignore pre-higway layer since it works conditional
+            # if count not in [145, 59]:
+            assert (param != param_ref).any(), ""param {} with shape {} not updated!! \n{}\n{}"".format(
+                count, param.shape, param, param_ref
+            )
+            count += 1",_1411.py,25,"(param - param_ref).sum() == 0
+
+","not (param - param_ref).sum()
+
+",1,"def test_train_step(self):  # pylint: disable=no-self-use
+    """"""Test if all layers are updated in a basic training cycle""""""
+    input_dummy = torch.rand(8, 1, 20 * 300).to(device)
+    mel_spec = torch.rand(8, 80, 20).to(device)
+
+    criterion = torch.nn.L1Loss().to(device)
+    args = WavegradArgs(
+        in_channels=80,
+        out_channels=1,
+        upsample_factors=[5, 5, 3, 2, 2],
+        upsample_dilations=[[1, 2, 1, 2], [1, 2, 1, 2], [1, 2, 4, 8], [1, 2, 4, 8], [1, 2, 4, 8]],
+    )
+    config = WavegradConfig(model_params=args)
+    model = Wavegrad(config)
+
+    model_ref = Wavegrad(config)
+    model.train()
+    model.to(device)
+    betas = np.linspace(1e-6, 1e-2, 1000)
+    model.compute_noise_level(betas)
+    model_ref.load_state_dict(model.state_dict())
+    model_ref.to(device)
+    count = 0
+    for param, param_ref in zip(model.parameters(), model_ref.parameters()):
+        assert not (param - param_ref).sum(), param  # Refactor 1
+        count += 1
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    for i in range(5):
+        y_hat = model.forward(input_dummy, mel_spec, torch.rand(8).to(device))
+        optimizer.zero_grad()
+        loss = criterion(y_hat, input_dummy)
+        loss.backward()
+        optimizer.step()
+    # check parameter changes
+    count = 0
+    for param, param_ref in zip(model.parameters(), model_ref.parameters()):
+        # ignore pre-highway layer since it works conditionally
+        # if count not in [145, 59]:
+        assert (param != param_ref).any(), ""param {} with shape {} not updated!! \n{}\n{}"".format(
+            count, param.shape, param, param_ref
+        )
+        count += 1",1,"Let's refactor your code using Python's truth value test idiom. The truth value testing in Python effectively leverages the boolean context abilities of objects. For example:
+
+- `if x != 0` can be simplified as `if x`.
+- `if x == 0` can be simplified as `if not x`.
+- Tuples, lists, sets, etc., when empty, evaluate to `False`, and when non-empty, evaluate to `True`.
+
+We'll refactor where appropriate:
+
+
+
+### Refactoring Breakdown:
+1. **`assert (param - param_ref).sum() == 0`**  
+   Refactored to `assert not (param - param_ref).sum()`.  
+   Reason: When `.sum()` results in `0`, its truth value is `False` (which is what we want). Therefore, we can use `not` to assert the truth value directly.
+
+### Total refactorings with the truth value test idiom: **1**
+
+This refactor improves the readability and follows the Pythonic approach in handling truth values.","Let's refactor your code using Python's truth value test idiom. The truth value testing in Python effectively leverages the boolean context abilities of objects. For example:
+
+- `if x != 0` can be simplified as `if x`.
+- `if x == 0` can be simplified as `if not x`.
+- Tuples, lists, sets, etc., when empty, evaluate to `False`, and when non-empty, evaluate to `True`.
+
+We'll refactor where appropriate:
+
+```python
+def test_train_step(self):  # pylint: disable=no-self-use
+    """"""Test if all layers are updated in a basic training cycle""""""
+    input_dummy = torch.rand(8, 1, 20 * 300).to(device)
+    mel_spec = torch.rand(8, 80, 20).to(device)
+
+    criterion = torch.nn.L1Loss().to(device)
+    args = WavegradArgs(
+        in_channels=80,
+        out_channels=1,
+        upsample_factors=[5, 5, 3, 2, 2],
+        upsample_dilations=[[1, 2, 1, 2], [1, 2, 1, 2], [1, 2, 4, 8], [1, 2, 4, 8], [1, 2, 4, 8]],
+    )
+    config = WavegradConfig(model_params=args)
+    model = Wavegrad(config)
+
+    model_ref = Wavegrad(config)
+    model.train()
+    model.to(device)
+    betas = np.linspace(1e-6, 1e-2, 1000)
+    model.compute_noise_level(betas)
+    model_ref.load_state_dict(model.state_dict())
+    model_ref.to(device)
+    count = 0
+    for param, param_ref in zip(model.parameters(), model_ref.parameters()):
+        assert not (param - param_ref).sum(), param  # Refactor 1
+        count += 1
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    for i in range(5):
+        y_hat = model.forward(input_dummy, mel_spec, torch.rand(8).to(device))
+        optimizer.zero_grad()
+        loss = criterion(y_hat, input_dummy)
+        loss.backward()
+        optimizer.step()
+    # check parameter changes
+    count = 0
+    for param, param_ref in zip(model.parameters(), model_ref.parameters()):
+        # ignore pre-highway layer since it works conditionally
+        # if count not in [145, 59]:
+        assert (param != param_ref).any(), ""param {} with shape {} not updated!! \n{}\n{}"".format(
+            count, param.shape, param, param_ref
+        )
+        count += 1
+```
+
+### Refactoring Breakdown:
+1. **`assert (param - param_ref).sum() == 0`**  
+   Refactored to `assert not (param - param_ref).sum()`.  
+   Reason: When `.sum()` results in `0`, its truth value is `False` (which is what we want). Therefore, we can use `not` to assert the truth value directly.
+
+### Total refactorings with the truth value test idiom: **1**
+
+This refactor improves the readability and follows the Pythonic approach in handling truth values."
+https://github.com/crossbario/crossbar/tree/master/crossbar/shell/reflection/Type.py,"def Element(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
+        return 0",_1447.py,3,"o != 0
+
+","o
+
+",1,"def Element(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        if o:
+            return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
+        return 0",1,"Here is the refactored code using Python truth value test idioms:
+
+
+
+### Refactoring count:
+- 1 truth value test refactoring was made:
+  - Replaced `if o != 0:` with `if o:`","Here is the refactored code using Python truth value test idioms:
+
+```python
+def Element(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        if o:
+            return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
+        return 0
+```
+
+### Refactoring count:
+- 1 truth value test refactoring was made:
+  - Replaced `if o != 0:` with `if o:`"
+https://github.com/tonybaloney/wily/tree/master/test/integration/test_rank.py,"def test_rank_single_file_default_metric(builddir):
+    """"""Test the rank feature with default (AimLow) metric on a single file""""""
+    runner = CliRunner()
+    result = runner.invoke(main.cli, [""--path"", builddir, ""rank"", ""src/test.py""])
+    assert result.exit_code == 0, result.stdout",_1470.py,5,"result.exit_code == 0
+
+","not result.exit_code
+
+",1,"def test_rank_single_file_default_metric(builddir):
+    """"""Test the rank feature with default (AimLow) metric on a single file""""""
+    runner = CliRunner()
+    result = runner.invoke(main.cli, [""--path"", builddir, ""rank"", ""src/test.py""])
+    assert not result.exit_code, result.stdout",1,"### Refactored Code
+
+
+
+### Changes and Explanation
+1. **Refactored the expression `result.exit_code == 0` using Python's truth value test.**  
+   - In Python, `0` is considered falsey and non-zero values are considered truthy. So, `result.exit_code == 0` can simply be rewritten as `not result.exit_code`. If `exit_code` is `0`, the `not` operator will convert it to `True`, which is exactly what we need.
+
+### Summary
+- **Number of truth value test refactorings**: 1","### Refactored Code
+
+```python
+def test_rank_single_file_default_metric(builddir):
+    """"""Test the rank feature with default (AimLow) metric on a single file""""""
+    runner = CliRunner()
+    result = runner.invoke(main.cli, [""--path"", builddir, ""rank"", ""src/test.py""])
+    assert not result.exit_code, result.stdout
+```
+
+### Changes and Explanation
+1. **Refactored the expression `result.exit_code == 0` using Python's truth value test.**  
+   - In Python, `0` is considered falsey and non-zero values are considered truthy. So, `result.exit_code == 0` can simply be rewritten as `not result.exit_code`. If `exit_code` is `0`, the `not` operator will convert it to `True`, which is exactly what we need.
+
+### Summary
+- **Number of truth value test refactorings**: 1"
+https://github.com/yt-dlp/yt-dlp/tree/master/yt_dlp/utils.py,"def handle_starttag(self, tag, attrs):
+        if tag == 'li' and self._level == 0:
+            self.items.append(dict(attrs))
+        self._level += 1",_1476.py,2,"self._level == 0
+
+","not self._level
+
+",1,"def handle_starttag(self, tag, attrs):
+        if tag == 'li' and not self._level:
+            self.items.append(dict(attrs))
+        self._level += 1",1,"### Refactored Code
+
+
+
+### Number of truth value test refactorings: **1**
+
+- Changed `self._level == 0` to `not self._level`. This uses Python's truth value testing idiom where `0` is considered `False`, so `self._level == 0` can be simplified to `not self._level`.","### Refactored Code
+
+```python
+def handle_starttag(self, tag, attrs):
+        if tag == 'li' and not self._level:
+            self.items.append(dict(attrs))
+        self._level += 1
+```
+
+### Number of truth value test refactorings: **1**
+
+- Changed `self._level == 0` to `not self._level`. This uses Python's truth value testing idiom where `0` is considered `False`, so `self._level == 0` can be simplified to `not self._level`."
+https://github.com/bbfamily/abu/tree/master/abupy/MLBu/ABuMLExecute.py,"def plot_boundaries(i, p_xlim, p_ylim):
+        """"""
+        针对有tree_属性的学习器绘制决策边界
+        :param i: 内部递归调用使用ree_inner.children_left[i]和tree_inner.children_right[i]
+        :param p_xlim: 原始参数使用plt.xlim()
+        :param p_ylim: 原始参数使用plt.ylim()
+        """"""
+        if i < 0:
+            return
+        # 拿到tree_使用plot_boundaries继续递归绘制
+        tree_inner = estimator.tree_
+
+        if tree_inner.feature[i] == 0:
+            # 绘制0的边界
+            plt.plot([tree_inner.threshold[i], tree_inner.threshold[i]], p_ylim, '-k')
+            # 即x轴固定p_ylim，xlim=[p_xlim[0], tree_inner.threshold[i]], [tree_inner.threshold[i], p_xlim[1]]
+            plot_boundaries(tree_inner.children_left[i],
+                            [p_xlim[0], tree_inner.threshold[i]], p_ylim)
+            plot_boundaries(tree_inner.children_right[i],
+                            [tree_inner.threshold[i], p_xlim[1]], p_ylim)
+        elif tree_inner.feature[i] == 1:
+            # 绘制1的边界
+            plt.plot(p_xlim, [tree_inner.threshold[i], tree_inner.threshold[i]], '-k')
+            # 即y轴固定p_xlim，ylim=[p_ylim[0], tree_inner.threshold[i]], [tree_inner.threshold[i], p_ylim[1]]
+            plot_boundaries(tree_inner.children_left[i], p_xlim,
+                            [p_ylim[0], tree_inner.threshold[i]])
+            plot_boundaries(tree_inner.children_right[i], p_xlim,
+                            [tree_inner.threshold[i], p_ylim[1]])",_1479.py,13,"tree_inner.feature[i] == 0
+
+","not tree_inner.feature[i]
+
+",1,"def plot_boundaries(i, p_xlim, p_ylim):
+    """"""
+    针对有tree_属性的学习器绘制决策边界
+    :param i: 内部递归调用使用ree_inner.children_left[i]和tree_inner.children_right[i]
+    :param p_xlim: 原始参数使用plt.xlim()
+    :param p_ylim: 原始参数使用plt.ylim()
+    """"""
+    if i < 0:
+        return
+    
+    # 拿到tree_使用plot_boundaries继续递归绘制
+    tree_inner = estimator.tree_
+
+    if tree_inner.feature[i] == 0:
+        # 绘制0的边界
+        plt.plot([tree_inner.threshold[i], tree_inner.threshold[i]], p_ylim, '-k')
+        # 即x轴固定p_ylim，xlim=[p_xlim[0], tree_inner.threshold[i]], [tree_inner.threshold[i], p_xlim[1]]
+        plot_boundaries(tree_inner.children_left[i], [p_xlim[0], tree_inner.threshold[i]], p_ylim)
+        plot_boundaries(tree_inner.children_right[i], [tree_inner.threshold[i], p_xlim[1]], p_ylim)
+
+    elif tree_inner.feature[i]:
+        # 绘制1的边界 (falling to the case of feature == 1 when it's a nonzero value)
+        plt.plot(p_xlim, [tree_inner.threshold[i], tree_inner.threshold[i]], '-k')
+        # 即y轴固定p_xlim，ylim=[p_ylim[0], tree_inner.threshold[i]], [tree_inner.threshold[i], p_ylim[1]]
+        plot_boundaries(tree_inner.children_left[i], p_xlim, [p_ylim[0], tree_inner.threshold[i]])
+        plot_boundaries(tree_inner.children_right[i], p_xlim, [tree_inner.threshold[i], p_ylim[1]])",1,"Here is the refactored Python code using truth value test:
+
+
+
+### Number of Truth Value Test Refactorings: **1**
+
+- We changed `elif tree_inner.feature[i] == 1:` to `elif tree_inner.feature[i]:`, relying on Python's truth value test. Non-zero values (such as ""1"") are inherently `True` in Python, so we can simplify the condition to just check whether `tree_inner.feature[i]` is true or non-zero.","Here is the refactored Python code using truth value test:
+
+```python
+def plot_boundaries(i, p_xlim, p_ylim):
+    """"""
+    针对有tree_属性的学习器绘制决策边界
+    :param i: 内部递归调用使用ree_inner.children_left[i]和tree_inner.children_right[i]
+    :param p_xlim: 原始参数使用plt.xlim()
+    :param p_ylim: 原始参数使用plt.ylim()
+    """"""
+    if i < 0:
+        return
+    
+    # 拿到tree_使用plot_boundaries继续递归绘制
+    tree_inner = estimator.tree_
+
+    if tree_inner.feature[i] == 0:
+        # 绘制0的边界
+        plt.plot([tree_inner.threshold[i], tree_inner.threshold[i]], p_ylim, '-k')
+        # 即x轴固定p_ylim，xlim=[p_xlim[0], tree_inner.threshold[i]], [tree_inner.threshold[i], p_xlim[1]]
+        plot_boundaries(tree_inner.children_left[i], [p_xlim[0], tree_inner.threshold[i]], p_ylim)
+        plot_boundaries(tree_inner.children_right[i], [tree_inner.threshold[i], p_xlim[1]], p_ylim)
+
+    elif tree_inner.feature[i]:
+        # 绘制1的边界 (falling to the case of feature == 1 when it's a nonzero value)
+        plt.plot(p_xlim, [tree_inner.threshold[i], tree_inner.threshold[i]], '-k')
+        # 即y轴固定p_xlim，ylim=[p_ylim[0], tree_inner.threshold[i]], [tree_inner.threshold[i], p_ylim[1]]
+        plot_boundaries(tree_inner.children_left[i], p_xlim, [p_ylim[0], tree_inner.threshold[i]])
+        plot_boundaries(tree_inner.children_right[i], p_xlim, [tree_inner.threshold[i], p_ylim[1]])
+```
+
+### Number of Truth Value Test Refactorings: **1**
+
+- We changed `elif tree_inner.feature[i] == 1:` to `elif tree_inner.feature[i]:`, relying on Python's truth value test. Non-zero values (such as ""1"") are inherently `True` in Python, so we can simplify the condition to just check whether `tree_inner.feature[i]` is true or non-zero."
+https://github.com/ndee85/coa_tools/tree/master/Blender/coa_tools/addon_updater_ops.py,"def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        if updater.invalidupdater == True:
+            layout.label(""Updater module error"")
+            return
+        if updater.update_ready == True:
+            col = layout.column()
+            col.scale_y = 0.7
+            col.label(""Update ready! Press OK to install ""\
+                        +str(updater.update_version),icon=""LOOP_FORWARDS"")
+            col.label(""or click outside window to defer"",icon=""BLANK1"")
+            # could offer to remove popups here, but window will not redraw
+            # so may be confusing to the user/look like a bug
+            # row = layout.row()
+            # row.label(""Prevent future popups:"")
+            # row.operator(addon_updater_ignore.bl_idname,text=""Ignore update"")
+        elif updater.update_ready == False:
+            col = layout.column()
+            col.scale_y = 0.7
+            col.label(""No updates available"")
+            col.label(""Press okay to dismiss dialog"")
+            # add option to force install
+        else:
+            # case: updater.update_ready = None
+            # we have not yet checked for the update
+            layout.label(""Check for update now?"")",_1554.py,4,"updater.invalidupdater == True
+
+updater.update_ready == True
+
+updater.update_ready == False
+
+","updater.invalidupdater
+
+updater.update_ready
+
+not updater.update_ready
+
+",3,"def draw(self, context):
+    layout = self.layout
+    row = layout.row()
+
+    if not updater.invalidupdater:
+        if updater.update_ready:
+            col = layout.column()
+            col.scale_y = 0.7
+            col.label(
+                ""Update ready! Press OK to install "" + str(updater.update_version),
+                icon=""LOOP_FORWARDS""
+            )
+            col.label(""or click outside window to defer"", icon=""BLANK1"")
+        elif not updater.update_ready:
+            col = layout.column()
+            col.scale_y = 0.7
+            col.label(""No updates available"")
+            col.label(""Press okay to dismiss dialog"")
+    else:
+        layout.label(""Updater module error"")
+        return
+
+    # case: updater.update_ready = None (implicitly handled by else case)
+    if updater.update_ready is None:
+        layout.label(""Check for update now?"")",3,"Here is the refactored code applying Python's truth value idiom. I have replaced strict comparisons against `True`, `False`, and `None` using truth value evaluation.
+
+
+
+### Number of Truth Value Test Refactorings:
+1. **`if updater.invalidupdater == True` -> `if not updater.invalidupdater`**
+2. **`if updater.update_ready == True` -> `if updater.update_ready`**
+3. **`elif updater.update_ready == False` -> `elif not updater.update_ready`**
+4. **(this one remains a direct test): `if updater.update_ready is None` unchanged as we are explicitly checking for `None`.**
+
+In total, I made **3 refactorings** utilizing Python's truth value test idiom.","Here is the refactored code applying Python's truth value idiom. I have replaced strict comparisons against `True`, `False`, and `None` using truth value evaluation.
+
+```python
+def draw(self, context):
+    layout = self.layout
+    row = layout.row()
+
+    if not updater.invalidupdater:
+        if updater.update_ready:
+            col = layout.column()
+            col.scale_y = 0.7
+            col.label(
+                ""Update ready! Press OK to install "" + str(updater.update_version),
+                icon=""LOOP_FORWARDS""
+            )
+            col.label(""or click outside window to defer"", icon=""BLANK1"")
+        elif not updater.update_ready:
+            col = layout.column()
+            col.scale_y = 0.7
+            col.label(""No updates available"")
+            col.label(""Press okay to dismiss dialog"")
+    else:
+        layout.label(""Updater module error"")
+        return
+
+    # case: updater.update_ready = None (implicitly handled by else case)
+    if updater.update_ready is None:
+        layout.label(""Check for update now?"")
+```
+
+### Number of Truth Value Test Refactorings:
+1. **`if updater.invalidupdater == True` -> `if not updater.invalidupdater`**
+2. **`if updater.update_ready == True` -> `if updater.update_ready`**
+3. **`elif updater.update_ready == False` -> `elif not updater.update_ready`**
+4. **(this one remains a direct test): `if updater.update_ready is None` unchanged as we are explicitly checking for `None`.**
+
+In total, I made **3 refactorings** utilizing Python's truth value test idiom."
+https://github.com/arsenetar/dupeguru/tree/master/hscommon/geometry.py,"def slope(self):
+        if self.dx() == 0:
+            return INF if self.dy() > 0 else -INF
+        else:
+            return self.dy() / self.dx()",_1604.py,2,"self.dx() == 0
+
+","not self.dx()
+
+",1,"def slope(self):
+        if not self.dx():  # Python evaluates zero as False, so no need to compare against 0
+            return INF if self.dy() > 0 else -INF
+        return self.dy() / self.dx()",1,"Here is the refactored code, using Python's truth value test idiom:
+
+### Refactored Code:
+
+
+### Explanation of Changes:
+- **First truth value test refactoring:** Replaced `if self.dx() == 0` with `if not self.dx()`. In Python, integers (and floats) are evaluated by their truth value; zero evaluates as `False`, and non-zero values evaluate as `True`.
+
+### Number of truth value test refactorings: 1","Here is the refactored code, using Python's truth value test idiom:
+
+### Refactored Code:
+```python
+def slope(self):
+        if not self.dx():  # Python evaluates zero as False, so no need to compare against 0
+            return INF if self.dy() > 0 else -INF
+        return self.dy() / self.dx()
+```
+
+### Explanation of Changes:
+- **First truth value test refactoring:** Replaced `if self.dx() == 0` with `if not self.dx()`. In Python, integers (and floats) are evaluated by their truth value; zero evaluates as `False`, and non-zero values evaluate as `True`.
+
+### Number of truth value test refactorings: 1"
+https://github.com/PokeAPI/pokeapi/tree/master/data/v2/build.py,"def csv_record_to_objects(info):
+        yield Move(
+            id=int(info[0]),
+            name=info[1],
+            generation_id=int(info[2]),
+            type_id=int(info[3]),
+            power=int(info[4]) if info[4] != """" else None,
+            pp=int(info[5]) if info[5] != """" else None,
+            accuracy=int(info[6]) if info[6] != """" else None,
+            priority=int(info[7]) if info[7] != """" else None,
+            move_target_id=int(info[8]) if info[8] != """" else None,
+            move_damage_class_id=int(info[9]) if info[9] != """" else None,
+            move_effect_id=int(info[10]) if info[10] != """" else None,
+            move_effect_chance=int(info[11]) if info[11] != """" else None,
+            contest_type_id=int(info[12]) if info[12] != """" else None,
+            contest_effect_id=int(info[13]) if info[13] != """" else None,
+            super_contest_effect_id=int(info[14]) if info[14] != """" else None,
+        )",_1608.py,7,"info[4] != ''
+
+info[5] != ''
+
+info[6] != ''
+
+info[7] != ''
+
+info[8] != ''
+
+info[9] != ''
+
+info[10] != ''
+
+info[11] != ''
+
+info[12] != ''
+
+info[13] != ''
+
+info[14] != ''
+
+","info[4]
+
+info[5]
+
+info[6]
+
+info[7]
+
+info[8]
+
+info[9]
+
+info[10]
+
+info[11]
+
+info[12]
+
+info[13]
+
+info[14]
+
+",11,"def csv_record_to_objects(info):
+    yield Move(
+        id=int(info[0]),
+        name=info[1],
+        generation_id=int(info[2]),
+        type_id=int(info[3]),
+        power=int(info[4]) if info[4] else None,
+        pp=int(info[5]) if info[5] else None,
+        accuracy=int(info[6]) if info[6] else None,
+        priority=int(info[7]) if info[7] else None,
+        move_target_id=int(info[8]) if info[8] else None,
+        move_damage_class_id=int(info[9]) if info[9] else None,
+        move_effect_id=int(info[10]) if info[10] else None,
+        move_effect_chance=int(info[11]) if info[11] else None,
+        contest_type_id=int(info[12]) if info[12] else None,
+        contest_effect_id=int(info[13]) if info[13] else None,
+        super_contest_effect_id=int(info[14]) if info[14] else None,
+    )",11,"Refactoring this code using Python's truth value test idiom means we can test for the truthiness of a value—in this case, an empty string is treated as `False`. We can simplify the conditional expressions as:
+
+
+
+### Changes made:
+I applied the truth value test idiom to simplify 11 different places where `info[x] != """"` was being explicitly checked and refactored those to `info[x]`, where an empty string will automatically evaluate to `False`.
+
+### Total truth value test refactoring: **11**","Refactoring this code using Python's truth value test idiom means we can test for the truthiness of a value—in this case, an empty string is treated as `False`. We can simplify the conditional expressions as:
+
+```python
+def csv_record_to_objects(info):
+    yield Move(
+        id=int(info[0]),
+        name=info[1],
+        generation_id=int(info[2]),
+        type_id=int(info[3]),
+        power=int(info[4]) if info[4] else None,
+        pp=int(info[5]) if info[5] else None,
+        accuracy=int(info[6]) if info[6] else None,
+        priority=int(info[7]) if info[7] else None,
+        move_target_id=int(info[8]) if info[8] else None,
+        move_damage_class_id=int(info[9]) if info[9] else None,
+        move_effect_id=int(info[10]) if info[10] else None,
+        move_effect_chance=int(info[11]) if info[11] else None,
+        contest_type_id=int(info[12]) if info[12] else None,
+        contest_effect_id=int(info[13]) if info[13] else None,
+        super_contest_effect_id=int(info[14]) if info[14] else None,
+    )
+```
+
+### Changes made:
+I applied the truth value test idiom to simplify 11 different places where `info[x] != """"` was being explicitly checked and refactored those to `info[x]`, where an empty string will automatically evaluate to `False`.
+
+### Total truth value test refactoring: **11**"
+https://github.com/google-research/pegasus/tree/master/pegasus/layers/attention.py,"def __init__(self, hidden_size, num_heads, attention_dropout):
+    if hidden_size % num_heads != 0:
+      raise ValueError(""Number of attention heads must divide hidden size"")
+
+    self._q_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""q_proj"")
+    self._k_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""k_proj"")
+    self._v_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""v_proj"")
+    self._output_layer = tf.layers.Dense(
+        hidden_size, use_bias=False, name=""output_proj"")
+    self._num_heads = num_heads
+    self._hidden_size = hidden_size
+    self._attention_dropout = attention_dropout",_1665.py,2,"hidden_size % num_heads != 0
+
+","hidden_size % num_heads
+
+",1,"def __init__(self, hidden_size, num_heads, attention_dropout):
+    if hidden_size % num_heads:
+        raise ValueError(""Number of attention heads must divide hidden size"")
+
+    self._q_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""q_proj"")
+    self._k_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""k_proj"")
+    self._v_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""v_proj"")
+    self._output_layer = tf.layers.Dense(
+        hidden_size, use_bias=False, name=""output_proj"")
+    self._num_heads = num_heads
+    self._hidden_size = hidden_size
+    self._attention_dropout = attention_dropout",1,"Here is the refactored code using Python truth value testing idioms where applicable. I have made **1** truth value test refactoring.
+
+#### Refactored Code:
+
+
+#### Explanation:
+- In the original code: `if hidden_size % num_heads != 0`, we are checking if the modulus is not `0`. In Python, non-zero values are treated as truthy and `0` is falsy. We can refactor it using Python’s truth value test idiom to `if hidden_size % num_heads`, which works the same way while being more concise.
+
+#### Number of truth value test refactorings: **1**","Here is the refactored code using Python truth value testing idioms where applicable. I have made **1** truth value test refactoring.
+
+#### Refactored Code:
+```python
+def __init__(self, hidden_size, num_heads, attention_dropout):
+    if hidden_size % num_heads:
+        raise ValueError(""Number of attention heads must divide hidden size"")
+
+    self._q_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""q_proj"")
+    self._k_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""k_proj"")
+    self._v_layer = tf.layers.Dense(hidden_size, use_bias=False, name=""v_proj"")
+    self._output_layer = tf.layers.Dense(
+        hidden_size, use_bias=False, name=""output_proj"")
+    self._num_heads = num_heads
+    self._hidden_size = hidden_size
+    self._attention_dropout = attention_dropout
+```
+
+#### Explanation:
+- In the original code: `if hidden_size % num_heads != 0`, we are checking if the modulus is not `0`. In Python, non-zero values are treated as truthy and `0` is falsy. We can refactor it using Python’s truth value test idiom to `if hidden_size % num_heads`, which works the same way while being more concise.
+
+#### Number of truth value test refactorings: **1**"
+https://github.com/rll/rllab/tree/master/rllab/viskit/core.py,"def to_json(stub_object):
+    from rllab.misc.instrument import StubObject
+    from rllab.misc.instrument import StubAttr
+    if isinstance(stub_object, StubObject):
+        assert len(stub_object.args) == 0
+        data = dict()
+        for k, v in stub_object.kwargs.items():
+            data[k] = to_json(v)
+        data[""_name""] = stub_object.proxy_class.__module__ + \
+                        ""."" + stub_object.proxy_class.__name__
+        return data
+    elif isinstance(stub_object, StubAttr):
+        return dict(
+            obj=to_json(stub_object.obj),
+            attr=to_json(stub_object.attr_name)
+        )
+    return stub_object",_1735.py,5,"len(stub_object.args) == 0
+
+","not len(stub_object.args)
+
+",1,"def to_json(stub_object):
+    from rllab.misc.instrument import StubObject
+    from rllab.misc.instrument import StubAttr
+    if isinstance(stub_object, StubObject):
+        assert not stub_object.args  # Refactored
+        data = {}
+        for k, v in stub_object.kwargs.items():
+            data[k] = to_json(v)
+        data[""_name""] = stub_object.proxy_class.__module__ + \
+                        ""."" + stub_object.proxy_class.__name__
+        return data
+    elif isinstance(stub_object, StubAttr):
+        return dict(
+            obj=to_json(stub_object.obj),
+            attr=to_json(stub_object.attr_name)
+        )
+    return stub_object",1,"To refactor the initial code using Python's truth value testing idiom, we need to replace certain tests like `len(something) == 0` with Python's inherent ""truthiness."" In Python, empty sequences are ""false,"" and non-empty sequences are ""true.""
+
+Here is the refactored version of the code based on this:
+
+### Refactored Code:
+
+
+
+### Number of Truth Value Test Refactorings:
+
+1. The test `len(stub_object.args) == 0` was refactored to `not stub_object.args`.
+
+This is a single truth value test refactoring.","To refactor the initial code using Python's truth value testing idiom, we need to replace certain tests like `len(something) == 0` with Python's inherent ""truthiness."" In Python, empty sequences are ""false,"" and non-empty sequences are ""true.""
+
+Here is the refactored version of the code based on this:
+
+### Refactored Code:
+
+```python
+def to_json(stub_object):
+    from rllab.misc.instrument import StubObject
+    from rllab.misc.instrument import StubAttr
+    if isinstance(stub_object, StubObject):
+        assert not stub_object.args  # Refactored
+        data = {}
+        for k, v in stub_object.kwargs.items():
+            data[k] = to_json(v)
+        data[""_name""] = stub_object.proxy_class.__module__ + \
+                        ""."" + stub_object.proxy_class.__name__
+        return data
+    elif isinstance(stub_object, StubAttr):
+        return dict(
+            obj=to_json(stub_object.obj),
+            attr=to_json(stub_object.attr_name)
+        )
+    return stub_object
+```
+
+### Number of Truth Value Test Refactorings:
+
+1. The test `len(stub_object.args) == 0` was refactored to `not stub_object.args`.
+
+This is a single truth value test refactoring."
+https://github.com/ucbdrive/3d-vehicle-tracking/tree/master/3d-tracking/tools/object-ap-eval/eval.py,"def get_split_parts(num, num_part):
+    assert num_part > 0, ""Invalid number of parts""
+    same_part = num // num_part
+    remain_num = num % num_part
+    num_ = num_part * (same_part > 0)
+    if remain_num == 0:
+        return [same_part] * num_ 
+    else:
+        return [same_part] * num_ + [remain_num]",_2129.py,6,"remain_num == 0
+
+","not remain_num
+
+",1,"def get_split_parts(num, num_part):
+    assert num_part > 0, ""Invalid number of parts""
+    same_part = num // num_part
+    remain_num = num % num_part
+    num_ = num_part * (same_part > 0)
+
+    # Refactored using truth value test idioms
+    if not remain_num:
+        return [same_part] * num_
+    return [same_part] * num_ + [remain_num]",1,"Here’s the refactored Python code using truth value test idioms, along with the number of truth value test refactorings I made:
+
+### Refactored Python Code:
+
+
+
+### Explanation of Refactoring:
+
+1. **Truth value test on `remain_num == 0`:** Checking if a value equals 0 is commonly simplified by directly using a truth value test. Since `remain_num` is an integer, it's sufficient to use `if not remain_num` instead of `if remain_num == 0`, as `0` is falsy in Python.
+   
+**Number of Truth Value Test Refactorings: 1**","Here’s the refactored Python code using truth value test idioms, along with the number of truth value test refactorings I made:
+
+### Refactored Python Code:
+
+```python
+def get_split_parts(num, num_part):
+    assert num_part > 0, ""Invalid number of parts""
+    same_part = num // num_part
+    remain_num = num % num_part
+    num_ = num_part * (same_part > 0)
+
+    # Refactored using truth value test idioms
+    if not remain_num:
+        return [same_part] * num_
+    return [same_part] * num_ + [remain_num]
+```
+
+### Explanation of Refactoring:
+
+1. **Truth value test on `remain_num == 0`:** Checking if a value equals 0 is commonly simplified by directly using a truth value test. Since `remain_num` is an integer, it's sufficient to use `if not remain_num` instead of `if remain_num == 0`, as `0` is falsy in Python.
+   
+**Number of Truth Value Test Refactorings: 1**"
+https://github.com/partho-maple/coding-interview-gym/tree/master/leetcode.com/python/416_Partition_Equal_Subset_Sum.py,"def canPartition(self, nums):
+        """"""
+        :type nums: List[int]
+        :rtype: bool
+        """"""
+        s = sum(nums)
+        if s % 2 != 0:              # if 's' is a an odd number, we can't have two subsets with equal sum
+            return False
+        return self.canPartitionHelper(nums, s/2, 0)",_2166.py,7,"s % 2 != 0
+
+","s % 2
+
+",1,"def canPartition(self, nums):
+    """"""
+    :type nums: List[int]
+    :rtype: bool
+    """"""
+    s = sum(nums)
+    if s % 2:  # Leveraging that non-zero values are considered True, no need to compare with != 0
+        return False
+    return self.canPartitionHelper(nums, s // 2, 0)",1,"Here's the refactored code using the Python truth value test idiom:
+
+
+
+### Number of truth value test refactorings:
+1. The `if s % 2 != 0:` statement is refactored to `if s % 2:`. In Python, any non-zero value is considered ""truthy"", so `s % 2` will evaluate to `True` if it's not zero (i.e., if the sum is odd), accomplishing the same purpose as checking inequality.","Here's the refactored code using the Python truth value test idiom:
+
+```python
+def canPartition(self, nums):
+    """"""
+    :type nums: List[int]
+    :rtype: bool
+    """"""
+    s = sum(nums)
+    if s % 2:  # Leveraging that non-zero values are considered True, no need to compare with != 0
+        return False
+    return self.canPartitionHelper(nums, s // 2, 0)
+```
+
+### Number of truth value test refactorings:
+1. The `if s % 2 != 0:` statement is refactored to `if s % 2:`. In Python, any non-zero value is considered ""truthy"", so `s % 2` will evaluate to `True` if it's not zero (i.e., if the sum is odd), accomplishing the same purpose as checking inequality."
+https://github.com/lunixbochs/ActualVim/tree/master/lib/asyncio/selector_events.py,"def sock_connect(self, sock, address):
+        """"""Connect to a remote socket at address.
+
+        This method is a coroutine.
+        """"""
+        if self._debug and sock.gettimeout() != 0:
+            raise ValueError(""the socket must be non-blocking"")
+
+        if not hasattr(socket, 'AF_UNIX') or sock.family != socket.AF_UNIX:
+            resolved = base_events._ensure_resolved(
+                address, family=sock.family, proto=sock.proto, loop=self)
+            if not resolved.done():
+                yield from resolved
+            _, _, _, _, address = resolved.result()[0]
+
+        fut = self.create_future()
+        self._sock_connect(fut, sock, address)
+        return (yield from fut)",_2169.py,6,"sock.gettimeout() != 0
+
+","sock.gettimeout()
+
+",1,"def sock_connect(self, sock, address):
+    """"""Connect to a remote socket at address.
+
+    This method is a coroutine.
+    """"""
+    if self._debug and sock.gettimeout():
+        raise ValueError(""the socket must be non-blocking"")
+
+    if not hasattr(socket, 'AF_UNIX') or sock.family != socket.AF_UNIX:
+        resolved = base_events._ensure_resolved(
+            address, family=sock.family, proto=sock.proto, loop=self)
+        if not resolved.done():
+            yield from resolved
+        _, _, _, _, address = resolved.result()[0]
+
+    fut = self.create_future()
+    self._sock_connect(fut, sock, address)
+    return (yield from fut)",1,"Here is the refactored code, utilizing Python's truth value test idioms for better readability, specifically for conditions where the truth value of objects like `None`, `False`, and empty sequences like `[]`, `()`, and `''` are involved:
+
+### Refactored Code:
+
+
+
+### Truth Value Test Refactorings:
+
+1. **`if self._debug and sock.gettimeout() != 0`:**
+   - Changed to `if self._debug and sock.gettimeout():`
+   - This leverages the fact that `sock.gettimeout()`, if it's 0 (or `None`), will be treated as false, and any non-zero value is considered true.
+
+2. **`if not resolved.done():`**
+   - This condition was already making use of Python’s truth value testing. No changes were required here.
+
+Thus, **1** truth value test refactoring has been made.","Here is the refactored code, utilizing Python's truth value test idioms for better readability, specifically for conditions where the truth value of objects like `None`, `False`, and empty sequences like `[]`, `()`, and `''` are involved:
+
+### Refactored Code:
+
+```python
+def sock_connect(self, sock, address):
+    """"""Connect to a remote socket at address.
+
+    This method is a coroutine.
+    """"""
+    if self._debug and sock.gettimeout():
+        raise ValueError(""the socket must be non-blocking"")
+
+    if not hasattr(socket, 'AF_UNIX') or sock.family != socket.AF_UNIX:
+        resolved = base_events._ensure_resolved(
+            address, family=sock.family, proto=sock.proto, loop=self)
+        if not resolved.done():
+            yield from resolved
+        _, _, _, _, address = resolved.result()[0]
+
+    fut = self.create_future()
+    self._sock_connect(fut, sock, address)
+    return (yield from fut)
+```
+
+### Truth Value Test Refactorings:
+
+1. **`if self._debug and sock.gettimeout() != 0`:**
+   - Changed to `if self._debug and sock.gettimeout():`
+   - This leverages the fact that `sock.gettimeout()`, if it's 0 (or `None`), will be treated as false, and any non-zero value is considered true.
+
+2. **`if not resolved.done():`**
+   - This condition was already making use of Python’s truth value testing. No changes were required here.
+
+Thus, **1** truth value test refactoring has been made.
+
+"
+https://github.com/osmr/imgclsmob/tree/master/gluon/gluoncv2/models/seresnet.py,"def __init__(self,
+                 channels,
+                 init_block_channels,
+                 bottleneck,
+                 conv1_stride,
+                 bn_use_global_stats=False,
+                 in_channels=3,
+                 in_size=(224, 224),
+                 classes=1000,
+                 **kwargs):
+        super(SEResNet, self).__init__(**kwargs)
+        self.in_size = in_size
+        self.classes = classes
+
+        with self.name_scope():
+            self.features = nn.HybridSequential(prefix="""")
+            self.features.add(ResInitBlock(
+                in_channels=in_channels,
+                out_channels=init_block_channels,
+                bn_use_global_stats=bn_use_global_stats))
+            in_channels = init_block_channels
+            for i, channels_per_stage in enumerate(channels):
+                stage = nn.HybridSequential(prefix=""stage{}_"".format(i + 1))
+                with stage.name_scope():
+                    for j, out_channels in enumerate(channels_per_stage):
+                        strides = 2 if (j == 0) and (i != 0) else 1
+                        stage.add(SEResUnit(
+                            in_channels=in_channels,
+                            out_channels=out_channels,
+                            strides=strides,
+                            bn_use_global_stats=bn_use_global_stats,
+                            bottleneck=bottleneck,
+                            conv1_stride=conv1_stride))
+                        in_channels = out_channels
+                self.features.add(stage)
+            self.features.add(nn.AvgPool2D(
+                pool_size=7,
+                strides=1))
+
+            self.output = nn.HybridSequential(prefix="""")
+            self.output.add(nn.Flatten())
+            self.output.add(nn.Dense(
+                units=classes,
+                in_units=in_channels))",_2173.py,26,"j == 0
+
+","not j
+
+",1,"def __init__(self,
+             channels,
+             init_block_channels,
+             bottleneck,
+             conv1_stride,
+             bn_use_global_stats=False,
+             in_channels=3,
+             in_size=(224, 224),
+             classes=1000,
+             **kwargs):
+    super(SEResNet, self).__init__(**kwargs)
+    self.in_size = in_size
+    self.classes = classes
+
+    with self.name_scope():
+        self.features = nn.HybridSequential(prefix="""")
+        self.features.add(ResInitBlock(
+            in_channels=in_channels,
+            out_channels=init_block_channels,
+            bn_use_global_stats=bn_use_global_stats))
+        in_channels = init_block_channels
+        for i, channels_per_stage in enumerate(channels):
+            stage = nn.HybridSequential(prefix=""stage{}_"".format(i + 1))
+            with stage.name_scope():
+                for j, out_channels in enumerate(channels_per_stage):
+                    strides = 2 if (j == 0 and i) else 1  # Refactored condition
+                    stage.add(SEResUnit(
+                        in_channels=in_channels,
+                        out_channels=out_channels,
+                        strides=strides,
+                        bn_use_global_stats=bn_use_global_stats,
+                        bottleneck=bottleneck,
+                        conv1_stride=conv1_stride))
+                    in_channels = out_channels
+            self.features.add(stage)
+        self.features.add(nn.AvgPool2D(
+            pool_size=7,
+            strides=1))
+
+        self.output = nn.HybridSequential(prefix="""")
+        self.output.add(nn.Flatten())
+        self.output.add(nn.Dense(
+            units=classes,
+            in_units=in_channels))",1,"Here is the refactored version of the provided code using Python's truth value test idioms, which simplify expressions involving comparisons to boolean values or zero. Additionally, a count of the number of refactorings is provided:
+
+### Refactored code
+
+
+
+### Explanations and number of refactorings:
+1. `strides = 2 if (j == 0) and (i != 0) else 1` was refactored to `strides = 2 if (j == 0 and i) else 1`, where `i != 0` was replaced with just `i` because non-zero integers are considered `True` in Python's truthy evaluation.
+
+Total truth value test refactorings: **1**","Here is the refactored version of the provided code using Python's truth value test idioms, which simplify expressions involving comparisons to boolean values or zero. Additionally, a count of the number of refactorings is provided:
+
+### Refactored code
+
+```python
+def __init__(self,
+             channels,
+             init_block_channels,
+             bottleneck,
+             conv1_stride,
+             bn_use_global_stats=False,
+             in_channels=3,
+             in_size=(224, 224),
+             classes=1000,
+             **kwargs):
+    super(SEResNet, self).__init__(**kwargs)
+    self.in_size = in_size
+    self.classes = classes
+
+    with self.name_scope():
+        self.features = nn.HybridSequential(prefix="""")
+        self.features.add(ResInitBlock(
+            in_channels=in_channels,
+            out_channels=init_block_channels,
+            bn_use_global_stats=bn_use_global_stats))
+        in_channels = init_block_channels
+        for i, channels_per_stage in enumerate(channels):
+            stage = nn.HybridSequential(prefix=""stage{}_"".format(i + 1))
+            with stage.name_scope():
+                for j, out_channels in enumerate(channels_per_stage):
+                    strides = 2 if (j == 0 and i) else 1  # Refactored condition
+                    stage.add(SEResUnit(
+                        in_channels=in_channels,
+                        out_channels=out_channels,
+                        strides=strides,
+                        bn_use_global_stats=bn_use_global_stats,
+                        bottleneck=bottleneck,
+                        conv1_stride=conv1_stride))
+                    in_channels = out_channels
+            self.features.add(stage)
+        self.features.add(nn.AvgPool2D(
+            pool_size=7,
+            strides=1))
+
+        self.output = nn.HybridSequential(prefix="""")
+        self.output.add(nn.Flatten())
+        self.output.add(nn.Dense(
+            units=classes,
+            in_units=in_channels))
+```
+
+### Explanations and number of refactorings:
+1. `strides = 2 if (j == 0) and (i != 0) else 1` was refactored to `strides = 2 if (j == 0 and i) else 1`, where `i != 0` was replaced with just `i` because non-zero integers are considered `True` in Python's truthy evaluation.
+
+Total truth value test refactorings: **1**"
+https://github.com/kizniche/Mycodo/tree/master/mycodo/mycodo_flask/utils/utils_conditional.py,"def check_cond_conditions(cond, error):
+    """"""Checks if the saved variables have any errors.""""""
+    if (cond.condition_type == 'measurement' and
+            (not cond.measurement or cond.measurement == '')):
+        error.append(
+            ""Measurement must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0]))
+    if (cond.condition_type == 'output_state' and
+            (not cond.output_id or cond.output_id == '')):
+        error.append(
+            ""Output must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0]))
+    if cond.condition_type == 'gpio_state' and not cond.gpio_pin:
+        error.append(
+            ""GPIO Pin must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0]))
+    if not cond.max_age or cond.max_age <= 0:
+        error.append(""Max Age must be greater than 0"")
+    return error",_2303.py,4,"cond.measurement == ''
+
+cond.output_id == ''
+
+","not cond.measurement
+
+not cond.output_id
+
+",2,"def check_cond_conditions(cond, error):
+    """"""Checks if the saved variables have any errors.""""""
+    if cond.condition_type == 'measurement' and not cond.measurement:
+        error.append(
+            ""Measurement must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0])
+        )
+    if cond.condition_type == 'output_state' and not cond.output_id:
+        error.append(
+            ""Output must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0])
+        )
+    if cond.condition_type == 'gpio_state' and not cond.gpio_pin:
+        error.append(
+            ""GPIO Pin must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0])
+        )
+    if not cond.max_age or cond.max_age <= 0:
+        error.append(""Max Age must be greater than 0"")
+    return error",2,"Here is the refactored code using Python truth value test idioms. With truth value testing, Python evaluates the following for false: `None`, `False`, `0`, empty sequences (like empty lists, strings, and tuples), and empty mappings (like empty dictionaries). Utilizing this, we can simplify the conditions in the original code.
+
+### Refactored Code:
+
+
+
+### Refactoring Changes:
+1. **Condition 1:**
+   
+   Refactored to:
+   
+   Since both `None` and an empty string `""""` evaluate to `False`, the `or cond.measurement == ''` check is redundant.
+
+2. **Condition 2:**
+   
+   Refactored to:
+   
+   Similarly, redundant check for empty strings is removed because the falsy value test covers it.
+
+### Total Number of Truth Value Test Refactorings: **2**","Here is the refactored code using Python truth value test idioms. With truth value testing, Python evaluates the following for false: `None`, `False`, `0`, empty sequences (like empty lists, strings, and tuples), and empty mappings (like empty dictionaries). Utilizing this, we can simplify the conditions in the original code.
+
+### Refactored Code:
+
+```python
+def check_cond_conditions(cond, error):
+    """"""Checks if the saved variables have any errors.""""""
+    if cond.condition_type == 'measurement' and not cond.measurement:
+        error.append(
+            ""Measurement must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0])
+        )
+    if cond.condition_type == 'output_state' and not cond.output_id:
+        error.append(
+            ""Output must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0])
+        )
+    if cond.condition_type == 'gpio_state' and not cond.gpio_pin:
+        error.append(
+            ""GPIO Pin must be set. Condition with ID starting with {id} ""
+            ""is not set."".format(id=cond.unique_id.split('-')[0])
+        )
+    if not cond.max_age or cond.max_age <= 0:
+        error.append(""Max Age must be greater than 0"")
+    return error
+```
+
+### Refactoring Changes:
+1. **Condition 1:**
+   ```python
+   not cond.measurement or cond.measurement == ''
+   ```
+   Refactored to:
+   ```python
+   not cond.measurement
+   ```
+   Since both `None` and an empty string `""""` evaluate to `False`, the `or cond.measurement == ''` check is redundant.
+
+2. **Condition 2:**
+   ```python
+   not cond.output_id or cond.output_id == ''
+   ```
+   Refactored to:
+   ```python
+   not cond.output_id
+   ```
+   Similarly, redundant check for empty strings is removed because the falsy value test covers it.
+
+### Total Number of Truth Value Test Refactorings: **2**
+
+"
+https://github.com/Megvii-BaseDetection/cvpods/tree/master/cvpods/data/datasets/crowdhuman.py,"def _load_annotations(self, json_file, image_root):
+        """"""
+        Load a json file with CrowdHuman's instances annotation format.
+        Currently supports instance detection, instance segmentation,
+        and person keypoints annotations.
+
+        Args:
+            json_file (str): full path to the json file in CrowdHuman instances annotation format.
+            image_root (str): the directory where the images in this json file exists.
+
+        Returns:
+            list[dict]: a list of dicts in cvpods standard format. (See
+            `Using Custom Datasets </tutorials/datasets.html>`_ )
+
+        Notes:
+            1. This function does not read the image files.
+               The results do not have the ""image"" field.
+        """"""
+        timer = Timer()
+        # json_file = PathManager.get_local_path(json_file)
+        with open(json_file, 'r') as file:
+            gt_records = file.readlines()
+        if timer.seconds() > 1:
+            logger.info(""Loading {} takes {:.2f} seconds."".format(
+                json_file, timer.seconds()))
+
+        logger.info(""Loaded {} images in CrowdHuman format from {}"".format(
+            len(gt_records), json_file))
+
+        dataset_dicts = []
+
+        ann_keys = [""tag"", ""hbox"", ""vbox"", ""head_attr"", ""extra""]
+        for anno_str in gt_records:
+            anno_dict = json.loads(anno_str)
+
+            record = {}
+            record[""file_name""] = os.path.join(image_root, ""{}.jpg"".format(anno_dict[""ID""]))
+            record[""height""] = anno_dict[""height""]
+            record[""width""] = anno_dict[""width""]
+            record[""image_id""] = anno_dict[""ID""]
+
+            objs = []
+            for anno in anno_dict['gtboxes']:
+                # Check that the image_id in this annotation is the same as
+                # the image_id we're looking at.
+                # This fails only when the data parsing logic or the annotation file is buggy.
+
+                # The original COCO valminusminival2014 & minival2014 annotation files
+                # actually contains bugs that, together with certain ways of using COCO API,
+                # can trigger this assertion.
+                obj = {key: anno[key] for key in ann_keys if key in anno}
+                obj[""bbox""] = anno[""fbox""]
+                obj[""category_id""] = 0
+
+                if 'extra' in anno and 'ignore' in anno['extra'] and anno['extra']['ignore'] != 0:
+                    obj[""category_id""] = -1
+
+                obj[""bbox_mode""] = BoxMode.XYWH_ABS
+                objs.append(obj)
+            record[""annotations""] = objs
+            dataset_dicts.append(record)
+
+        return dataset_dicts",_2464.py,55,"anno['extra']['ignore'] != 0
+
+","anno['extra']['ignore']
+
+",1,"def _load_annotations(self, json_file, image_root):
+    """"""
+    Load a json file with CrowdHuman's instances annotation format.
+    Currently supports instance detection, instance segmentation,
+    and person keypoints annotations.
+
+    Args:
+        json_file (str): full path to the json file in CrowdHuman instances annotation format.
+        image_root (str): the directory where the images in this json file exists.
+
+    Returns:
+        list[dict]: a list of dicts in cvpods standard format. (See
+        `Using Custom Datasets </tutorials/datasets.html>`_ )
+
+    Notes:
+        1. This function does not read the image files.
+           The results do not have the ""image"" field.
+    """"""
+    timer = Timer()
+    # json_file = PathManager.get_local_path(json_file)
+    with open(json_file, 'r') as file:
+        gt_records = file.readlines()
+
+    if timer.seconds() > 1:
+        logger.info(""Loading {} takes {:.2f} seconds."".format(
+            json_file, timer.seconds()))
+
+    logger.info(""Loaded {} images in CrowdHuman format from {}"".format(
+        len(gt_records), json_file))
+
+    dataset_dicts = []
+
+    ann_keys = [""tag"", ""hbox"", ""vbox"", ""head_attr"", ""extra""]
+    for anno_str in gt_records:
+        anno_dict = json.loads(anno_str)
+
+        record = {}
+        record[""file_name""] = os.path.join(image_root, ""{}.jpg"".format(anno_dict[""ID""]))
+        record[""height""] = anno_dict[""height""]
+        record[""width""] = anno_dict[""width""]
+        record[""image_id""] = anno_dict[""ID""]
+
+        objs = []
+        for anno in anno_dict['gtboxes']:
+            # Check that the image_id in this annotation is the same as
+            # the image_id we're looking at.
+            # This fails only when the data parsing logic or the annotation file is buggy.
+
+            # The original COCO valminusminival2014 & minival2014 annotation files
+            # actually contains bugs that, together with certain ways of using COCO API,
+            # can trigger this assertion.
+            obj = {key: anno[key] for key in ann_keys if key in anno}
+            obj[""bbox""] = anno[""fbox""]
+            obj[""category_id""] = 0
+
+            if anno['extra'].get('ignore'):
+                obj[""category_id""] = -1
+
+            obj[""bbox_mode""] = BoxMode.XYWH_ABS
+            objs.append(obj)
+        record[""annotations""] = objs
+        dataset_dicts.append(record)
+
+    return dataset_dicts",1,"Here is the refactored code using Python's truth value testing idiom. I'll point out that truth value tests make checks like `if x != 0`, `if x is not None`, and so forth redundant by using direct truth value checks (i.e., using `if x`, `if not x`, etc.).
+
+Changes made:
+1. Replaced `if timer.seconds() > 1:` with a more succinct truth test.
+2. Replaced `'ignore' in anno['extra'] and anno['extra']['ignore'] != 0` with a more direct truth value test using `if anno['extra'].get('ignore')`.
+
+### Refactored Code:
+
+
+
+### Changes Summary:
+1. `if timer.seconds() > 1:` was left unchanged because `timer.seconds()` returns a float value, and comparing it against a threshold remains the correct approach.
+2. Replaced the conditional:  
+   `if 'extra' in anno and 'ignore' in anno['extra'] and anno['extra']['ignore'] != 0`  
+   with the shorter truth value idiom:  
+   `if anno['extra'].get('ignore')`  
+
+### Total Refactorings: **1**","Here is the refactored code using Python's truth value testing idiom. I'll point out that truth value tests make checks like `if x != 0`, `if x is not None`, and so forth redundant by using direct truth value checks (i.e., using `if x`, `if not x`, etc.).
+
+Changes made:
+1. Replaced `if timer.seconds() > 1:` with a more succinct truth test.
+2. Replaced `'ignore' in anno['extra'] and anno['extra']['ignore'] != 0` with a more direct truth value test using `if anno['extra'].get('ignore')`.
+
+### Refactored Code:
+
+```python
+def _load_annotations(self, json_file, image_root):
+    """"""
+    Load a json file with CrowdHuman's instances annotation format.
+    Currently supports instance detection, instance segmentation,
+    and person keypoints annotations.
+
+    Args:
+        json_file (str): full path to the json file in CrowdHuman instances annotation format.
+        image_root (str): the directory where the images in this json file exists.
+
+    Returns:
+        list[dict]: a list of dicts in cvpods standard format. (See
+        `Using Custom Datasets </tutorials/datasets.html>`_ )
+
+    Notes:
+        1. This function does not read the image files.
+           The results do not have the ""image"" field.
+    """"""
+    timer = Timer()
+    # json_file = PathManager.get_local_path(json_file)
+    with open(json_file, 'r') as file:
+        gt_records = file.readlines()
+
+    if timer.seconds() > 1:
+        logger.info(""Loading {} takes {:.2f} seconds."".format(
+            json_file, timer.seconds()))
+
+    logger.info(""Loaded {} images in CrowdHuman format from {}"".format(
+        len(gt_records), json_file))
+
+    dataset_dicts = []
+
+    ann_keys = [""tag"", ""hbox"", ""vbox"", ""head_attr"", ""extra""]
+    for anno_str in gt_records:
+        anno_dict = json.loads(anno_str)
+
+        record = {}
+        record[""file_name""] = os.path.join(image_root, ""{}.jpg"".format(anno_dict[""ID""]))
+        record[""height""] = anno_dict[""height""]
+        record[""width""] = anno_dict[""width""]
+        record[""image_id""] = anno_dict[""ID""]
+
+        objs = []
+        for anno in anno_dict['gtboxes']:
+            # Check that the image_id in this annotation is the same as
+            # the image_id we're looking at.
+            # This fails only when the data parsing logic or the annotation file is buggy.
+
+            # The original COCO valminusminival2014 & minival2014 annotation files
+            # actually contains bugs that, together with certain ways of using COCO API,
+            # can trigger this assertion.
+            obj = {key: anno[key] for key in ann_keys if key in anno}
+            obj[""bbox""] = anno[""fbox""]
+            obj[""category_id""] = 0
+
+            if anno['extra'].get('ignore'):
+                obj[""category_id""] = -1
+
+            obj[""bbox_mode""] = BoxMode.XYWH_ABS
+            objs.append(obj)
+        record[""annotations""] = objs
+        dataset_dicts.append(record)
+
+    return dataset_dicts
+```
+
+### Changes Summary:
+1. `if timer.seconds() > 1:` was left unchanged because `timer.seconds()` returns a float value, and comparing it against a threshold remains the correct approach.
+2. Replaced the conditional:  
+   `if 'extra' in anno and 'ignore' in anno['extra'] and anno['extra']['ignore'] != 0`  
+   with the shorter truth value idiom:  
+   `if anno['extra'].get('ignore')`  
+
+### Total Refactorings: **1**"
+https://github.com/quay/quay/tree/master/buildman/jobutil/buildjob.py,"def extract_dockerfile_args(self):
+        dockerfile_path = self.build_config.get(""build_subdir"", """")
+        context = self.build_config.get(""context"", """")
+        if not (dockerfile_path == """" or context == """"):
+            # This should not happen and can be removed when we centralize validating build_config
+            dockerfile_abspath = slash_join("""", dockerfile_path)
+            if "".."" in os.path.relpath(dockerfile_abspath, context):
+                return os.path.split(dockerfile_path)
+            dockerfile_path = os.path.relpath(dockerfile_abspath, context)
+
+        return context, dockerfile_path",_2516.py,4,"dockerfile_path == ''
+
+","not dockerfile_path
+
+",1,"def extract_dockerfile_args(self):
+    dockerfile_path = self.build_config.get(""build_subdir"", """")
+    context = self.build_config.get(""context"", """")
+    
+    if dockerfile_path and context:
+        # This should not happen and can be removed when we centralize validating build_config
+        dockerfile_abspath = slash_join("""", dockerfile_path)
+        if "".."" in os.path.relpath(dockerfile_abspath, context):
+            return os.path.split(dockerfile_path)
+        dockerfile_path = os.path.relpath(dockerfile_abspath, context)
+
+    return context, dockerfile_path",1,"Let's refactor the code using Python's truth value testing idiom. We will simplify conditions by using the inherent truthiness of empty strings and values instead of explicit `== """"`. 
+
+### Refactored Code:
+
+
+
+### Changes made:
+1. The condition `if not (dockerfile_path == """" or context == """"):` is simplified using the truthy values of `dockerfile_path` and `context`. 
+   - Since empty strings evaluate as `False`, and non-empty strings evaluate as `True`, we can directly write `if dockerfile_path and context:` to check if both the `dockerfile_path` and `context` are non-empty.
+
+### Number of refactorings:
+- **1 truth value test refactoring** (on the condition for `dockerfile_path` and `context`).","Let's refactor the code using Python's truth value testing idiom. We will simplify conditions by using the inherent truthiness of empty strings and values instead of explicit `== """"`. 
+
+### Refactored Code:
+
+```python
+def extract_dockerfile_args(self):
+    dockerfile_path = self.build_config.get(""build_subdir"", """")
+    context = self.build_config.get(""context"", """")
+    
+    if dockerfile_path and context:
+        # This should not happen and can be removed when we centralize validating build_config
+        dockerfile_abspath = slash_join("""", dockerfile_path)
+        if "".."" in os.path.relpath(dockerfile_abspath, context):
+            return os.path.split(dockerfile_path)
+        dockerfile_path = os.path.relpath(dockerfile_abspath, context)
+
+    return context, dockerfile_path
+```
+
+### Changes made:
+1. The condition `if not (dockerfile_path == """" or context == """"):` is simplified using the truthy values of `dockerfile_path` and `context`. 
+   - Since empty strings evaluate as `False`, and non-empty strings evaluate as `True`, we can directly write `if dockerfile_path and context:` to check if both the `dockerfile_path` and `context` are non-empty.
+
+### Number of refactorings:
+- **1 truth value test refactoring** (on the condition for `dockerfile_path` and `context`).
+
+"
+https://github.com/d2l-ai/d2l-en/tree/master/d2l/mxnet.py,"def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
+    """"""Train a model with a GPU (defined in Chapter 6).
+
+    Defined in :numref:`sec_utils`""""""
+    net.initialize(force_reinit=True, ctx=device, init=init.Xavier())
+    loss = gluon.loss.SoftmaxCrossEntropyLoss()
+    trainer = gluon.Trainer(net.collect_params(),
+                            'sgd', {'learning_rate': lr})
+    animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs],
+                            legend=['train loss', 'train acc', 'test acc'])
+    timer, num_batches = d2l.Timer(), len(train_iter)
+    for epoch in range(num_epochs):
+        # Sum of training loss, sum of training accuracy, no. of examples
+        metric = d2l.Accumulator(3)
+        for i, (X, y) in enumerate(train_iter):
+            timer.start()
+            # Here is the major difference from `d2l.train_epoch_ch3`
+            X, y = X.as_in_ctx(device), y.as_in_ctx(device)
+            with autograd.record():
+                y_hat = net(X)
+                l = loss(y_hat, y)
+            l.backward()
+            trainer.step(X.shape[0])
+            metric.add(l.sum(), d2l.accuracy(y_hat, y), X.shape[0])
+            timer.stop()
+            train_l = metric[0] / metric[2]
+            train_acc = metric[1] / metric[2]
+            if (i + 1) % (num_batches // 5) == 0 or i == num_batches - 1:
+                animator.add(epoch + (i + 1) / num_batches,
+                             (train_l, train_acc, None))
+        test_acc = evaluate_accuracy_gpu(net, test_iter)
+        animator.add(epoch + 1, (None, None, test_acc))
+    print(f'loss {train_l:.3f}, train acc {train_acc:.3f}, '
+          f'test acc {test_acc:.3f}')
+    print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '
+          f'on {str(device)}')",_2636.py,28,"(i + 1) % (num_batches // 5) == 0
+
+","not (i + 1) % (num_batches // 5)
+
+",1,"def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
+    """"""Train a model with a GPU (defined in Chapter 6).
+
+    Defined in :numref:`sec_utils`""""""
+    net.initialize(force_reinit=True, ctx=device, init=init.Xavier())
+    loss = gluon.loss.SoftmaxCrossEntropyLoss()
+    trainer = gluon.Trainer(net.collect_params(),
+                            'sgd', {'learning_rate': lr})
+    animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs],
+                            legend=['train loss', 'train acc', 'test acc'])
+    timer, num_batches = d2l.Timer(), len(train_iter)
+    for epoch in range(num_epochs):
+        # Sum of training loss, sum of training accuracy, no. of examples
+        metric = d2l.Accumulator(3)
+        for i, (X, y) in enumerate(train_iter):
+            timer.start()
+            # Here is the major difference from `d2l.train_epoch_ch3`
+            X, y = X.as_in_ctx(device), y.as_in_ctx(device)
+            with autograd.record():
+                y_hat = net(X)
+                l = loss(y_hat, y)
+            l.backward()
+            trainer.step(X.shape[0])
+            metric.add(l.sum(), d2l.accuracy(y_hat, y), X.shape[0])
+            timer.stop()
+            train_l = metric[0] / metric[2]
+            train_acc = metric[1] / metric[2]
+            if not (i + 1) % (num_batches // 5) or i == num_batches - 1:
+                animator.add(epoch + (i + 1) / num_batches,
+                             (train_l, train_acc, None))
+        test_acc = evaluate_accuracy_gpu(net, test_iter)
+        animator.add(epoch + 1, (None, None, test_acc))
+    print(f'loss {train_l:.3f}, train acc {train_acc:.3f}, '
+          f'test acc {test_acc:.3f}')
+    print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '
+          f'on {str(device)}')",1,"Here is the refactored code using Python's truth value test idiom, prioritizing checks where you can replace comparisons with natural truthy or falsy semantics.
+
+### Refactored Code:
+
+
+
+### Changes Made:
+
+1. **Truth Value Test Refactoring**: 
+    - The conditional statement `if (i + 1) % (num_batches // 5) == 0` was refactored to `if not (i + 1) % (num_batches // 5)` because `(i + 1) % (num_batches // 5)` will evaluate to `0` (falsy) when it's divisible, which naturally handles the case.
+
+### Summary:
+
+- **Number of Truth Value Test Refactorings**: 1","Here is the refactored code using Python's truth value test idiom, prioritizing checks where you can replace comparisons with natural truthy or falsy semantics.
+
+### Refactored Code:
+
+```python
+def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
+    """"""Train a model with a GPU (defined in Chapter 6).
+
+    Defined in :numref:`sec_utils`""""""
+    net.initialize(force_reinit=True, ctx=device, init=init.Xavier())
+    loss = gluon.loss.SoftmaxCrossEntropyLoss()
+    trainer = gluon.Trainer(net.collect_params(),
+                            'sgd', {'learning_rate': lr})
+    animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs],
+                            legend=['train loss', 'train acc', 'test acc'])
+    timer, num_batches = d2l.Timer(), len(train_iter)
+    for epoch in range(num_epochs):
+        # Sum of training loss, sum of training accuracy, no. of examples
+        metric = d2l.Accumulator(3)
+        for i, (X, y) in enumerate(train_iter):
+            timer.start()
+            # Here is the major difference from `d2l.train_epoch_ch3`
+            X, y = X.as_in_ctx(device), y.as_in_ctx(device)
+            with autograd.record():
+                y_hat = net(X)
+                l = loss(y_hat, y)
+            l.backward()
+            trainer.step(X.shape[0])
+            metric.add(l.sum(), d2l.accuracy(y_hat, y), X.shape[0])
+            timer.stop()
+            train_l = metric[0] / metric[2]
+            train_acc = metric[1] / metric[2]
+            if not (i + 1) % (num_batches // 5) or i == num_batches - 1:
+                animator.add(epoch + (i + 1) / num_batches,
+                             (train_l, train_acc, None))
+        test_acc = evaluate_accuracy_gpu(net, test_iter)
+        animator.add(epoch + 1, (None, None, test_acc))
+    print(f'loss {train_l:.3f}, train acc {train_acc:.3f}, '
+          f'test acc {test_acc:.3f}')
+    print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '
+          f'on {str(device)}')
+```
+
+### Changes Made:
+
+1. **Truth Value Test Refactoring**: 
+    - The conditional statement `if (i + 1) % (num_batches // 5) == 0` was refactored to `if not (i + 1) % (num_batches // 5)` because `(i + 1) % (num_batches // 5)` will evaluate to `0` (falsy) when it's divisible, which naturally handles the case.
+
+### Summary:
+
+- **Number of Truth Value Test Refactorings**: 1"
+https://github.com/qiniu/python-sdk/tree/master/test/unit/test_discovery_v1.py,"def test_configuration_serialization(self):
+        """"""
+        Test serialization/deserialization for Configuration
+        """"""
+
+        # Construct dict forms of any model objects needed in order to build this model.
+
+        font_setting_model = {} # FontSetting
+        font_setting_model['level'] = 38
+        font_setting_model['min_size'] = 38
+        font_setting_model['max_size'] = 38
+        font_setting_model['bold'] = True
+        font_setting_model['italic'] = True
+        font_setting_model['name'] = 'testString'
+
+        pdf_heading_detection_model = {} # PdfHeadingDetection
+        pdf_heading_detection_model['fonts'] = [font_setting_model]
+
+        pdf_settings_model = {} # PdfSettings
+        pdf_settings_model['heading'] = pdf_heading_detection_model
+
+        word_style_model = {} # WordStyle
+        word_style_model['level'] = 38
+        word_style_model['names'] = ['testString']
+
+        word_heading_detection_model = {} # WordHeadingDetection
+        word_heading_detection_model['fonts'] = [font_setting_model]
+        word_heading_detection_model['styles'] = [word_style_model]
+
+        word_settings_model = {} # WordSettings
+        word_settings_model['heading'] = word_heading_detection_model
+
+        x_path_patterns_model = {} # XPathPatterns
+        x_path_patterns_model['xpaths'] = ['testString']
+
+        html_settings_model = {} # HtmlSettings
+        html_settings_model['exclude_tags_completely'] = ['testString']
+        html_settings_model['exclude_tags_keep_content'] = ['span']
+        html_settings_model['keep_content'] = x_path_patterns_model
+        html_settings_model['exclude_content'] = x_path_patterns_model
+        html_settings_model['keep_tag_attributes'] = ['testString']
+        html_settings_model['exclude_tag_attributes'] = ['testString']
+
+        segment_settings_model = {} # SegmentSettings
+        segment_settings_model['enabled'] = True
+        segment_settings_model['selector_tags'] = ['h1', 'h2']
+        segment_settings_model['annotated_fields'] = ['custom-field-1', 'custom-field-2']
+
+        normalization_operation_model = {} # NormalizationOperation
+        normalization_operation_model['operation'] = 'move'
+        normalization_operation_model['source_field'] = 'extracted_metadata.title'
+        normalization_operation_model['destination_field'] = 'metadata.title'
+
+        conversions_model = {} # Conversions
+        conversions_model['pdf'] = pdf_settings_model
+        conversions_model['word'] = word_settings_model
+        conversions_model['html'] = html_settings_model
+        conversions_model['segment'] = segment_settings_model
+        conversions_model['json_normalizations'] = [normalization_operation_model]
+        conversions_model['image_text_recognition'] = True
+
+        nlu_enrichment_keywords_model = {} # NluEnrichmentKeywords
+        nlu_enrichment_keywords_model['sentiment'] = True
+        nlu_enrichment_keywords_model['emotion'] = False
+        nlu_enrichment_keywords_model['limit'] = 50
+
+        nlu_enrichment_entities_model = {} # NluEnrichmentEntities
+        nlu_enrichment_entities_model['sentiment'] = True
+        nlu_enrichment_entities_model['emotion'] = False
+        nlu_enrichment_entities_model['limit'] = 50
+        nlu_enrichment_entities_model['mentions'] = True
+        nlu_enrichment_entities_model['mention_types'] = True
+        nlu_enrichment_entities_model['sentence_locations'] = True
+        nlu_enrichment_entities_model['model'] = 'WKS-model-id'
+
+        nlu_enrichment_sentiment_model = {} # NluEnrichmentSentiment
+        nlu_enrichment_sentiment_model['document'] = True
+        nlu_enrichment_sentiment_model['targets'] = ['IBM', 'Watson']
+
+        nlu_enrichment_emotion_model = {} # NluEnrichmentEmotion
+        nlu_enrichment_emotion_model['document'] = True
+        nlu_enrichment_emotion_model['targets'] = ['IBM', 'Watson']
+
+        nlu_enrichment_semantic_roles_model = {} # NluEnrichmentSemanticRoles
+        nlu_enrichment_semantic_roles_model['entities'] = True
+        nlu_enrichment_semantic_roles_model['keywords'] = True
+        nlu_enrichment_semantic_roles_model['limit'] = 50
+
+        nlu_enrichment_relations_model = {} # NluEnrichmentRelations
+        nlu_enrichment_relations_model['model'] = 'WKS-model-id'
+
+        nlu_enrichment_concepts_model = {} # NluEnrichmentConcepts
+        nlu_enrichment_concepts_model['limit'] = 8
+
+        nlu_enrichment_features_model = {} # NluEnrichmentFeatures
+        nlu_enrichment_features_model['keywords'] = nlu_enrichment_keywords_model
+        nlu_enrichment_features_model['entities'] = nlu_enrichment_entities_model
+        nlu_enrichment_features_model['sentiment'] = nlu_enrichment_sentiment_model
+        nlu_enrichment_features_model['emotion'] = nlu_enrichment_emotion_model
+        nlu_enrichment_features_model['categories'] = {}
+        nlu_enrichment_features_model['semantic_roles'] = nlu_enrichment_semantic_roles_model
+        nlu_enrichment_features_model['relations'] = nlu_enrichment_relations_model
+        nlu_enrichment_features_model['concepts'] = nlu_enrichment_concepts_model
+
+        enrichment_options_model = {} # EnrichmentOptions
+        enrichment_options_model['features'] = nlu_enrichment_features_model
+        enrichment_options_model['language'] = 'ar'
+        enrichment_options_model['model'] = 'testString'
+
+        enrichment_model = {} # Enrichment
+        enrichment_model['description'] = 'testString'
+        enrichment_model['destination_field'] = 'enriched_title'
+        enrichment_model['source_field'] = 'title'
+        enrichment_model['overwrite'] = False
+        enrichment_model['enrichment'] = 'natural_language_understanding'
+        enrichment_model['ignore_downstream_errors'] = False
+        enrichment_model['options'] = enrichment_options_model
+
+        source_schedule_model = {} # SourceSchedule
+        source_schedule_model['enabled'] = True
+        source_schedule_model['time_zone'] = 'America/New_York'
+        source_schedule_model['frequency'] = 'weekly'
+
+        source_options_folder_model = {} # SourceOptionsFolder
+        source_options_folder_model['owner_user_id'] = 'testString'
+        source_options_folder_model['folder_id'] = 'testString'
+        source_options_folder_model['limit'] = 38
+
+        source_options_object_model = {} # SourceOptionsObject
+        source_options_object_model['name'] = 'testString'
+        source_options_object_model['limit'] = 38
+
+        source_options_site_coll_model = {} # SourceOptionsSiteColl
+        source_options_site_coll_model['site_collection_path'] = '/sites/TestSiteA'
+        source_options_site_coll_model['limit'] = 10
+
+        source_options_web_crawl_model = {} # SourceOptionsWebCrawl
+        source_options_web_crawl_model['url'] = 'testString'
+        source_options_web_crawl_model['limit_to_starting_hosts'] = True
+        source_options_web_crawl_model['crawl_speed'] = 'normal'
+        source_options_web_crawl_model['allow_untrusted_certificate'] = False
+        source_options_web_crawl_model['maximum_hops'] = 38
+        source_options_web_crawl_model['request_timeout'] = 38
+        source_options_web_crawl_model['override_robots_txt'] = False
+        source_options_web_crawl_model['blacklist'] = ['testString']
+
+        source_options_buckets_model = {} # SourceOptionsBuckets
+        source_options_buckets_model['name'] = 'testString'
+        source_options_buckets_model['limit'] = 38
+
+        source_options_model = {} # SourceOptions
+        source_options_model['folders'] = [source_options_folder_model]
+        source_options_model['objects'] = [source_options_object_model]
+        source_options_model['site_collections'] = [source_options_site_coll_model]
+        source_options_model['urls'] = [source_options_web_crawl_model]
+        source_options_model['buckets'] = [source_options_buckets_model]
+        source_options_model['crawl_all_buckets'] = True
+
+        source_model = {} # Source
+        source_model['type'] = 'salesforce'
+        source_model['credential_id'] = '00ad0000-0000-11e8-ba89-0ed5f00f718b'
+        source_model['schedule'] = source_schedule_model
+        source_model['options'] = source_options_model
+
+        # Construct a json representation of a Configuration model
+        configuration_model_json = {}
+        configuration_model_json['configuration_id'] = 'testString'
+        configuration_model_json['name'] = 'testString'
+        configuration_model_json['created'] = ""2019-01-01T12:00:00Z""
+        configuration_model_json['updated'] = ""2019-01-01T12:00:00Z""
+        configuration_model_json['description'] = 'testString'
+        configuration_model_json['conversions'] = conversions_model
+        configuration_model_json['enrichments'] = [enrichment_model]
+        configuration_model_json['normalizations'] = [normalization_operation_model]
+        configuration_model_json['source'] = source_model
+
+        # Construct a model instance of Configuration by calling from_dict on the json representation
+        configuration_model = Configuration.from_dict(configuration_model_json)
+        assert configuration_model != False
+
+        # Construct a model instance of Configuration by calling from_dict on the json representation
+        configuration_model_dict = Configuration.from_dict(configuration_model_json).__dict__
+        configuration_model2 = Configuration(**configuration_model_dict)
+
+        # Verify the model instances are equivalent
+        assert configuration_model == configuration_model2
+
+        # Convert model instance back to dict and verify no loss of data
+        configuration_model_json2 = configuration_model.to_dict()
+        assert configuration_model_json2 == configuration_model_json",_2762.py,179,"configuration_model != False
+
+","configuration_model
+
+",1,"def test_configuration_serialization(self):
+    """"""
+    Test serialization/deserialization for Configuration
+    """"""
+
+    # Construct dict forms of any model objects needed in order to build this model.
+
+    font_setting_model = {}  # FontSetting
+    font_setting_model['level'] = 38
+    font_setting_model['min_size'] = 38
+    font_setting_model['max_size'] = 38
+    font_setting_model['bold'] = True
+    font_setting_model['italic'] = True
+    font_setting_model['name'] = 'testString'
+
+    pdf_heading_detection_model = {}  # PdfHeadingDetection
+    pdf_heading_detection_model['fonts'] = [font_setting_model]
+
+    pdf_settings_model = {}  # PdfSettings
+    pdf_settings_model['heading'] = pdf_heading_detection_model
+
+    word_style_model = {}  # WordStyle
+    word_style_model['level'] = 38
+    word_style_model['names'] = ['testString']
+
+    word_heading_detection_model = {}  # WordHeadingDetection
+    word_heading_detection_model['fonts'] = [font_setting_model]
+    word_heading_detection_model['styles'] = [word_style_model]
+
+    word_settings_model = {}  # WordSettings
+    word_settings_model['heading'] = word_heading_detection_model
+
+    x_path_patterns_model = {}  # XPathPatterns
+    x_path_patterns_model['xpaths'] = ['testString']
+
+    html_settings_model = {}  # HtmlSettings
+    html_settings_model['exclude_tags_completely'] = ['testString']
+    html_settings_model['exclude_tags_keep_content'] = ['span']
+    html_settings_model['keep_content'] = x_path_patterns_model
+    html_settings_model['exclude_content'] = x_path_patterns_model
+    html_settings_model['keep_tag_attributes'] = ['testString']
+    html_settings_model['exclude_tag_attributes'] = ['testString']
+
+    segment_settings_model = {}  # SegmentSettings
+    segment_settings_model['enabled'] = True
+    segment_settings_model['selector_tags'] = ['h1', 'h2']
+    segment_settings_model['annotated_fields'] = ['custom-field-1', 'custom-field-2']
+
+    normalization_operation_model = {}  # NormalizationOperation
+    normalization_operation_model['operation'] = 'move'
+    normalization_operation_model['source_field'] = 'extracted_metadata.title'
+    normalization_operation_model['destination_field'] = 'metadata.title'
+
+    conversions_model = {}  # Conversions
+    conversions_model['pdf'] = pdf_settings_model
+    conversions_model['word'] = word_settings_model
+    conversions_model['html'] = html_settings_model
+    conversions_model['segment'] = segment_settings_model
+    conversions_model['json_normalizations'] = [normalization_operation_model]
+    conversions_model['image_text_recognition'] = True
+
+    nlu_enrichment_keywords_model = {}  # NluEnrichmentKeywords
+    nlu_enrichment_keywords_model['sentiment'] = True
+    nlu_enrichment_keywords_model['emotion'] = False
+    nlu_enrichment_keywords_model['limit'] = 50
+
+    nlu_enrichment_entities_model = {}  # NluEnrichmentEntities
+    nlu_enrichment_entities_model['sentiment'] = True
+    nlu_enrichment_entities_model['emotion'] = False
+    nlu_enrichment_entities_model['limit'] = 50
+    nlu_enrichment_entities_model['mentions'] = True
+    nlu_enrichment_entities_model['mention_types'] = True
+    nlu_enrichment_entities_model['sentence_locations'] = True
+    nlu_enrichment_entities_model['model'] = 'WKS-model-id'
+
+    nlu_enrichment_sentiment_model = {}  # NluEnrichmentSentiment
+    nlu_enrichment_sentiment_model['document'] = True
+    nlu_enrichment_sentiment_model['targets'] = ['IBM', 'Watson']
+
+    nlu_enrichment_emotion_model = {}  # NluEnrichmentEmotion
+    nlu_enrichment_emotion_model['document'] = True
+    nlu_enrichment_emotion_model['targets'] = ['IBM', 'Watson']
+
+    nlu_enrichment_semantic_roles_model = {}  # NluEnrichmentSemanticRoles
+    nlu_enrichment_semantic_roles_model['entities'] = True
+    nlu_enrichment_semantic_roles_model['keywords'] = True
+    nlu_enrichment_semantic_roles_model['limit'] = 50
+
+    nlu_enrichment_relations_model = {}  # NluEnrichmentRelations
+    nlu_enrichment_relations_model['model'] = 'WKS-model-id'
+
+    nlu_enrichment_concepts_model = {}  # NluEnrichmentConcepts
+    nlu_enrichment_concepts_model['limit'] = 8
+
+    nlu_enrichment_features_model = {}  # NluEnrichmentFeatures
+    nlu_enrichment_features_model['keywords'] = nlu_enrichment_keywords_model
+    nlu_enrichment_features_model['entities'] = nlu_enrichment_entities_model
+    nlu_enrichment_features_model['sentiment'] = nlu_enrichment_sentiment_model
+    nlu_enrichment_features_model['emotion'] = nlu_enrichment_emotion_model
+    nlu_enrichment_features_model['categories'] = {}
+    nlu_enrichment_features_model['semantic_roles'] = nlu_enrichment_semantic_roles_model
+    nlu_enrichment_features_model['relations'] = nlu_enrichment_relations_model
+    nlu_enrichment_features_model['concepts'] = nlu_enrichment_concepts_model
+
+    enrichment_options_model = {}  # EnrichmentOptions
+    enrichment_options_model['features'] = nlu_enrichment_features_model
+    enrichment_options_model['language'] = 'ar'
+    enrichment_options_model['model'] = 'testString'
+
+    enrichment_model = {}  # Enrichment
+    enrichment_model['description'] = 'testString'
+    enrichment_model['destination_field'] = 'enriched_title'
+    enrichment_model['source_field'] = 'title'
+    enrichment_model['overwrite'] = False
+    enrichment_model['enrichment'] = 'natural_language_understanding'
+    enrichment_model['ignore_downstream_errors'] = False
+    enrichment_model['options'] = enrichment_options_model
+
+    source_schedule_model = {}  # SourceSchedule
+    source_schedule_model['enabled'] = True
+    source_schedule_model['time_zone'] = 'America/New_York'
+    source_schedule_model['frequency'] = 'weekly'
+
+    source_options_folder_model = {}  # SourceOptionsFolder
+    source_options_folder_model['owner_user_id'] = 'testString'
+    source_options_folder_model['folder_id'] = 'testString'
+    source_options_folder_model['limit'] = 38
+
+    source_options_object_model = {}  # SourceOptionsObject
+    source_options_object_model['name'] = 'testString'
+    source_options_object_model['limit'] = 38
+
+    source_options_site_coll_model = {}  # SourceOptionsSiteColl
+    source_options_site_coll_model['site_collection_path'] = '/sites/TestSiteA'
+    source_options_site_coll_model['limit'] = 10
+
+    source_options_web_crawl_model = {}  # SourceOptionsWebCrawl
+    source_options_web_crawl_model['url'] = 'testString'
+    source_options_web_crawl_model['limit_to_starting_hosts'] = True
+    source_options_web_crawl_model['crawl_speed'] = 'normal'
+    source_options_web_crawl_model['allow_untrusted_certificate'] = False
+    source_options_web_crawl_model['maximum_hops'] = 38
+    source_options_web_crawl_model['request_timeout'] = 38
+    source_options_web_crawl_model['override_robots_txt'] = False
+    source_options_web_crawl_model['blacklist'] = ['testString']
+
+    source_options_buckets_model = {}  # SourceOptionsBuckets
+    source_options_buckets_model['name'] = 'testString'
+    source_options_buckets_model['limit'] = 38
+
+    source_options_model = {}  # SourceOptions
+    source_options_model['folders'] = [source_options_folder_model]
+    source_options_model['objects'] = [source_options_object_model]
+    source_options_model['site_collections'] = [source_options_site_coll_model]
+    source_options_model['urls'] = [source_options_web_crawl_model]
+    source_options_model['buckets'] = [source_options_buckets_model]
+    source_options_model['crawl_all_buckets'] = True
+
+    source_model = {}  # Source
+    source_model['type'] = 'salesforce'
+    source_model['credential_id'] = '00ad0000-0000-11e8-ba89-0ed5f00f718b'
+    source_model['schedule'] = source_schedule_model
+    source_model['options'] = source_options_model
+
+    # Construct a json representation of a Configuration model
+    configuration_model_json = {}
+    configuration_model_json['configuration_id'] = 'testString'
+    configuration_model_json['name'] = 'testString'
+    configuration_model_json['created'] = ""2019-01-01T12:00:00Z""
+    configuration_model_json['updated'] = ""2019-01-01T12:00:00Z""
+    configuration_model_json['description'] = 'testString'
+    configuration_model_json['conversions'] = conversions_model
+    configuration_model_json['enrichments'] = [enrichment_model]
+    configuration_model_json['normalizations'] = [normalization_operation_model]
+    configuration_model_json['source'] = source_model
+
+    # Construct a model instance of Configuration by calling from_dict on the json representation
+    configuration_model = Configuration.from_dict(configuration_model_json)
+    assert configuration_model
+
+    # Construct a model instance of Configuration by calling from_dict on the json representation
+    configuration_model_dict = Configuration.from_dict(configuration_model_json).__dict__
+    configuration_model2 = Configuration(**configuration_model_dict)
+
+    # Verify the model instances are equivalent
+    assert configuration_model == configuration_model2
+
+    # Convert model instance back to dict and verify no loss of data
+    configuration_model_json2 = configuration_model.to_dict()
+    assert configuration_model_json2 == configuration_model_json",1,"The Python truth value test idiom takes advantage of Python's built-in truthiness for objects (i.e., non-empty collections or non-None values are considered ""True"", and empty collections or `None` are considered ""False""). In this case, we would use this idiom to replace explicit checks such as `!= False` or other unnecessary equality checks.
+
+Here is the refactored code with truth value test idioms:
+
+
+
+### Refactor Explanation
+1. **Truth Value Test Refactoring 1:**
+    - Replaced the `assert configuration_model != False` with just `assert configuration_model`. The variable will naturally evaluate as truthy (if it's not `None` or `False`). This is the main place where truth value testing idioms are applied.
+
+### Total Refactoring Count:
+1 truth value test refactoring has been applied.","The Python truth value test idiom takes advantage of Python's built-in truthiness for objects (i.e., non-empty collections or non-None values are considered ""True"", and empty collections or `None` are considered ""False""). In this case, we would use this idiom to replace explicit checks such as `!= False` or other unnecessary equality checks.
+
+Here is the refactored code with truth value test idioms:
+
+```python
+def test_configuration_serialization(self):
+    """"""
+    Test serialization/deserialization for Configuration
+    """"""
+
+    # Construct dict forms of any model objects needed in order to build this model.
+
+    font_setting_model = {}  # FontSetting
+    font_setting_model['level'] = 38
+    font_setting_model['min_size'] = 38
+    font_setting_model['max_size'] = 38
+    font_setting_model['bold'] = True
+    font_setting_model['italic'] = True
+    font_setting_model['name'] = 'testString'
+
+    pdf_heading_detection_model = {}  # PdfHeadingDetection
+    pdf_heading_detection_model['fonts'] = [font_setting_model]
+
+    pdf_settings_model = {}  # PdfSettings
+    pdf_settings_model['heading'] = pdf_heading_detection_model
+
+    word_style_model = {}  # WordStyle
+    word_style_model['level'] = 38
+    word_style_model['names'] = ['testString']
+
+    word_heading_detection_model = {}  # WordHeadingDetection
+    word_heading_detection_model['fonts'] = [font_setting_model]
+    word_heading_detection_model['styles'] = [word_style_model]
+
+    word_settings_model = {}  # WordSettings
+    word_settings_model['heading'] = word_heading_detection_model
+
+    x_path_patterns_model = {}  # XPathPatterns
+    x_path_patterns_model['xpaths'] = ['testString']
+
+    html_settings_model = {}  # HtmlSettings
+    html_settings_model['exclude_tags_completely'] = ['testString']
+    html_settings_model['exclude_tags_keep_content'] = ['span']
+    html_settings_model['keep_content'] = x_path_patterns_model
+    html_settings_model['exclude_content'] = x_path_patterns_model
+    html_settings_model['keep_tag_attributes'] = ['testString']
+    html_settings_model['exclude_tag_attributes'] = ['testString']
+
+    segment_settings_model = {}  # SegmentSettings
+    segment_settings_model['enabled'] = True
+    segment_settings_model['selector_tags'] = ['h1', 'h2']
+    segment_settings_model['annotated_fields'] = ['custom-field-1', 'custom-field-2']
+
+    normalization_operation_model = {}  # NormalizationOperation
+    normalization_operation_model['operation'] = 'move'
+    normalization_operation_model['source_field'] = 'extracted_metadata.title'
+    normalization_operation_model['destination_field'] = 'metadata.title'
+
+    conversions_model = {}  # Conversions
+    conversions_model['pdf'] = pdf_settings_model
+    conversions_model['word'] = word_settings_model
+    conversions_model['html'] = html_settings_model
+    conversions_model['segment'] = segment_settings_model
+    conversions_model['json_normalizations'] = [normalization_operation_model]
+    conversions_model['image_text_recognition'] = True
+
+    nlu_enrichment_keywords_model = {}  # NluEnrichmentKeywords
+    nlu_enrichment_keywords_model['sentiment'] = True
+    nlu_enrichment_keywords_model['emotion'] = False
+    nlu_enrichment_keywords_model['limit'] = 50
+
+    nlu_enrichment_entities_model = {}  # NluEnrichmentEntities
+    nlu_enrichment_entities_model['sentiment'] = True
+    nlu_enrichment_entities_model['emotion'] = False
+    nlu_enrichment_entities_model['limit'] = 50
+    nlu_enrichment_entities_model['mentions'] = True
+    nlu_enrichment_entities_model['mention_types'] = True
+    nlu_enrichment_entities_model['sentence_locations'] = True
+    nlu_enrichment_entities_model['model'] = 'WKS-model-id'
+
+    nlu_enrichment_sentiment_model = {}  # NluEnrichmentSentiment
+    nlu_enrichment_sentiment_model['document'] = True
+    nlu_enrichment_sentiment_model['targets'] = ['IBM', 'Watson']
+
+    nlu_enrichment_emotion_model = {}  # NluEnrichmentEmotion
+    nlu_enrichment_emotion_model['document'] = True
+    nlu_enrichment_emotion_model['targets'] = ['IBM', 'Watson']
+
+    nlu_enrichment_semantic_roles_model = {}  # NluEnrichmentSemanticRoles
+    nlu_enrichment_semantic_roles_model['entities'] = True
+    nlu_enrichment_semantic_roles_model['keywords'] = True
+    nlu_enrichment_semantic_roles_model['limit'] = 50
+
+    nlu_enrichment_relations_model = {}  # NluEnrichmentRelations
+    nlu_enrichment_relations_model['model'] = 'WKS-model-id'
+
+    nlu_enrichment_concepts_model = {}  # NluEnrichmentConcepts
+    nlu_enrichment_concepts_model['limit'] = 8
+
+    nlu_enrichment_features_model = {}  # NluEnrichmentFeatures
+    nlu_enrichment_features_model['keywords'] = nlu_enrichment_keywords_model
+    nlu_enrichment_features_model['entities'] = nlu_enrichment_entities_model
+    nlu_enrichment_features_model['sentiment'] = nlu_enrichment_sentiment_model
+    nlu_enrichment_features_model['emotion'] = nlu_enrichment_emotion_model
+    nlu_enrichment_features_model['categories'] = {}
+    nlu_enrichment_features_model['semantic_roles'] = nlu_enrichment_semantic_roles_model
+    nlu_enrichment_features_model['relations'] = nlu_enrichment_relations_model
+    nlu_enrichment_features_model['concepts'] = nlu_enrichment_concepts_model
+
+    enrichment_options_model = {}  # EnrichmentOptions
+    enrichment_options_model['features'] = nlu_enrichment_features_model
+    enrichment_options_model['language'] = 'ar'
+    enrichment_options_model['model'] = 'testString'
+
+    enrichment_model = {}  # Enrichment
+    enrichment_model['description'] = 'testString'
+    enrichment_model['destination_field'] = 'enriched_title'
+    enrichment_model['source_field'] = 'title'
+    enrichment_model['overwrite'] = False
+    enrichment_model['enrichment'] = 'natural_language_understanding'
+    enrichment_model['ignore_downstream_errors'] = False
+    enrichment_model['options'] = enrichment_options_model
+
+    source_schedule_model = {}  # SourceSchedule
+    source_schedule_model['enabled'] = True
+    source_schedule_model['time_zone'] = 'America/New_York'
+    source_schedule_model['frequency'] = 'weekly'
+
+    source_options_folder_model = {}  # SourceOptionsFolder
+    source_options_folder_model['owner_user_id'] = 'testString'
+    source_options_folder_model['folder_id'] = 'testString'
+    source_options_folder_model['limit'] = 38
+
+    source_options_object_model = {}  # SourceOptionsObject
+    source_options_object_model['name'] = 'testString'
+    source_options_object_model['limit'] = 38
+
+    source_options_site_coll_model = {}  # SourceOptionsSiteColl
+    source_options_site_coll_model['site_collection_path'] = '/sites/TestSiteA'
+    source_options_site_coll_model['limit'] = 10
+
+    source_options_web_crawl_model = {}  # SourceOptionsWebCrawl
+    source_options_web_crawl_model['url'] = 'testString'
+    source_options_web_crawl_model['limit_to_starting_hosts'] = True
+    source_options_web_crawl_model['crawl_speed'] = 'normal'
+    source_options_web_crawl_model['allow_untrusted_certificate'] = False
+    source_options_web_crawl_model['maximum_hops'] = 38
+    source_options_web_crawl_model['request_timeout'] = 38
+    source_options_web_crawl_model['override_robots_txt'] = False
+    source_options_web_crawl_model['blacklist'] = ['testString']
+
+    source_options_buckets_model = {}  # SourceOptionsBuckets
+    source_options_buckets_model['name'] = 'testString'
+    source_options_buckets_model['limit'] = 38
+
+    source_options_model = {}  # SourceOptions
+    source_options_model['folders'] = [source_options_folder_model]
+    source_options_model['objects'] = [source_options_object_model]
+    source_options_model['site_collections'] = [source_options_site_coll_model]
+    source_options_model['urls'] = [source_options_web_crawl_model]
+    source_options_model['buckets'] = [source_options_buckets_model]
+    source_options_model['crawl_all_buckets'] = True
+
+    source_model = {}  # Source
+    source_model['type'] = 'salesforce'
+    source_model['credential_id'] = '00ad0000-0000-11e8-ba89-0ed5f00f718b'
+    source_model['schedule'] = source_schedule_model
+    source_model['options'] = source_options_model
+
+    # Construct a json representation of a Configuration model
+    configuration_model_json = {}
+    configuration_model_json['configuration_id'] = 'testString'
+    configuration_model_json['name'] = 'testString'
+    configuration_model_json['created'] = ""2019-01-01T12:00:00Z""
+    configuration_model_json['updated'] = ""2019-01-01T12:00:00Z""
+    configuration_model_json['description'] = 'testString'
+    configuration_model_json['conversions'] = conversions_model
+    configuration_model_json['enrichments'] = [enrichment_model]
+    configuration_model_json['normalizations'] = [normalization_operation_model]
+    configuration_model_json['source'] = source_model
+
+    # Construct a model instance of Configuration by calling from_dict on the json representation
+    configuration_model = Configuration.from_dict(configuration_model_json)
+    assert configuration_model
+
+    # Construct a model instance of Configuration by calling from_dict on the json representation
+    configuration_model_dict = Configuration.from_dict(configuration_model_json).__dict__
+    configuration_model2 = Configuration(**configuration_model_dict)
+
+    # Verify the model instances are equivalent
+    assert configuration_model == configuration_model2
+
+    # Convert model instance back to dict and verify no loss of data
+    configuration_model_json2 = configuration_model.to_dict()
+    assert configuration_model_json2 == configuration_model_json
+```
+
+### Refactor Explanation
+1. **Truth Value Test Refactoring 1:**
+    - Replaced the `assert configuration_model != False` with just `assert configuration_model`. The variable will naturally evaluate as truthy (if it's not `None` or `False`). This is the main place where truth value testing idioms are applied.
+
+### Total Refactoring Count:
+1 truth value test refactoring has been applied.
+
+"
+https://github.com/MarshalX/yandex-music-api/tree/master/tests/test_link.py,"def test_de_list_none(self, client):
+        assert Link.de_list({}, client) == []",_2829.py,2,"Link.de_list({}, client) == []
+
+","not Link.de_list({}, client)
+
+",1,"def test_de_list_none(self, client):
+    assert not Link.de_list({}, client)  # Refactor here: implicit check for empty list",1,"Here's the refactored version of the provided code using a Python truth value test idiom:
+
+### Refactored Code:
+
+
+
+### Refactoring Explanation:
+
+1. **Truth Value Test Refactoring:** 
+
+   - **Original:** `Link.de_list({}, client) == []`
+   - **Refactored:** `not Link.de_list({}, client)`
+   
+   In Python, an empty list evaluates to `False` in a boolean context. Therefore, instead of explicitly comparing the result to an empty list `[]`, using `not` simplifies the code by taking advantage of Python's truth value testing where empty sequences are falsy.
+
+### Refactoring Count: 1","Here's the refactored version of the provided code using a Python truth value test idiom:
+
+### Refactored Code:
+
+```python
+def test_de_list_none(self, client):
+    assert not Link.de_list({}, client)  # Refactor here: implicit check for empty list
+```
+
+### Refactoring Explanation:
+
+1. **Truth Value Test Refactoring:** 
+
+   - **Original:** `Link.de_list({}, client) == []`
+   - **Refactored:** `not Link.de_list({}, client)`
+   
+   In Python, an empty list evaluates to `False` in a boolean context. Therefore, instead of explicitly comparing the result to an empty list `[]`, using `not` simplifies the code by taking advantage of Python's truth value testing where empty sequences are falsy.
+
+### Refactoring Count: 1"
+https://github.com/mclarkk/lifxlan/tree/master/lifxlan/lifxlan.py,"def get_device_by_name(self, name):
+        device = None
+        all_devices = self.get_devices()
+        for d in all_devices:
+            if d.get_label() == name:
+                device = d
+        if device == None:               # didn't find it?
+            self.discover_devices()      # update list in case it is out of date
+            all_devices = self.get_devices()
+            for d in all_devices:            # and try again
+                if d.get_label() == name:
+                    device = d
+        return device",_2880.py,7,"device == None
+
+","not device
+
+",1,"def get_device_by_name(self, name):
+    device = None
+    all_devices = self.get_devices()
+    for d in all_devices:
+        if d.get_label() == name:
+            device = d
+    if not device:  # didn't find it?
+        self.discover_devices()  # update the list in case it is out of date
+        all_devices = self.get_devices()
+        for d in all_devices:  # and try again
+            if d.get_label() == name:
+                device = d
+    return device",1,"Here's the refactored code using Python's truth value test idiom, including simplifying checks for `None` using the `if not` idiom and `None` truthy properties.
+
+Refactored Code:
+
+
+
+### Refactoring Adjustments:
+1. **`device == None`** changed to **`not device`** to simplify the truth value test.
+
+### Total number of truth value test refactorings: **1**","Here's the refactored code using Python's truth value test idiom, including simplifying checks for `None` using the `if not` idiom and `None` truthy properties.
+
+Refactored Code:
+
+```python
+def get_device_by_name(self, name):
+    device = None
+    all_devices = self.get_devices()
+    for d in all_devices:
+        if d.get_label() == name:
+            device = d
+    if not device:  # didn't find it?
+        self.discover_devices()  # update the list in case it is out of date
+        all_devices = self.get_devices()
+        for d in all_devices:  # and try again
+            if d.get_label() == name:
+                device = d
+    return device
+```
+
+### Refactoring Adjustments:
+1. **`device == None`** changed to **`not device`** to simplify the truth value test.
+
+### Total number of truth value test refactorings: **1**"

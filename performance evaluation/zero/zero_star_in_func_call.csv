@@ -1,0 +1,184 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/pyglet/pyglet/tree/master/pyglet/math.py,"def heading(self):
+        """"""The angle of the vector in radians.
+
+        :type: float
+        """"""
+        return _math.atan2(self[1], self[0])",_7854.py,6,"_math.atan2(self[1], self[0])
+
+","_math.atan2(*self[1::-1])
+
+",1,"def heading(self):
+    """"""The angle of the vector in radians.
+
+    :type: float
+    """"""
+    return _math.atan2(self[1], self[0])",0,"To refactor this code using PEP 448 (which allows for Additional Unpacking Generalizations), we can exploit the ability to unpack collections more efficiently. However, in the provided code, there are no collection manipulations or unpacking operations where PEP 448 is directly applicable.
+
+PEP 448 mainly improves scenarios where lists, tuples, dicts, and other collections are merged and unpacked. This function focuses on using the math `atan2()` function, and no collection unpacking or argument merging is happening that would allow us to directly apply PEP 448 in this exact case.
+
+Thus, the code you've provided does not need refactoring using PEP 448.
+
+### Refactored Python Code:
+There actually isn't any refactor here directly applicable to PEP 448.
+
+
+
+### Number of PEP 448 refactorings:
+**0**","To refactor this code using PEP 448 (which allows for Additional Unpacking Generalizations), we can exploit the ability to unpack collections more efficiently. However, in the provided code, there are no collection manipulations or unpacking operations where PEP 448 is directly applicable.
+
+PEP 448 mainly improves scenarios where lists, tuples, dicts, and other collections are merged and unpacked. This function focuses on using the math `atan2()` function, and no collection unpacking or argument merging is happening that would allow us to directly apply PEP 448 in this exact case.
+
+Thus, the code you've provided does not need refactoring using PEP 448.
+
+### Refactored Python Code:
+There actually isn't any refactor here directly applicable to PEP 448.
+
+```python
+def heading(self):
+    """"""The angle of the vector in radians.
+
+    :type: float
+    """"""
+    return _math.atan2(self[1], self[0])
+```
+
+### Number of PEP 448 refactorings:
+**0**"
+https://github.com/kliment/Printrun/tree/master/printrun/gui/xybuttons.py,"def OnMotion(self, event):
+        if not self.enabled:
+            return
+
+        oldcorner = self.corner
+        oldq, oldc = self.quadrant, self.concentric
+        old_hovered_keypad = self.hovered_keypad
+
+        mpos = event.GetPosition()
+        self.hovered_keypad = self.mouseOverKeypad(mpos)
+        self.quadrant = None
+        self.concentric = None
+        if self.hovered_keypad is None:
+            center = wx.Point(self.center[0], self.center[1])
+            riseDist = self.distanceToLine(mpos, center.x - 1, center.y - 1, center.x + 1, center.y + 1)
+            fallDist = self.distanceToLine(mpos, center.x - 1, center.y + 1, center.x + 1, center.y - 1)
+            self.quadrant, self.concentric = self.getQuadrantConcentricFromPosition(mpos)
+
+            # If mouse hovers in space between quadrants, don't commit to a quadrant
+            if riseDist <= self.spacer or fallDist <= self.spacer:
+                self.quadrant = None
+
+        cx, cy = self.center
+        if mpos.x < cx and mpos.y < cy:
+            self.corner = 0
+        if mpos.x >= cx and mpos.y < cy:
+            self.corner = 1
+        if mpos.x >= cx and mpos.y >= cy:
+            self.corner = 2
+        if mpos.x < cx and mpos.y >= cy:
+            self.corner = 3
+
+        if oldq != self.quadrant or oldc != self.concentric or oldcorner != self.corner \
+            or old_hovered_keypad != self.hovered_keypad:
+            self.update()",_9365.py,14,"self.center[0], self.center[1]
+
+","*self.center[:2]
+
+",1,"def OnMotion(self, event):
+    if not self.enabled:
+        return
+
+    oldcorner = self.corner
+    oldq, oldc = self.quadrant, self.concentric
+    old_hovered_keypad = self.hovered_keypad
+
+    mpos = event.GetPosition()
+    self.hovered_keypad = self.mouseOverKeypad(mpos)
+    self.quadrant = None
+    self.concentric = None
+    if self.hovered_keypad is None:
+        center = wx.Point(self.center[0], self.center[1])
+        riseDist = self.distanceToLine(mpos, center.x - 1, center.y - 1, center.x + 1, center.y + 1)
+        fallDist = self.distanceToLine(mpos, center.x - 1, center.y + 1, center.x + 1, center.y - 1)
+        self.quadrant, self.concentric = self.getQuadrantConcentricFromPosition(mpos)
+
+        # If mouse hovers in space between quadrants, don't commit to a quadrant
+        if riseDist <= self.spacer or fallDist <= self.spacer:
+            self.quadrant = None
+
+    cx, cy = self.center
+    if mpos.x < cx and mpos.y < cy:
+        self.corner = 0
+    if mpos.x >= cx and mpos.y < cy:
+        self.corner = 1
+    if mpos.x >= cx and mpos.y >= cy:
+        self.corner = 2
+    if mpos.x < cx and mpos.y >= cy:
+        self.corner = 3
+
+    if oldq != self.quadrant or oldc != self.concentric or oldcorner != self.corner \
+        or old_hovered_keypad != self.hovered_keypad:
+        self.update()",0,"To apply PEP 448 (""Additional Unpacking Generalizations""), we can use the unpacking of iterable and dictionary elements wherever possible to make the code cleaner and potentially more efficient.
+
+Upon review of the provided code, there is no evident need for dictionary or iterable unpacking since the code primarily deals with assignment operations, variable checks, and event handling. There are a couple of places where we assign tuples (`oldq, oldc = self.quadrant, self.concentric`), but no opportunity to use the unpacking generalizations effectively.
+
+Considering that no opportunities present themselves for unpacking generalizations (not iterating over lists, not merging multiple dictionaries or tuples, etc.) in this specific snippet of code, no PEP 448 refactoring will be made.
+
+Here is the original code again for clarity:
+
+
+
+**Number of PEP 448 refactors made: 0**
+
+This code doesn't have unpacking opportunities as per PEP 448. The logic primarily deals with assignments and comparisons, which don't benefit from unpacking changes.
+
+Should you have a different code example with dictionaries or lists where unpacking generalizations could apply, I would be happy to assist with that.","To apply PEP 448 (""Additional Unpacking Generalizations""), we can use the unpacking of iterable and dictionary elements wherever possible to make the code cleaner and potentially more efficient.
+
+Upon review of the provided code, there is no evident need for dictionary or iterable unpacking since the code primarily deals with assignment operations, variable checks, and event handling. There are a couple of places where we assign tuples (`oldq, oldc = self.quadrant, self.concentric`), but no opportunity to use the unpacking generalizations effectively.
+
+Considering that no opportunities present themselves for unpacking generalizations (not iterating over lists, not merging multiple dictionaries or tuples, etc.) in this specific snippet of code, no PEP 448 refactoring will be made.
+
+Here is the original code again for clarity:
+
+```python
+def OnMotion(self, event):
+    if not self.enabled:
+        return
+
+    oldcorner = self.corner
+    oldq, oldc = self.quadrant, self.concentric
+    old_hovered_keypad = self.hovered_keypad
+
+    mpos = event.GetPosition()
+    self.hovered_keypad = self.mouseOverKeypad(mpos)
+    self.quadrant = None
+    self.concentric = None
+    if self.hovered_keypad is None:
+        center = wx.Point(self.center[0], self.center[1])
+        riseDist = self.distanceToLine(mpos, center.x - 1, center.y - 1, center.x + 1, center.y + 1)
+        fallDist = self.distanceToLine(mpos, center.x - 1, center.y + 1, center.x + 1, center.y - 1)
+        self.quadrant, self.concentric = self.getQuadrantConcentricFromPosition(mpos)
+
+        # If mouse hovers in space between quadrants, don't commit to a quadrant
+        if riseDist <= self.spacer or fallDist <= self.spacer:
+            self.quadrant = None
+
+    cx, cy = self.center
+    if mpos.x < cx and mpos.y < cy:
+        self.corner = 0
+    if mpos.x >= cx and mpos.y < cy:
+        self.corner = 1
+    if mpos.x >= cx and mpos.y >= cy:
+        self.corner = 2
+    if mpos.x < cx and mpos.y >= cy:
+        self.corner = 3
+
+    if oldq != self.quadrant or oldc != self.concentric or oldcorner != self.corner \
+        or old_hovered_keypad != self.hovered_keypad:
+        self.update()
+```
+
+**Number of PEP 448 refactors made: 0**
+
+This code doesn't have unpacking opportunities as per PEP 448. The logic primarily deals with assignments and comparisons, which don't benefit from unpacking changes.
+
+Should you have a different code example with dictionaries or lists where unpacking generalizations could apply, I would be happy to assist with that."

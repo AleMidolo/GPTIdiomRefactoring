@@ -1,0 +1,1292 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/asyml/texar/tree/master/texar/tf/data/tokenizers/bert_tokenizer_utils.py,"def tokenize(self, text: str) -> List[str]:
+        r""""""Tokenizes a piece of text into its word pieces.
+
+        This uses a greedy longest-match-first algorithm to perform tokenization
+        using the given vocabulary.
+
+        For example:
+            input = ""unaffable""
+            output = [""un"", ""##aff"", ""##able""]
+
+        Args:
+            text: A single token or whitespace separated tokens. This should
+                have already been passed through `BasicTokenizer`.
+
+        Returns:
+            A list of wordpiece tokens.
+        """"""
+        output_tokens = []
+        for token in whitespace_tokenize(text):
+            assert token is not None
+            chars = list(token)
+            if len(chars) > self.max_input_chars_per_word:
+                output_tokens.append(self.unk_token)
+                continue
+
+            is_bad = False
+            start = 0
+            sub_tokens = []
+            while start < len(chars):
+                end = len(chars)
+                cur_substr = None
+                while start < end:
+                    substr = """".join(chars[start:end])
+                    if start > 0:
+                        substr = ""##"" + substr
+                    if substr in self.vocab:
+                        cur_substr = substr
+                        break
+                    end -= 1
+                if cur_substr is None:
+                    is_bad = True
+                    break
+                sub_tokens.append(cur_substr)
+                start = end
+
+            if is_bad:
+                output_tokens.append(self.unk_token)
+            else:
+                output_tokens.extend(sub_tokens)
+        return output_tokens",_104483.py,29,"while start < len(chars):
+    end = len(chars)
+    cur_substr = None
+    while start < end:
+        substr = ''.join(chars[start:end])
+        if start > 0:
+            substr = '##' + substr
+        if substr in self.vocab:
+            cur_substr = substr
+            break
+        end -= 1
+    if cur_substr is None:
+        is_bad = True
+        break
+    sub_tokens.append(cur_substr)
+    start = end
+
+while start < end:
+    substr = ''.join(chars[start:end])
+    if start > 0:
+        substr = '##' + substr
+    if substr in self.vocab:
+        cur_substr = substr
+        break
+    end -= 1
+
+","if is_bad:
+    output_tokens.append(self.unk_token)
+else:
+    output_tokens.extend(sub_tokens)
+
+if cur_substr is None:
+    is_bad = True
+    break
+
+",2,"def tokenize(self, text: str) -> List[str]:
+    r""""""Tokenizes a piece of text into its word pieces.
+
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+
+    For example:
+        input = ""unaffable""
+        output = [""un"", ""##aff"", ""##able""]
+
+    Args:
+        text: A single token or whitespace separated tokens. This should
+            have already been passed through `BasicTokenizer`.
+
+    Returns:
+        A list of wordpiece tokens.
+    """"""
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        assert token is not None
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            # Try to find the longest substring in vocabulary
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    sub_tokens.append(substr)
+                    start = end
+                    break
+                end -= 1
+            else:
+                # This part of the word couldn't be tokenized
+                output_tokens.append(self.unk_token)
+                break
+        else:
+            # If the word is successfully tokenized, add sub-tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens",1.0,"Here is the refactored code using Python's loop-else idiom. The `else` block in Python loops is executed when the loop completes normally without a `break`, making it an effective way to refactor exit conditions. I've refactored the part of the algorithm inside the nested loop where `cur_substr` is determined.
+
+
+
+### What has been refactored:
+- I've refactored the `cur_substr` logic by eliminating the `is_bad` flag and the explicit `is_bad` check. Instead, the `else` part of the `while start < end:` is utilized to handle the case where no valid substring is found in the vocabulary (i.e., the token is considered broken, and `unk_token` is appended).
+- In place of `is_bad` and `break`, we use a combination of the loop-else idiom and `break` appropriately depending on whether a valid substring match was found.
+
+### Number of Loop-Else Refactorings:
+- **1 loop-else refactoring**: Refactored the nested while loop (`while start < end:`) with an else block for handling the case where no match is found in `vocab`.","Here is the refactored code using Python's loop-else idiom. The `else` block in Python loops is executed when the loop completes normally without a `break`, making it an effective way to refactor exit conditions. I've refactored the part of the algorithm inside the nested loop where `cur_substr` is determined.
+
+```python
+def tokenize(self, text: str) -> List[str]:
+    r""""""Tokenizes a piece of text into its word pieces.
+
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+
+    For example:
+        input = ""unaffable""
+        output = [""un"", ""##aff"", ""##able""]
+
+    Args:
+        text: A single token or whitespace separated tokens. This should
+            have already been passed through `BasicTokenizer`.
+
+    Returns:
+        A list of wordpiece tokens.
+    """"""
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        assert token is not None
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            # Try to find the longest substring in vocabulary
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    sub_tokens.append(substr)
+                    start = end
+                    break
+                end -= 1
+            else:
+                # This part of the word couldn't be tokenized
+                output_tokens.append(self.unk_token)
+                break
+        else:
+            # If the word is successfully tokenized, add sub-tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens
+```
+
+### What has been refactored:
+- I've refactored the `cur_substr` logic by eliminating the `is_bad` flag and the explicit `is_bad` check. Instead, the `else` part of the `while start < end:` is utilized to handle the case where no valid substring is found in the vocabulary (i.e., the token is considered broken, and `unk_token` is appended).
+- In place of `is_bad` and `break`, we use a combination of the loop-else idiom and `break` appropriately depending on whether a valid substring match was found.
+
+### Number of Loop-Else Refactorings:
+- **1 loop-else refactoring**: Refactored the nested while loop (`while start < end:`) with an else block for handling the case where no match is found in `vocab`."
+https://github.com/huggingface/transformers/tree/master/src/transformers/models/squeezebert/tokenization_squeezebert.py,"def tokenize(self, text):
+        """"""
+        Tokenizes a piece of text into its word pieces. This uses a greedy longest-match-first algorithm to perform
+        tokenization using the given vocabulary.
+
+        For example, `input = ""unaffable""` wil return as output `[""un"", ""##aff"", ""##able""]`.
+
+        Args:
+            text: A single token or whitespace separated tokens. This should have
+                already been passed through *BasicTokenizer*.
+
+        Returns:
+            A list of wordpiece tokens.
+        """"""
+
+        output_tokens = []
+        for token in whitespace_tokenize(text):
+            chars = list(token)
+            if len(chars) > self.max_input_chars_per_word:
+                output_tokens.append(self.unk_token)
+                continue
+
+            is_bad = False
+            start = 0
+            sub_tokens = []
+            while start < len(chars):
+                end = len(chars)
+                cur_substr = None
+                while start < end:
+                    substr = """".join(chars[start:end])
+                    if start > 0:
+                        substr = ""##"" + substr
+                    if substr in self.vocab:
+                        cur_substr = substr
+                        break
+                    end -= 1
+                if cur_substr is None:
+                    is_bad = True
+                    break
+                sub_tokens.append(cur_substr)
+                start = end
+
+            if is_bad:
+                output_tokens.append(self.unk_token)
+            else:
+                output_tokens.extend(sub_tokens)
+        return output_tokens",_112783.py,26,"while start < len(chars):
+    end = len(chars)
+    cur_substr = None
+    while start < end:
+        substr = ''.join(chars[start:end])
+        if start > 0:
+            substr = '##' + substr
+        if substr in self.vocab:
+            cur_substr = substr
+            break
+        end -= 1
+    if cur_substr is None:
+        is_bad = True
+        break
+    sub_tokens.append(cur_substr)
+    start = end
+
+while start < end:
+    substr = ''.join(chars[start:end])
+    if start > 0:
+        substr = '##' + substr
+    if substr in self.vocab:
+        cur_substr = substr
+        break
+    end -= 1
+
+","if is_bad:
+    output_tokens.append(self.unk_token)
+else:
+    output_tokens.extend(sub_tokens)
+
+if cur_substr is None:
+    is_bad = True
+    break
+
+",2,"def tokenize(self, text):
+    """"""
+    Tokenizes a piece of text into its word pieces. This uses a greedy longest-match-first algorithm to perform
+    tokenization using the given vocabulary.
+
+    For example, `input = ""unaffable""` will return as output `[""un"", ""##aff"", ""##able""]`.
+
+    Args:
+        text: A single token or whitespace separated tokens. This should have
+            already been passed through *BasicTokenizer*.
+
+    Returns:
+        A list of wordpiece tokens.
+    """"""
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+                end -= 1
+
+            # Using loop-else idiom: if the inner loop wasn't broken, cur_substr should be None
+            else:
+                output_tokens.append(self.unk_token)
+                break
+
+            sub_tokens.append(cur_substr)
+            start = end
+        else:
+            # If no break in the outer while loop - add sub_tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens",1.0,"To refactor the code using the Python loop `else` idiom, the basic idea is to place the `else` statement in loops where breaking out of the loop should influence subsequent logic. This is particularly useful in situations where the loop successfully completes without hitting a `break` statement. In your case, we can implement `else` after the inner `while` loop to replace the `is_bad` flag checks.
+
+Here is the refactored code:
+
+
+
+### Refactoring Summary:
+I made **one** significant use of the Python `while-else` idiom, replacing the `is_bad` flag check with a clean `else` clause on the inner loop.
+
+By using the `else` clause:
+- The code where no valid sub-token is found (`cur_substr is None`) executes the `else` block of the `while` loop.
+- When a valid sub-token is found, we break from the loop, avoiding the `else` block and continuing with the outer logic.
+
+This makes the logic tighter and avoids the need for managing the extra `is_bad` boolean flag.
+
+### Number of loop else refactorings: 1","To refactor the code using the Python loop `else` idiom, the basic idea is to place the `else` statement in loops where breaking out of the loop should influence subsequent logic. This is particularly useful in situations where the loop successfully completes without hitting a `break` statement. In your case, we can implement `else` after the inner `while` loop to replace the `is_bad` flag checks.
+
+Here is the refactored code:
+
+```python
+def tokenize(self, text):
+    """"""
+    Tokenizes a piece of text into its word pieces. This uses a greedy longest-match-first algorithm to perform
+    tokenization using the given vocabulary.
+
+    For example, `input = ""unaffable""` will return as output `[""un"", ""##aff"", ""##able""]`.
+
+    Args:
+        text: A single token or whitespace separated tokens. This should have
+            already been passed through *BasicTokenizer*.
+
+    Returns:
+        A list of wordpiece tokens.
+    """"""
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+                end -= 1
+
+            # Using loop-else idiom: if the inner loop wasn't broken, cur_substr should be None
+            else:
+                output_tokens.append(self.unk_token)
+                break
+
+            sub_tokens.append(cur_substr)
+            start = end
+        else:
+            # If no break in the outer while loop - add sub_tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens
+```
+
+### Refactoring Summary:
+I made **one** significant use of the Python `while-else` idiom, replacing the `is_bad` flag check with a clean `else` clause on the inner loop.
+
+By using the `else` clause:
+- The code where no valid sub-token is found (`cur_substr is None`) executes the `else` block of the `while` loop.
+- When a valid sub-token is found, we break from the loop, avoiding the `else` block and continuing with the outer logic.
+
+This makes the logic tighter and avoids the need for managing the extra `is_bad` boolean flag.
+
+### Number of loop else refactorings: 1"
+https://github.com/DLLXW/data-science-competition/tree/master/else/���������������������������--AI+z������������������������������������/code/uer/utils/tokenizer.py,"def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer.
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    text = convert_to_unicode(text)
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+      chars = list(token)
+      if len(chars) > self.max_input_chars_per_word:
+        output_tokens.append(self.unk_token)
+        continue
+
+      is_bad = False
+      start = 0
+      sub_tokens = []
+      while start < len(chars):
+        end = len(chars)
+        cur_substr = None
+        while start < end:
+          substr = """".join(chars[start:end])
+          if start > 0:
+            substr = ""##"" + six.ensure_str(substr)
+          if substr in self.vocab:
+            cur_substr = substr
+            break
+          end -= 1
+        if cur_substr is None:
+          is_bad = True
+          break
+        sub_tokens.append(cur_substr)
+        start = end
+
+      if is_bad:
+        output_tokens.append(self.unk_token)
+      else:
+        output_tokens.extend(sub_tokens)
+    return output_tokens",_12602.py,27,"while start < len(chars):
+    end = len(chars)
+    cur_substr = None
+    while start < end:
+        substr = ''.join(chars[start:end])
+        if start > 0:
+            substr = '##' + six.ensure_str(substr)
+        if substr in self.vocab:
+            cur_substr = substr
+            break
+        end -= 1
+    if cur_substr is None:
+        is_bad = True
+        break
+    sub_tokens.append(cur_substr)
+    start = end
+
+while start < end:
+    substr = ''.join(chars[start:end])
+    if start > 0:
+        substr = '##' + six.ensure_str(substr)
+    if substr in self.vocab:
+        cur_substr = substr
+        break
+    end -= 1
+
+","if is_bad:
+    output_tokens.append(self.unk_token)
+else:
+    output_tokens.extend(sub_tokens)
+
+if cur_substr is None:
+    is_bad = True
+    break
+
+",2,"def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer.
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    text = convert_to_unicode(text)
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            for end in range(len(chars), start, -1):  # start -> end loop
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + six.ensure_str(substr)
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+            else:
+                # Executed if we did not `break` out of the loop (meaning no valid sub-token found)
+                output_tokens.append(self.unk_token)
+                break
+
+            sub_tokens.append(cur_substr)
+            start = end
+
+        else:
+            # If we did not encounter a `break` in the `while` loop, extend with the sub tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens",1.0,"Here's the refactored code using Python's `for-else` idiom. In this use case, `for-else` can help simplify the logic by allowing us to manage failure conditions (`is_bad` flag) directly in the loop using `else` rather than using a separate boolean flag. The idea is that the code in the `else` block of a loop is executed only if the loop completes all iterations without `break`.
+
+### Refactored code:
+
+
+
+### Explanation of changes:
+
+1. **Loop-else idiom for the inner `while`/`for`**:
+   - I refactored the inner loop that was checking for substrings within `while start < len(chars)`. Instead of managing the `is_bad` flag manually, I used a `for-else` idiom:
+     - The `for end in range(len(chars), start, -1)` loop iterates from the end of the token downwards to `start` and looks for a substring in the vocabulary.
+     - If no valid substring is found (i.e., no `break` was encountered), the `else` block is entered and marks the token as ""bad"" by appending the `unk_token`.
+   - If a break occurs, the loop exists early, and the substring (`cur_substr`) continues.
+
+2. **Removed unnecessary `is_bad` flag**:
+   - With the `else` block of the loop, we no longer need the `is_bad` flag to track whether a matching substring was found for the token. The loop's logic handles this through the `else`.
+
+### Refactoring analysis:
+
+- **Number of `loop else` refactorings**: 1 (One use of the `for-else` within the loop that searches for matching substrings).
+
+This refactoring improves the clarity of the failure logic (unsuccessful substring search) by leveraging Python's loop-`else` idiom.","Here's the refactored code using Python's `for-else` idiom. In this use case, `for-else` can help simplify the logic by allowing us to manage failure conditions (`is_bad` flag) directly in the loop using `else` rather than using a separate boolean flag. The idea is that the code in the `else` block of a loop is executed only if the loop completes all iterations without `break`.
+
+### Refactored code:
+
+```python
+def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer.
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    text = convert_to_unicode(text)
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            for end in range(len(chars), start, -1):  # start -> end loop
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + six.ensure_str(substr)
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+            else:
+                # Executed if we did not `break` out of the loop (meaning no valid sub-token found)
+                output_tokens.append(self.unk_token)
+                break
+
+            sub_tokens.append(cur_substr)
+            start = end
+
+        else:
+            # If we did not encounter a `break` in the `while` loop, extend with the sub tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens
+```
+
+### Explanation of changes:
+
+1. **Loop-else idiom for the inner `while`/`for`**:
+   - I refactored the inner loop that was checking for substrings within `while start < len(chars)`. Instead of managing the `is_bad` flag manually, I used a `for-else` idiom:
+     - The `for end in range(len(chars), start, -1)` loop iterates from the end of the token downwards to `start` and looks for a substring in the vocabulary.
+     - If no valid substring is found (i.e., no `break` was encountered), the `else` block is entered and marks the token as ""bad"" by appending the `unk_token`.
+   - If a break occurs, the loop exists early, and the substring (`cur_substr`) continues.
+
+2. **Removed unnecessary `is_bad` flag**:
+   - With the `else` block of the loop, we no longer need the `is_bad` flag to track whether a matching substring was found for the token. The loop's logic handles this through the `else`.
+
+### Refactoring analysis:
+
+- **Number of `loop else` refactorings**: 1 (One use of the `for-else` within the loop that searches for matching substrings).
+
+This refactoring improves the clarity of the failure logic (unsuccessful substring search) by leveraging Python's loop-`else` idiom."
+https://github.com/EssayKillerBrain/EssayKiller_V2/tree/master/LanguageNetwork/GPT2/dataset/tokenization/tokenization.py,"def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer.
+
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    text = convert_to_unicode(text)
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+      chars = list(token)
+      if len(chars) > self.max_input_chars_per_word:
+        output_tokens.append(self.unk_token)
+        continue
+
+      is_bad = False
+      start = 0
+      sub_tokens = []
+      while start < len(chars):
+        end = len(chars)
+        cur_substr = None
+        while start < end:
+          substr = """".join(chars[start:end])
+          if start > 0:
+            substr = ""##"" + substr
+          if substr in self.vocab:
+            cur_substr = substr
+            break
+          end -= 1
+        if cur_substr is None:
+          is_bad = True
+          break
+        sub_tokens.append(cur_substr)
+        start = end
+
+      if is_bad:
+        output_tokens.append(self.unk_token)
+      else:
+        output_tokens.extend(sub_tokens)
+    return output_tokens",_13770.py,31,"while start < len(chars):
+    end = len(chars)
+    cur_substr = None
+    while start < end:
+        substr = ''.join(chars[start:end])
+        if start > 0:
+            substr = '##' + substr
+        if substr in self.vocab:
+            cur_substr = substr
+            break
+        end -= 1
+    if cur_substr is None:
+        is_bad = True
+        break
+    sub_tokens.append(cur_substr)
+    start = end
+
+while start < end:
+    substr = ''.join(chars[start:end])
+    if start > 0:
+        substr = '##' + substr
+    if substr in self.vocab:
+        cur_substr = substr
+        break
+    end -= 1
+
+","if is_bad:
+    output_tokens.append(self.unk_token)
+else:
+    output_tokens.extend(sub_tokens)
+
+if cur_substr is None:
+    is_bad = True
+    break
+
+",2,"def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer.
+
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    text = convert_to_unicode(text)
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            for end in range(len(chars), start, -1):
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    sub_tokens.append(cur_substr)
+                    start = end
+                    break
+            else:  # No valid substring was found
+                output_tokens.append(self.unk_token)  # Equivalent to setting `is_bad = True` and breaking.
+                break
+        else:
+            # If we didn't break in the loop, append the successful sub_tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens",1.0,"Here’s the refactored version of your code using the `loop-else` idiom in Python. The `else` clause on a loop is executed if the loop is not terminated by a `break`.
+
+I refactored the inner loop where the `break` statement was used, into a loop-else block:
+
+### Refactored Code:
+
+
+
+### Explanation of changes:
+
+- The `while` loop over `chars` remains the same.
+- Inside that loop, I replaced the `while start < end` loop with a `for end in range(...)` to use the `else` block.
+- The `for` loop iterates over the possible substrings in decreasing length like the original code.
+- If the substring is found in `self.vocab`, we `break` and set `cur_substr`. The processing continues normally.
+- If no valid substring is found (the `for` loop ends without breaking), the `else` part of the `for` loop is executed. This is the place where you append the `unk_token` and exit the main `while` loop.
+- The `else` part of the `while` loop executes if the `while` loop completes successfully without encountering a `break`, in which case the `output_tokens` list is updated with the `sub_tokens`.
+
+### Refactor Summary:
+
+- **1 loop-else refactoring** was performed (`for end in range(...): ... else ...`) for the inner loop finding subword tokens.","Here’s the refactored version of your code using the `loop-else` idiom in Python. The `else` clause on a loop is executed if the loop is not terminated by a `break`.
+
+I refactored the inner loop where the `break` statement was used, into a loop-else block:
+
+### Refactored Code:
+
+```python
+def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer.
+
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    text = convert_to_unicode(text)
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            for end in range(len(chars), start, -1):
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    sub_tokens.append(cur_substr)
+                    start = end
+                    break
+            else:  # No valid substring was found
+                output_tokens.append(self.unk_token)  # Equivalent to setting `is_bad = True` and breaking.
+                break
+        else:
+            # If we didn't break in the loop, append the successful sub_tokens
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens
+```
+
+### Explanation of changes:
+
+- The `while` loop over `chars` remains the same.
+- Inside that loop, I replaced the `while start < end` loop with a `for end in range(...)` to use the `else` block.
+- The `for` loop iterates over the possible substrings in decreasing length like the original code.
+- If the substring is found in `self.vocab`, we `break` and set `cur_substr`. The processing continues normally.
+- If no valid substring is found (the `for` loop ends without breaking), the `else` part of the `for` loop is executed. This is the place where you append the `unk_token` and exit the main `while` loop.
+- The `else` part of the `while` loop executes if the `while` loop completes successfully without encountering a `break`, in which case the `output_tokens` list is updated with the `sub_tokens`.
+
+### Refactor Summary:
+
+- **1 loop-else refactoring** was performed (`for end in range(...): ... else ...`) for the inner loop finding subword tokens.
+"
+https://github.com/huggingface/transformers/tree/master/src/transformers/models/layoutlmv2/tokenization_layoutlmv2.py,"def tokenize(self, text):
+        """"""
+        Tokenizes a piece of text into its word pieces. This uses a greedy longest-match-first algorithm to perform
+        tokenization using the given vocabulary.
+
+        For example, `input = ""unaffable""` wil return as output `[""un"", ""##aff"", ""##able""]`.
+
+        Args:
+            text: A single token or whitespace separated tokens. This should have
+                already been passed through *BasicTokenizer*.
+
+        Returns:
+            A list of wordpiece tokens.
+        """"""
+
+        output_tokens = []
+        for token in whitespace_tokenize(text):
+            chars = list(token)
+            if len(chars) > self.max_input_chars_per_word:
+                output_tokens.append(self.unk_token)
+                continue
+
+            is_bad = False
+            start = 0
+            sub_tokens = []
+            while start < len(chars):
+                end = len(chars)
+                cur_substr = None
+                while start < end:
+                    substr = """".join(chars[start:end])
+                    if start > 0:
+                        substr = ""##"" + substr
+                    if substr in self.vocab:
+                        cur_substr = substr
+                        break
+                    end -= 1
+                if cur_substr is None:
+                    is_bad = True
+                    break
+                sub_tokens.append(cur_substr)
+                start = end
+
+            if is_bad:
+                output_tokens.append(self.unk_token)
+            else:
+                output_tokens.extend(sub_tokens)
+        return output_tokens",_42680.py,26,"while start < len(chars):
+    end = len(chars)
+    cur_substr = None
+    while start < end:
+        substr = ''.join(chars[start:end])
+        if start > 0:
+            substr = '##' + substr
+        if substr in self.vocab:
+            cur_substr = substr
+            break
+        end -= 1
+    if cur_substr is None:
+        is_bad = True
+        break
+    sub_tokens.append(cur_substr)
+    start = end
+
+while start < end:
+    substr = ''.join(chars[start:end])
+    if start > 0:
+        substr = '##' + substr
+    if substr in self.vocab:
+        cur_substr = substr
+        break
+    end -= 1
+
+","if is_bad:
+    output_tokens.append(self.unk_token)
+else:
+    output_tokens.extend(sub_tokens)
+
+if cur_substr is None:
+    is_bad = True
+    break
+
+",2,"def tokenize(self, text):
+    """"""
+    Tokenizes a piece of text into its word pieces. This uses a greedy longest-match-first algorithm to perform
+    tokenization using the given vocabulary.
+
+    For example, `input = ""unaffable""` will return as output `[""un"", ""##aff"", ""##able""]`.
+
+    Args:
+        text: A single token or whitespace separated tokens. This should have
+            already been passed through *BasicTokenizer*.
+
+    Returns:
+        A list of wordpiece tokens.
+    """"""
+    
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+                end -= 1
+            
+            # Loop else: If no valid substring was found
+            else:
+                output_tokens.append(self.unk_token)
+                break
+
+            # Append the found sub token and move start to end for further tokenization
+            sub_tokens.append(cur_substr)
+            start = end
+            
+        else:
+            # If we didn't 'break', all sub-tokens were valid.
+            output_tokens.extend(sub_tokens)
+    
+    return output_tokens",1.0,"To refactor the provided code using Python's `loop-else` idiom, we will incorporate the `else` block following the `while` loops. In a `for` or `while` loop, the `else` block is executed if the loop completed without encountering a `break`. The `else` statement is useful here, as we can handle cases where a substring is found or not found without requiring a flag (`is_bad`).
+
+### Refactoring Strategy
+- Eliminate the `is_bad` flag.
+- Use the `else` block in the second `while` loop, which searches for the substring within the vocabulary. If we are unable to find a valid substring (`cur_substr is None`), we can directly handle it using the `break` and `else` mechanism.
+
+### Refactored Python Code:
+
+
+
+### Changes Implemented:
+1. Removed the `is_bad` flag that was being used to track if a bad token was found.
+2. Incorporated `while-else`:
+   - Inside the second `while` loop (searching for substring in the vocabulary), we used the `else` clause to handle cases where no valid substring was found. This allowed us to append the unknown token (`unk_token`) directly.
+   - If the inner `while` loop completes without breaking (which would mean all sub-tokens were found successfully), we continue normally and append the sub-tokens list.
+
+### Number of `loop-else` Refactorings: 1
+
+The refactoring was applied to the inner `while` loop where we search for the longest matching substring in `self.vocab`.","To refactor the provided code using Python's `loop-else` idiom, we will incorporate the `else` block following the `while` loops. In a `for` or `while` loop, the `else` block is executed if the loop completed without encountering a `break`. The `else` statement is useful here, as we can handle cases where a substring is found or not found without requiring a flag (`is_bad`).
+
+### Refactoring Strategy
+- Eliminate the `is_bad` flag.
+- Use the `else` block in the second `while` loop, which searches for the substring within the vocabulary. If we are unable to find a valid substring (`cur_substr is None`), we can directly handle it using the `break` and `else` mechanism.
+
+### Refactored Python Code:
+
+```python
+def tokenize(self, text):
+    """"""
+    Tokenizes a piece of text into its word pieces. This uses a greedy longest-match-first algorithm to perform
+    tokenization using the given vocabulary.
+
+    For example, `input = ""unaffable""` will return as output `[""un"", ""##aff"", ""##able""]`.
+
+    Args:
+        text: A single token or whitespace separated tokens. This should have
+            already been passed through *BasicTokenizer*.
+
+    Returns:
+        A list of wordpiece tokens.
+    """"""
+    
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+                end -= 1
+            
+            # Loop else: If no valid substring was found
+            else:
+                output_tokens.append(self.unk_token)
+                break
+
+            # Append the found sub token and move start to end for further tokenization
+            sub_tokens.append(cur_substr)
+            start = end
+            
+        else:
+            # If we didn't 'break', all sub-tokens were valid.
+            output_tokens.extend(sub_tokens)
+    
+    return output_tokens
+```
+
+### Changes Implemented:
+1. Removed the `is_bad` flag that was being used to track if a bad token was found.
+2. Incorporated `while-else`:
+   - Inside the second `while` loop (searching for substring in the vocabulary), we used the `else` clause to handle cases where no valid substring was found. This allowed us to append the unknown token (`unk_token`) directly.
+   - If the inner `while` loop completes without breaking (which would mean all sub-tokens were found successfully), we continue normally and append the sub-tokens list.
+
+### Number of `loop-else` Refactorings: 1
+
+The refactoring was applied to the inner `while` loop where we search for the longest matching substring in `self.vocab`."
+https://github.com/microsoft/muzic/tree/master/deeprapper/tokenizations/tokenization_bert.py,"def tokenize(self, text):
+        """"""Tokenizes a piece of text into its word pieces.
+
+        This uses a greedy longest-match-first algorithm to perform tokenization
+        using the given vocabulary.
+
+        For example:
+          input = ""unaffable""
+          output = [""un"", ""##aff"", ""##able""]
+
+        Args:
+          text: A single token or whitespace separated tokens. This should have
+            already been passed through `BasicTokenizer`.
+
+        Returns:
+          A list of wordpiece tokens.
+        """"""
+
+        output_tokens = []
+        for token in whitespace_tokenize(text):
+            chars = list(token)
+            if len(chars) > self.max_input_chars_per_word:
+                output_tokens.append(self.unk_token)
+                continue
+
+            is_bad = False
+            start = 0
+            sub_tokens = []
+            while start < len(chars):
+                end = len(chars)
+                cur_substr = None
+                while start < end:
+                    substr = """".join(chars[start:end])
+                    if start > 0:
+                        substr = ""##"" + substr
+                    if substr in self.vocab:
+                        cur_substr = substr
+                        break
+                    end -= 1
+                if cur_substr is None:
+                    is_bad = True
+                    break
+                sub_tokens.append(cur_substr)
+                start = end
+
+            if is_bad:
+                output_tokens.append(self.unk_token)
+            else:
+                output_tokens.extend(sub_tokens)
+        return output_tokens",_123063.py,29,"while start < len(chars):
+    end = len(chars)
+    cur_substr = None
+    while start < end:
+        substr = ''.join(chars[start:end])
+        if start > 0:
+            substr = '##' + substr
+        if substr in self.vocab:
+            cur_substr = substr
+            break
+        end -= 1
+    if cur_substr is None:
+        is_bad = True
+        break
+    sub_tokens.append(cur_substr)
+    start = end
+
+while start < end:
+    substr = ''.join(chars[start:end])
+    if start > 0:
+        substr = '##' + substr
+    if substr in self.vocab:
+        cur_substr = substr
+        break
+    end -= 1
+
+","if is_bad:
+    output_tokens.append(self.unk_token)
+else:
+    output_tokens.extend(sub_tokens)
+
+if cur_substr is None:
+    is_bad = True
+    break
+
+",2,"def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+    
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer`.
+
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+                end -= 1
+            else:
+                # This executes if the inner loop didn't break (i.e., no substring was found)
+                output_tokens.append(self.unk_token)
+                break
+
+            sub_tokens.append(cur_substr)
+            start = end
+        else:
+            # This executes if the outer loop completes without a break 
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens",1.0,"Here is the refactored code using the `loop-else` idiom in Python. The `else` part of a loop can be used when there's no `break` execution during the loop, making it a great fit for scenarios where we are looking for a condition (like finding `cur_substr`) and using isolated `break` statements. The logic is rewritten with an `else` attached to the `while` loop that checks for substring matches in the vocabulary. This results in one refactor. 
+
+### Refactored Code
+
+
+
+### Changes Explained:
+
+1. The inner `while` loop (`start < end`) is now using an `else` clause. The `else` clause runs if the loop completes without encountering a `break`, which in this case means no valid substring was found.
+2. If no valid substring is found (`cur_substr` remains `None`), it appends the `unk_token` and breaks the outer loop with `break`.
+3. If sub-tokens are found, they are appended to the final `output_tokens`.
+
+### Number of loop-else refactorings: `1`.
+
+The refactor makes the code cleaner by integrating the `is_bad` logic into the loop flow using an `else`, which is a more Pythonic way of handling failure conditions within loops.","Here is the refactored code using the `loop-else` idiom in Python. The `else` part of a loop can be used when there's no `break` execution during the loop, making it a great fit for scenarios where we are looking for a condition (like finding `cur_substr`) and using isolated `break` statements. The logic is rewritten with an `else` attached to the `while` loop that checks for substring matches in the vocabulary. This results in one refactor. 
+
+### Refactored Code
+
+```python
+def tokenize(self, text):
+    """"""Tokenizes a piece of text into its word pieces.
+
+    This uses a greedy longest-match-first algorithm to perform tokenization
+    using the given vocabulary.
+    
+    For example:
+      input = ""unaffable""
+      output = [""un"", ""##aff"", ""##able""]
+
+    Args:
+      text: A single token or whitespace separated tokens. This should have
+        already been passed through `BasicTokenizer`.
+
+    Returns:
+      A list of wordpiece tokens.
+    """"""
+
+    output_tokens = []
+    for token in whitespace_tokenize(text):
+        chars = list(token)
+        if len(chars) > self.max_input_chars_per_word:
+            output_tokens.append(self.unk_token)
+            continue
+
+        start = 0
+        sub_tokens = []
+        
+        while start < len(chars):
+            end = len(chars)
+            cur_substr = None
+            while start < end:
+                substr = """".join(chars[start:end])
+                if start > 0:
+                    substr = ""##"" + substr
+                if substr in self.vocab:
+                    cur_substr = substr
+                    break
+                end -= 1
+            else:
+                # This executes if the inner loop didn't break (i.e., no substring was found)
+                output_tokens.append(self.unk_token)
+                break
+
+            sub_tokens.append(cur_substr)
+            start = end
+        else:
+            # This executes if the outer loop completes without a break 
+            output_tokens.extend(sub_tokens)
+
+    return output_tokens
+```
+
+### Changes Explained:
+
+1. The inner `while` loop (`start < end`) is now using an `else` clause. The `else` clause runs if the loop completes without encountering a `break`, which in this case means no valid substring was found.
+2. If no valid substring is found (`cur_substr` remains `None`), it appends the `unk_token` and breaks the outer loop with `break`.
+3. If sub-tokens are found, they are appended to the final `output_tokens`.
+
+### Number of loop-else refactorings: `1`.
+
+The refactor makes the code cleaner by integrating the `is_bad` logic into the loop flow using an `else`, which is a more Pythonic way of handling failure conditions within loops."

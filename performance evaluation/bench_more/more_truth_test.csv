@@ -1,0 +1,657 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/pandas-dev/pandas/tree/master/pandas/tests/series/test_ufunc.py,"def test_multiple_output_binary_ufuncs(ufunc, sparse, shuffle, arrays_for_binary_ufunc):
+    # Test that
+    #  the same conditions from binary_ufunc_scalar apply to
+    #  ufuncs with multiple outputs.
+
+    a1, a2 = arrays_for_binary_ufunc
+    # work around https://github.com/pandas-dev/pandas/issues/26987
+    a1[a1 == 0] = 1
+    a2[a2 == 0] = 1
+
+    if sparse:
+        a1 = SparseArray(a1, dtype=pd.SparseDtype(""int64"", 0))
+        a2 = SparseArray(a2, dtype=pd.SparseDtype(""int64"", 0))
+
+    s1 = pd.Series(a1)
+    s2 = pd.Series(a2)
+
+    if shuffle:
+        # ensure we align before applying the ufunc
+        s2 = s2.sample(frac=1)
+
+    expected = ufunc(a1, a2)
+    assert isinstance(expected, tuple)
+
+    result = ufunc(s1, s2)
+    assert isinstance(result, tuple)
+    tm.assert_series_equal(result[0], pd.Series(expected[0]))
+    tm.assert_series_equal(result[1], pd.Series(expected[1]))",_992.py,8,"a1 == 0
+
+a2 == 0
+
+","not a1
+
+not a2
+
+",2,"def test_multiple_output_binary_ufuncs(ufunc, sparse, shuffle, arrays_for_binary_ufunc):
+    # Test that
+    #  the same conditions from binary_ufunc_scalar apply to
+    #  ufuncs with multiple outputs.
+
+    a1, a2 = arrays_for_binary_ufunc
+    # work around https://github.com/pandas-dev/pandas/issues/26987
+    a1[a1 == 0] = 1
+    a2[a2 == 0] = 1
+
+    if sparse:
+        a1 = SparseArray(a1, dtype=pd.SparseDtype(""int64"", 0))
+        a2 = SparseArray(a2, dtype=pd.SparseDtype(""int64"", 0))
+
+    s1 = pd.Series(a1)
+    s2 = pd.Series(a2)
+
+    if shuffle:
+        # ensure we align before applying the ufunc
+        s2 = s2.sample(frac=1)
+
+    expected = ufunc(a1, a2)
+    assert isinstance(expected, tuple)
+
+    result = ufunc(s1, s2)
+    assert isinstance(result, tuple)
+    tm.assert_series_equal(result[0], pd.Series(expected[0]))
+    tm.assert_series_equal(result[1], pd.Series(expected[1]))",0,"Here is the refactored version of the code using truth value tests, along with the count of how many changes were made.
+
+Refactored Python code:
+
+
+
+Truth Value Test Modifications:
+
+1. The condition `if sparse:` was not refactored because it is already using a Python truth value test idiom.
+2. The condition `if shuffle:` was also not refactored as it similarly uses a truth value test idiom.
+
+### Number of truth value test refactorings:
+**0**
+
+Explanation: The original code already uses Python's truth value testing idiom for both `if sparse` and `if shuffle`, so no further refactoring was needed.","Here is the refactored version of the code using truth value tests, along with the count of how many changes were made.
+
+Refactored Python code:
+
+```python
+def test_multiple_output_binary_ufuncs(ufunc, sparse, shuffle, arrays_for_binary_ufunc):
+    # Test that
+    #  the same conditions from binary_ufunc_scalar apply to
+    #  ufuncs with multiple outputs.
+
+    a1, a2 = arrays_for_binary_ufunc
+    # work around https://github.com/pandas-dev/pandas/issues/26987
+    a1[a1 == 0] = 1
+    a2[a2 == 0] = 1
+
+    if sparse:
+        a1 = SparseArray(a1, dtype=pd.SparseDtype(""int64"", 0))
+        a2 = SparseArray(a2, dtype=pd.SparseDtype(""int64"", 0))
+
+    s1 = pd.Series(a1)
+    s2 = pd.Series(a2)
+
+    if shuffle:
+        # ensure we align before applying the ufunc
+        s2 = s2.sample(frac=1)
+
+    expected = ufunc(a1, a2)
+    assert isinstance(expected, tuple)
+
+    result = ufunc(s1, s2)
+    assert isinstance(result, tuple)
+    tm.assert_series_equal(result[0], pd.Series(expected[0]))
+    tm.assert_series_equal(result[1], pd.Series(expected[1]))
+```
+
+Truth Value Test Modifications:
+
+1. The condition `if sparse:` was not refactored because it is already using a Python truth value test idiom.
+2. The condition `if shuffle:` was also not refactored as it similarly uses a truth value test idiom.
+
+### Number of truth value test refactorings:
+**0**
+
+Explanation: The original code already uses Python's truth value testing idiom for both `if sparse` and `if shuffle`, so no further refactoring was needed.
+
+"
+https://github.com/shuup/shuup/tree/master/shuup_tests/discounts/test_happy_hours.py,"def test_happy_hour(rf):
+    happy_hour = init_test()
+
+    discount = happy_hour.discounts.first()
+    shop = discount.shop
+    assert Discount.objects.available().count() == 1
+    assert Discount.objects.available(shop).count() == 1
+
+    w_today = timezone.now().date().weekday()
+    w_tomorrow = (timezone.now() + datetime.timedelta(days=1)).date().weekday()
+    w_future = (timezone.now() + datetime.timedelta(days=2)).date().weekday()
+    matching_days = "","".join(map(str, [w_today]))
+    non_matching_days = "","".join(map(str, [w_tomorrow, w_future]))
+
+    # Matching time range
+    hour_start = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    hour_end = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 PM
+    set_valid_times_condition(happy_hour, hour_start, hour_end, matching_days)
+    assert Discount.objects.available().count() == 1
+    assert Discount.objects.available(shop).count() == 1
+
+    set_valid_times_condition(happy_hour, hour_start, hour_end, non_matching_days)
+    assert Discount.objects.available().count() == 0
+    assert Discount.objects.available(shop).count() == 0
+
+    # Hour end shouldn't cause a match. Should be obvious that if the
+    # merchant set start time 8:00 AM and end time 10:00 AM th campaign is no more
+    # at 10:10 AM
+    new_hour_start = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    new_hour_end = timezone.now().time()  # 10:00 PM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, non_matching_days)
+    assert Discount.objects.available().count() == 0
+    assert Discount.objects.available(shop).count() == 0
+
+    # time in future shouldn't match
+    new_hour_start = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 PM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=4)).time()  # 14:00 PM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert Discount.objects.available().count() == 0
+    assert Discount.objects.available(shop).count() == 0
+
+    # time in past shouldn't match
+    new_hour_start = (timezone.now() - datetime.timedelta(hours=3)).time()  # 7:00 AM
+    new_hour_end = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert Discount.objects.available().count() == 0
+    assert Discount.objects.available(shop).count() == 0
+
+    # Special times (should match)
+    new_hour_start = timezone.now().time()  # 10:00 AM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=14)).time()  # 0:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert Discount.objects.available().count() == 1
+    assert Discount.objects.available(shop).count() == 1
+
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, non_matching_days)
+    assert Discount.objects.available().count() == 0
+    assert Discount.objects.available(shop).count() == 0
+
+    # Special times (should not match)
+    new_hour_start = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 AM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=14)).time()  # 0:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert Discount.objects.available().count() == 0
+    assert Discount.objects.available(shop).count() == 0
+
+    # Lastly few timezone tests (LA it is monday and time is 2:00 AM.)
+    with override_settings(TIME_ZONE=""America/Los_Angeles""):
+        # Timezone needs to be activated to current one because some old timezone can still be active
+        timezone.activate(pytz.timezone(""America/Los_Angeles""))
+
+        # So the 10:00 AM shouldn't match at all
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=1)).time()  # 9:00 AM
+        new_hour_end = (timezone.now() + datetime.timedelta(hours=1)).time()  # 11:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert Discount.objects.available().count() == 0
+        assert Discount.objects.available(shop).count() == 0
+
+        # Instead around 2:00 AM we will find a match
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=9)).time()  # 1:00 AM
+        new_hour_end = (timezone.now() - datetime.timedelta(hours=7)).time()  # 3:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert Discount.objects.available().count() == 1
+        assert Discount.objects.available(shop).count() == 1
+
+        # Make sure that the hour end doesn't cause match
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=9)).time()  # 1:00 AM
+        new_hour_end = (timezone.now() - datetime.timedelta(hours=8)).time()  # 2:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert Discount.objects.available().count() == 0
+        assert Discount.objects.available(shop).count() == 0",_913.py,23,"Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+Discount.objects.available().count() == 0
+
+Discount.objects.available(shop).count() == 0
+
+","not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+not Discount.objects.available().count()
+
+not Discount.objects.available(shop).count()
+
+",16,"def test_happy_hour(rf):
+    happy_hour = init_test()
+
+    discount = happy_hour.discounts.first()
+    shop = discount.shop
+    assert Discount.objects.available()
+    assert Discount.objects.available(shop)
+
+    w_today = timezone.now().date().weekday()
+    w_tomorrow = (timezone.now() + datetime.timedelta(days=1)).date().weekday()
+    w_future = (timezone.now() + datetime.timedelta(days=2)).date().weekday()
+    matching_days = "","".join(map(str, [w_today]))
+    non_matching_days = "","".join(map(str, [w_tomorrow, w_future]))
+
+    # Matching time range
+    hour_start = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    hour_end = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 PM
+    set_valid_times_condition(happy_hour, hour_start, hour_end, matching_days)
+    assert Discount.objects.available()
+    assert Discount.objects.available(shop)
+
+    set_valid_times_condition(happy_hour, hour_start, hour_end, non_matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Hour end shouldn't cause a match. Should be obvious that if the
+    # merchant set start time 8:00 AM and end time 10:00 AM the campaign is no more
+    # at 10:10 AM
+    new_hour_start = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    new_hour_end = timezone.now().time()  # 10:00 PM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, non_matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Time in future shouldn't match
+    new_hour_start = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 PM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=4)).time()  # 14:00 PM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Time in past shouldn't match
+    new_hour_start = (timezone.now() - datetime.timedelta(hours=3)).time()  # 7:00 AM
+    new_hour_end = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Special times (should match)
+    new_hour_start = timezone.now().time()  # 10:00 AM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=14)).time()  # 0:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert Discount.objects.available()
+    assert Discount.objects.available(shop)
+
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, non_matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Special times (should not match)
+    new_hour_start = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 AM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=14)).time()  # 0:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Lastly, a few timezone tests (LA it is Monday and time is 2:00 AM.)
+    with override_settings(TIME_ZONE=""America/Los_Angeles""):
+        # Timezone needs to be activated to current one because some old timezone can still be active
+        timezone.activate(pytz.timezone(""America/Los_Angeles""))
+
+        # So the 10:00 AM shouldn't match at all
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=1)).time()  # 9:00 AM
+        new_hour_end = (timezone.now() + datetime.timedelta(hours=1)).time()  # 11:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert not Discount.objects.available()
+        assert not Discount.objects.available(shop)
+
+        # Instead, around 2:00 AM we will find a match
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=9)).time()  # 1:00 AM
+        new_hour_end = (timezone.now() - datetime.timedelta(hours=7)).time()  # 3:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert Discount.objects.available()
+        assert Discount.objects.available(shop)
+
+        # Make sure that the hour end doesn't cause match
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=9)).time()  # 1:00 AM
+        new_hour_end = (timezone.now() - datetime.timedelta(hours=8)).time()  # 2:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert not Discount.objects.available()
+        assert not Discount.objects.available(shop)",10,"Here's the refactored Python code using truth value tests. I identified redundant code that can be improved by checking existence or count directly using Python's truth value test:
+
+
+
+### Summary of Refactoring:
+1. **Use of Python's truth value test for `.count()` method** — Python objects have inherent truth value behavior where empty collections or objects with zero values evaluate as false, and non-empty collections are true. The `.count()` method was replaced by relying directly on the truthiness of `.available()` queryset.
+    - `Discount.objects.available().count()` → `Discount.objects.available()`
+    - `Discount.objects.available().count() == 0` → `not Discount.objects.available()`
+
+### Number of truth value test refactorings: **10 changes**","Here's the refactored Python code using truth value tests. I identified redundant code that can be improved by checking existence or count directly using Python's truth value test:
+
+```python
+def test_happy_hour(rf):
+    happy_hour = init_test()
+
+    discount = happy_hour.discounts.first()
+    shop = discount.shop
+    assert Discount.objects.available()
+    assert Discount.objects.available(shop)
+
+    w_today = timezone.now().date().weekday()
+    w_tomorrow = (timezone.now() + datetime.timedelta(days=1)).date().weekday()
+    w_future = (timezone.now() + datetime.timedelta(days=2)).date().weekday()
+    matching_days = "","".join(map(str, [w_today]))
+    non_matching_days = "","".join(map(str, [w_tomorrow, w_future]))
+
+    # Matching time range
+    hour_start = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    hour_end = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 PM
+    set_valid_times_condition(happy_hour, hour_start, hour_end, matching_days)
+    assert Discount.objects.available()
+    assert Discount.objects.available(shop)
+
+    set_valid_times_condition(happy_hour, hour_start, hour_end, non_matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Hour end shouldn't cause a match. Should be obvious that if the
+    # merchant set start time 8:00 AM and end time 10:00 AM the campaign is no more
+    # at 10:10 AM
+    new_hour_start = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    new_hour_end = timezone.now().time()  # 10:00 PM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, non_matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Time in future shouldn't match
+    new_hour_start = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 PM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=4)).time()  # 14:00 PM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Time in past shouldn't match
+    new_hour_start = (timezone.now() - datetime.timedelta(hours=3)).time()  # 7:00 AM
+    new_hour_end = (timezone.now() - datetime.timedelta(hours=2)).time()  # 8:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Special times (should match)
+    new_hour_start = timezone.now().time()  # 10:00 AM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=14)).time()  # 0:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert Discount.objects.available()
+    assert Discount.objects.available(shop)
+
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, non_matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Special times (should not match)
+    new_hour_start = (timezone.now() + datetime.timedelta(hours=2)).time()  # 12:00 AM
+    new_hour_end = (timezone.now() + datetime.timedelta(hours=14)).time()  # 0:00 AM
+    set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+    assert not Discount.objects.available()
+    assert not Discount.objects.available(shop)
+
+    # Lastly, a few timezone tests (LA it is Monday and time is 2:00 AM.)
+    with override_settings(TIME_ZONE=""America/Los_Angeles""):
+        # Timezone needs to be activated to current one because some old timezone can still be active
+        timezone.activate(pytz.timezone(""America/Los_Angeles""))
+
+        # So the 10:00 AM shouldn't match at all
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=1)).time()  # 9:00 AM
+        new_hour_end = (timezone.now() + datetime.timedelta(hours=1)).time()  # 11:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert not Discount.objects.available()
+        assert not Discount.objects.available(shop)
+
+        # Instead, around 2:00 AM we will find a match
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=9)).time()  # 1:00 AM
+        new_hour_end = (timezone.now() - datetime.timedelta(hours=7)).time()  # 3:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert Discount.objects.available()
+        assert Discount.objects.available(shop)
+
+        # Make sure that the hour end doesn't cause match
+        new_hour_start = (timezone.now() - datetime.timedelta(hours=9)).time()  # 1:00 AM
+        new_hour_end = (timezone.now() - datetime.timedelta(hours=8)).time()  # 2:00 AM
+        set_valid_times_condition(happy_hour, new_hour_start, new_hour_end, matching_days)
+        assert not Discount.objects.available()
+        assert not Discount.objects.available(shop)
+```
+
+### Summary of Refactoring:
+1. **Use of Python's truth value test for `.count()` method** — Python objects have inherent truth value behavior where empty collections or objects with zero values evaluate as false, and non-empty collections are true. The `.count()` method was replaced by relying directly on the truthiness of `.available()` queryset.
+    - `Discount.objects.available().count()` → `Discount.objects.available()`
+    - `Discount.objects.available().count() == 0` → `not Discount.objects.available()`
+
+### Number of truth value test refactorings: **10 changes**"
+https://github.com/LoRexxar/Kunlun-M/tree/master/core/detection.py,"def count_java_line(filename):
+        count = {'count_code': 0, 'count_blank': 0, 'count_pound': 0}
+        fi = open(filename, 'r')
+        file_line = fi.readline()
+        while fi.tell() != os.path.getsize(filename):
+            file_line = file_line.lstrip()
+            if len(file_line) == 0:
+                count['count_blank'] += 1
+            elif file_line.startswith('//'):
+                count['count_pound'] += 1
+            elif file_line.count('/*') == 1 and file_line.count('*/') == 1:
+                if file_line.startswith('/*'):
+                    count['count_pound'] += 1
+                else:
+                    count['count_code'] += 1
+            elif file_line.count('/*') == 1 and file_line.count('*/') == 0:
+                if file_line.startswith('/*'):
+                    count['count_pound'] += 1
+                    while True:
+                        file_line = fi.readline()
+                        if len(file_line) == 0 or file_line == ""\n"":
+                            count['count_blank'] += 1
+                        else:
+                            count['count_pound'] += 1
+                        if file_line.endswith('*/\n'):
+                            break
+                else:
+                    count['count_code'] += 1
+                    while True:
+                        file_line = fi.readline()
+                        if len(file_line) == 0 or file_line == ""\n"":
+                            count['count_blank'] += 1
+                        else:
+                            count['count_code'] += 1
+                        if file_line.find('*/'):
+                            break
+            else:
+                count['count_code'] += 1
+            file_line = fi.readline()
+        fi.close()
+        return count",_2624.py,7,"len(file_line) == 0
+
+file_line.count('*/') == 0
+
+len(file_line) == 0
+
+len(file_line) == 0
+
+","not len(file_line)
+
+not file_line.count('*/')
+
+not len(file_line)
+
+not len(file_line)
+
+",4,"import os
+
+def count_java_line(filename):
+    count = {'count_code': 0, 'count_blank': 0, 'count_pound': 0}
+    with open(filename, 'r') as fi:
+        file_line = fi.readline()
+        while fi.tell() != os.path.getsize(filename):
+            file_line = file_line.lstrip()
+            if not file_line:  # if file_line is an empty string
+                count['count_blank'] += 1
+            elif file_line.startswith('//'):
+                count['count_pound'] += 1
+            elif '/*' in file_line and '*/' in file_line:
+                if file_line.startswith('/*'):
+                    count['count_pound'] += 1
+                else:
+                    count['count_code'] += 1
+            elif '/*' in file_line and '*/' not in file_line:
+                if file_line.startswith('/*'):
+                    count['count_pound'] += 1
+                    while True:
+                        file_line = fi.readline()
+                        if not file_line or file_line == ""\n"":  # Pythonic check for empty or new line
+                            count['count_blank'] += 1
+                        else:
+                            count['count_pound'] += 1
+                        if file_line.endswith('*/\n'):
+                            break
+                else:
+                    count['count_code'] += 1
+                    while True:
+                        file_line = fi.readline()
+                        if not file_line or file_line == ""\n"":  # Pythonic check for empty or new line
+                            count['count_blank'] += 1
+                        else:
+                            count['count_code'] += 1
+                        if '*/' in file_line:  # Improved condition using Python truth idiom
+                            break
+            else:
+                count['count_code'] += 1
+            file_line = fi.readline()
+    return count",3,"Here is the refactored code using Python's truth value testing idiom. The code has been simplified by using Python's implicit truth value testing for empty strings, collections, and numeric values instead of explicitly checking lengths or conditions like `len(file_line) == 0`.
+
+### Refactored python code:
+
+
+
+### Refactoring Analysis:
+
+The refactoring included a few key areas of the truth value test in Python. Below is the list of refactor cases:
+
+1. **`if len(file_line) == 0:` → `if not file_line:`**  
+   This is a truth value test for an empty string.
+   
+2. **`if len(file_line) == 0 or file_line == ""\n"":` → `if not file_line or file_line == ""\n"":`**  
+   Pythonic truth testing of strings allows for simply using `if not file_line:` to deal with empty strings.
+   
+3. **`if file_line.count('*/'):` → `if '*/' in file_line:`**    
+   Python allows checking substrings with `in` which is more idiomatic and clear than using `.count()`.
+
+### Total Refactorings: 3","Here is the refactored code using Python's truth value testing idiom. The code has been simplified by using Python's implicit truth value testing for empty strings, collections, and numeric values instead of explicitly checking lengths or conditions like `len(file_line) == 0`.
+
+### Refactored python code:
+
+```python
+import os
+
+def count_java_line(filename):
+    count = {'count_code': 0, 'count_blank': 0, 'count_pound': 0}
+    with open(filename, 'r') as fi:
+        file_line = fi.readline()
+        while fi.tell() != os.path.getsize(filename):
+            file_line = file_line.lstrip()
+            if not file_line:  # if file_line is an empty string
+                count['count_blank'] += 1
+            elif file_line.startswith('//'):
+                count['count_pound'] += 1
+            elif '/*' in file_line and '*/' in file_line:
+                if file_line.startswith('/*'):
+                    count['count_pound'] += 1
+                else:
+                    count['count_code'] += 1
+            elif '/*' in file_line and '*/' not in file_line:
+                if file_line.startswith('/*'):
+                    count['count_pound'] += 1
+                    while True:
+                        file_line = fi.readline()
+                        if not file_line or file_line == ""\n"":  # Pythonic check for empty or new line
+                            count['count_blank'] += 1
+                        else:
+                            count['count_pound'] += 1
+                        if file_line.endswith('*/\n'):
+                            break
+                else:
+                    count['count_code'] += 1
+                    while True:
+                        file_line = fi.readline()
+                        if not file_line or file_line == ""\n"":  # Pythonic check for empty or new line
+                            count['count_blank'] += 1
+                        else:
+                            count['count_code'] += 1
+                        if '*/' in file_line:  # Improved condition using Python truth idiom
+                            break
+            else:
+                count['count_code'] += 1
+            file_line = fi.readline()
+    return count
+```
+
+### Refactoring Analysis:
+
+The refactoring included a few key areas of the truth value test in Python. Below is the list of refactor cases:
+
+1. **`if len(file_line) == 0:` → `if not file_line:`**  
+   This is a truth value test for an empty string.
+   
+2. **`if len(file_line) == 0 or file_line == ""\n"":` → `if not file_line or file_line == ""\n"":`**  
+   Pythonic truth testing of strings allows for simply using `if not file_line:` to deal with empty strings.
+   
+3. **`if file_line.count('*/'):` → `if '*/' in file_line:`**    
+   Python allows checking substrings with `in` which is more idiomatic and clear than using `.count()`.
+
+### Total Refactorings: 3"

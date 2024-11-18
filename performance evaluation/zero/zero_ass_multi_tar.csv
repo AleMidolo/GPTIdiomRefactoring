@@ -1,0 +1,63 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/rholder/retrying/tree/master//test_retrying.py,"def test_random_sleep(self):
+        r = Retrying(wait_random_min=1000, wait_random_max=2000)
+        times = set()
+        times.add(r.wait(1, 6546))
+        times.add(r.wait(1, 6546))
+        times.add(r.wait(1, 6546))
+        times.add(r.wait(1, 6546))
+
+        # this is kind of non-deterministic...
+        self.assertTrue(len(times) > 1)
+        for t in times:
+            self.assertTrue(t >= 1000)
+            self.assertTrue(t <= 2000)",_35.py,2,"r = Retrying(wait_random_min=1000, wait_random_max=2000)
+times = set()
+
+","r , times  = Retrying(wait_random_min=1000, wait_random_max=2000), set()
+
+",1,"def test_random_sleep(self):
+    r = Retrying(wait_random_min=1000, wait_random_max=2000)
+    times = {r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546)}
+
+    # this is kind of non-deterministic...
+    self.assertTrue(len(times) > 1)
+    for t in times:
+        self.assertTrue(1000 <= t <= 2000)",0.0,"Here’s the refactored code using Python's ""multiple targets in a single assignment"" idiom. Specifically, I reduced the repetition of assigning the result of `r.wait()` to the set and used multiple-target assignment where applicable:
+
+### Refactored code:
+
+
+
+---
+
+### Refactoring Explanation:
+
+I've applied **1 multiple assignment refactoring**:
+
+1. The redundant individual `times.add(r.wait(1, 6546))` calls are replaced with an *inline set initializer*, where all the results of `r.wait()` are added to the `times` set in a single statement.
+
+There are no opportunities for further multiple-target assignments in this specific code.","Here’s the refactored code using Python's ""multiple targets in a single assignment"" idiom. Specifically, I reduced the repetition of assigning the result of `r.wait()` to the set and used multiple-target assignment where applicable:
+
+### Refactored code:
+
+```python
+def test_random_sleep(self):
+    r = Retrying(wait_random_min=1000, wait_random_max=2000)
+    times = {r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546)}
+
+    # this is kind of non-deterministic...
+    self.assertTrue(len(times) > 1)
+    for t in times:
+        self.assertTrue(1000 <= t <= 2000)
+```
+
+---
+
+### Refactoring Explanation:
+
+I've applied **1 multiple assignment refactoring**:
+
+1. The redundant individual `times.add(r.wait(1, 6546))` calls are replaced with an *inline set initializer*, where all the results of `r.wait()` are added to the `times` set in a single statement.
+
+There are no opportunities for further multiple-target assignments in this specific code."

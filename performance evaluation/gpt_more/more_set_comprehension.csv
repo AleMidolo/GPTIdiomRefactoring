@@ -1,0 +1,3715 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/LinOTP/LinOTP/tree/master/linotp/lib/token.py,"def removeToken(self, user=None, serial=None):
+        """"""
+        delete a token from database
+
+        :param user: the tokens of the user
+        :param serial: the token with this serial number
+
+        :return: the number of deleted tokens
+        """"""
+        if (user is None or user.is_empty) and (serial is None):
+            raise ParameterError(""Parameter user or serial required!"", id=1212)
+
+        tokenList = getTokens4UserOrSerial(user, serial, _class=False)
+
+        serials = set()
+        tokens = set()
+        token_ids = set()
+        try:
+
+            for token in tokenList:
+                ser = token.getSerial()
+                serials.add(ser)
+                token_ids.add(token.LinOtpTokenId)
+                tokens.add(token)
+
+            #  we cleanup the challenges
+            challenges = set()
+            for serial in serials:
+                challenges.update(Challenges.lookup_challenges(serial=serial))
+
+            for chall in challenges:
+                db.session.delete(chall)
+
+            #  due to legacy SQLAlchemy it could happen that the
+            #  foreign key relation could not be deleted
+            #  so we do this manualy
+
+            for t_id in set(token_ids):
+                TokenRealm.query.filter(TokenRealm.token_id == t_id).delete()
+
+            db.session.commit()
+
+            for token in tokens:
+                db.session.delete(token)
+
+        except Exception as exx:
+            raise TokenAdminError(
+                ""removeToken: Token update failed: %r"" % exx, id=1132
+            )
+
+        return len(serials)",_31493.py,20,"for token in tokenList:
+    ser = token.getSerial()
+    serials.add(ser)
+    token_ids.add(token.LinOtpTokenId)
+    tokens.add(token)
+
+","serials = {token.getSerial()  for token in tokenList}
+token_ids = {token.LinOtpTokenId  for token in tokenList}
+tokens = {token for token in tokenList}
+
+",1,"def removeToken(self, user=None, serial=None):
+    """"""
+    delete a token from database
+
+    :param user: the tokens of the user
+    :param serial: the token with this serial number
+
+    :return: the number of deleted tokens
+    """"""
+    if (user is None or user.is_empty) and (serial is None):
+        raise ParameterError(""Parameter user or serial required!"", id=1212)
+
+    tokenList = getTokens4UserOrSerial(user, serial, _class=False)
+
+    try:
+        # Using set comprehension to generate serials, token_ids, and tokens
+        serials = {token.getSerial() for token in tokenList}
+        token_ids = {token.LinOtpTokenId for token in tokenList}
+        tokens = {token for token in tokenList}
+
+        # We cleanup the challenges using set comprehension
+        challenges = {challenge for serial in serials for challenge in Challenges.lookup_challenges(serial=serial)}
+
+        for chall in challenges:
+            db.session.delete(chall)
+
+        # Due to legacy SQLAlchemy, it could happen that the
+        # foreign key relation could not be deleted manually
+        for t_id in token_ids:
+            TokenRealm.query.filter(TokenRealm.token_id == t_id).delete()
+
+        db.session.commit()
+
+        for token in tokens:
+            db.session.delete(token)
+
+    except Exception as exx:
+        raise TokenAdminError(
+            ""removeToken: Token update failed: %r"" % exx, id=1132
+        )
+
+    return len(serials)",4,"Here, I will apply Python set comprehension to refactor loops that build sets. Below is the refactored code along with an explanation showing how many refactorings have been applied.
+
+### Refactored Code:
+
+
+
+### Refactoring Explanation:
+
+1. **First Refactoring:**
+   
+   This line refactors the loop that was populating the `serials` set.
+
+2. **Second Refactoring:**
+   
+   Refactor the loop that was adding `LinOtpTokenId` to the `token_ids` set.
+
+3. **Third Refactoring:**
+   
+   This eliminates the loop over `tokenList` to add elements to the `tokens` set.
+
+4. **Fourth Refactoring:**
+   
+   Refactored the loop that was adding challenges to the `challenges` set based on serials.
+
+### Number of Set Comprehension Refactorings:
+
+We have done **4** set comprehension refactorings in the code.
+
+- Refactored the creation of `serials`.
+- Refactored the creation of `token_ids`.
+- Refactored the collection of `tokens`.
+- Refactored the creation of `challenges`.
+
+These refactorings improve both readability and performance when working with sets.","Here, I will apply Python set comprehension to refactor loops that build sets. Below is the refactored code along with an explanation showing how many refactorings have been applied.
+
+### Refactored Code:
+
+```python
+def removeToken(self, user=None, serial=None):
+    """"""
+    delete a token from database
+
+    :param user: the tokens of the user
+    :param serial: the token with this serial number
+
+    :return: the number of deleted tokens
+    """"""
+    if (user is None or user.is_empty) and (serial is None):
+        raise ParameterError(""Parameter user or serial required!"", id=1212)
+
+    tokenList = getTokens4UserOrSerial(user, serial, _class=False)
+
+    try:
+        # Using set comprehension to generate serials, token_ids, and tokens
+        serials = {token.getSerial() for token in tokenList}
+        token_ids = {token.LinOtpTokenId for token in tokenList}
+        tokens = {token for token in tokenList}
+
+        # We cleanup the challenges using set comprehension
+        challenges = {challenge for serial in serials for challenge in Challenges.lookup_challenges(serial=serial)}
+
+        for chall in challenges:
+            db.session.delete(chall)
+
+        # Due to legacy SQLAlchemy, it could happen that the
+        # foreign key relation could not be deleted manually
+        for t_id in token_ids:
+            TokenRealm.query.filter(TokenRealm.token_id == t_id).delete()
+
+        db.session.commit()
+
+        for token in tokens:
+            db.session.delete(token)
+
+    except Exception as exx:
+        raise TokenAdminError(
+            ""removeToken: Token update failed: %r"" % exx, id=1132
+        )
+
+    return len(serials)
+```
+
+### Refactoring Explanation:
+
+1. **First Refactoring:**
+   ```python
+   serials = {token.getSerial() for token in tokenList}
+   ```
+   This line refactors the loop that was populating the `serials` set.
+
+2. **Second Refactoring:**
+   ```python
+   token_ids = {token.LinOtpTokenId for token in tokenList}
+   ```
+   Refactor the loop that was adding `LinOtpTokenId` to the `token_ids` set.
+
+3. **Third Refactoring:**
+   ```python
+   tokens = {token for token in tokenList}
+   ```
+   This eliminates the loop over `tokenList` to add elements to the `tokens` set.
+
+4. **Fourth Refactoring:**
+   ```python
+   challenges = {challenge for serial in serials for challenge in Challenges.lookup_challenges(serial=serial)}
+   ```
+   Refactored the loop that was adding challenges to the `challenges` set based on serials.
+
+### Number of Set Comprehension Refactorings:
+
+We have done **4** set comprehension refactorings in the code.
+
+- Refactored the creation of `serials`.
+- Refactored the creation of `token_ids`.
+- Refactored the collection of `tokens`.
+- Refactored the creation of `challenges`.
+
+These refactorings improve both readability and performance when working with sets."
+https://github.com/rackerlabs/scantron/tree/master/console/extract_targets.py,"def retrieve_amazon_cloudfront_ip_ranges(
+    retrieve_new_data=False, aws_cloudfront_filename=""aws_cloudfront_ip_networks.txt"", write_to_disk=True
+):
+    """"""Retrieve the IPv4 and IPv6 ranges for AWS' CloudFront servers.
+
+    https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/LocationsOfEdgeServers.html
+    """"""
+
+    cloudfront_dict = {
+        ""list_of_strings"": set(),
+        ""list_of_ipaddress_objects"": set(),
+    }
+
+    # If aws_cloudfront_filename already exists and fresh data isn't requested.
+    if os.path.exists(aws_cloudfront_filename) and not retrieve_new_data:
+
+        print(f""File already exists: {aws_cloudfront_filename}"")
+
+        with open(aws_cloudfront_filename, ""r"") as fh:
+            for ip_network in fh.readlines():
+                cloudfront_dict[""list_of_ipaddress_objects""].add(ipaddress.ip_network(ip_network.strip()))
+
+    else:
+
+        print(""Retrieving IPv4 and IPv6 network ranges for AWS' CloudFront servers."")
+
+        url = ""https://ip-ranges.amazonaws.com/ip-ranges.json""
+        response = requests.get(url, verify=True)
+
+        if response.status_code == 200:
+            json_data = response.json()
+
+            for service in json_data[""prefixes""]:
+                if service[""service""] == ""CLOUDFRONT"":
+                    cloudfront_dict[""list_of_ipaddress_objects""].add(ipaddress.ip_network(service[""ip_prefix""]))
+
+            for service in json_data[""ipv6_prefixes""]:
+                if service[""service""] == ""CLOUDFRONT"":
+                    cloudfront_dict[""list_of_ipaddress_objects""].add(ipaddress.ip_network(service[""ipv6_prefix""]))
+
+        else:
+            print(""CloudFront IP networks could not be retrieved."")
+
+    # Return a list of sorted IPv4 and IPv6 networks.
+    # See https://docs.python.org/3/library/ipaddress.html#ipaddress.get_mixed_type_key
+    cloudfront_dict[""list_of_ipaddress_objects""] = sorted(
+        cloudfront_dict[""list_of_ipaddress_objects""], key=lambda obj: ipaddress.get_mixed_type_key(obj)
+    )
+
+    # Convert ipaddress objects to strings.
+    cloudfront_dict[""list_of_strings""] = [str(obj) for obj in cloudfront_dict[""list_of_ipaddress_objects""]]
+
+    # Only write to disk if fresh data is requested.
+    if write_to_disk and retrieve_new_data:
+        print(f""Writing CloudFront IP networks to disk: {aws_cloudfront_filename}"")
+        with open(aws_cloudfront_filename, ""w"") as fh:
+            for ip_network in cloudfront_dict[""list_of_strings""]:
+                fh.write(f""{ip_network}\n"")
+
+    # print(f""cloudfront_dict: {cloudfront_dict}"")
+
+    return cloudfront_dict",_32396.py,20,"for ip_network in fh.readlines():
+    cloudfront_dict['list_of_ipaddress_objects'].add(ipaddress.ip_network(ip_network.strip()))
+
+","cloudfront_dict[‘list_of_ipaddress_objects'] = {ipaddress.ip_network(ip_network.strip()) for ip_network in fh.readlines()}
+
+",1,"import os
+import ipaddress
+import requests
+
+def retrieve_amazon_cloudfront_ip_ranges(
+    retrieve_new_data=False, aws_cloudfront_filename=""aws_cloudfront_ip_networks.txt"", write_to_disk=True
+):
+    """"""Retrieve the IPv4 and IPv6 ranges for AWS' CloudFront servers.
+
+    https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/LocationsOfEdgeServers.html
+    """"""
+
+    cloudfront_dict = {
+        ""list_of_strings"": set(),
+        ""list_of_ipaddress_objects"": set(),
+    }
+
+    # If aws_cloudfront_filename already exists and fresh data isn't requested.
+    if os.path.exists(aws_cloudfront_filename) and not retrieve_new_data:
+
+        print(f""File already exists: {aws_cloudfront_filename}"")
+
+        with open(aws_cloudfront_filename, ""r"") as fh:
+            cloudfront_dict[""list_of_ipaddress_objects""] = {ipaddress.ip_network(ip_network.strip()) for ip_network in fh.readlines()}
+
+    else:
+        print(""Retrieving IPv4 and IPv6 network ranges for AWS' CloudFront servers."")
+
+        url = ""https://ip-ranges.amazonaws.com/ip-ranges.json""
+        response = requests.get(url, verify=True)
+
+        if response.status_code == 200:
+            json_data = response.json()
+
+            cloudfront_dict[""list_of_ipaddress_objects""] = {
+                ipaddress.ip_network(service[""ip_prefix""])
+                for service in json_data[""prefixes""] if service[""service""] == ""CLOUDFRONT""
+            }.union(
+                {
+                    ipaddress.ip_network(service[""ipv6_prefix""])
+                    for service in json_data[""ipv6_prefixes""] if service[""service""] == ""CLOUDFRONT""
+                }
+            )
+
+        else:
+            print(""CloudFront IP networks could not be retrieved."")
+
+    # Return a list of sorted IPv4 and IPv6 networks.
+    cloudfront_dict[""list_of_ipaddress_objects""] = sorted(
+        cloudfront_dict[""list_of_ipaddress_objects""], key=lambda obj: ipaddress.get_mixed_type_key(obj)
+    )
+
+    # Convert ipaddress objects to strings.
+    cloudfront_dict[""list_of_strings""] = [str(obj) for obj in cloudfront_dict[""list_of_ipaddress_objects""]]
+
+    # Only write to disk if fresh data is requested.
+    if write_to_disk and retrieve_new_data:
+        print(f""Writing CloudFront IP networks to disk: {aws_cloudfront_filename}"")
+        with open(aws_cloudfront_filename, ""w"") as fh:
+            for ip_network in cloudfront_dict[""list_of_strings""]:
+                fh.write(f""{ip_network}\n"")
+
+    return cloudfront_dict",3,"To refactor the given code using Python set comprehension, we will apply set comprehensions where appropriate. Specifically, we aim to replace loops that accumulate values into sets. We'll do this in two sections where a set is being populated: when reading from a file, and when parsing the `json_data` in both the `prefixes` and `ipv6_prefixes`.
+
+Here's the refactored code using set comprehension:
+
+
+
+### Number of refactorings using set comprehension:
+- **1st refactoring**: The section that reads the IP networks from the file was refactored to use set comprehension.
+  
+
+- **2nd refactoring**: The first loop that iterates over the `prefixes` in the response JSON for IPv4 ranges was refactored to:
+  
+
+- **3rd refactoring**: Similarly, the second loop that processes the `ipv6_prefixes` in the response JSON for IPv6 ranges was refactored to:
+  
+
+In total, **3 set comprehension refactorings** were made.","To refactor the given code using Python set comprehension, we will apply set comprehensions where appropriate. Specifically, we aim to replace loops that accumulate values into sets. We'll do this in two sections where a set is being populated: when reading from a file, and when parsing the `json_data` in both the `prefixes` and `ipv6_prefixes`.
+
+Here's the refactored code using set comprehension:
+
+```python
+import os
+import ipaddress
+import requests
+
+def retrieve_amazon_cloudfront_ip_ranges(
+    retrieve_new_data=False, aws_cloudfront_filename=""aws_cloudfront_ip_networks.txt"", write_to_disk=True
+):
+    """"""Retrieve the IPv4 and IPv6 ranges for AWS' CloudFront servers.
+
+    https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/LocationsOfEdgeServers.html
+    """"""
+
+    cloudfront_dict = {
+        ""list_of_strings"": set(),
+        ""list_of_ipaddress_objects"": set(),
+    }
+
+    # If aws_cloudfront_filename already exists and fresh data isn't requested.
+    if os.path.exists(aws_cloudfront_filename) and not retrieve_new_data:
+
+        print(f""File already exists: {aws_cloudfront_filename}"")
+
+        with open(aws_cloudfront_filename, ""r"") as fh:
+            cloudfront_dict[""list_of_ipaddress_objects""] = {ipaddress.ip_network(ip_network.strip()) for ip_network in fh.readlines()}
+
+    else:
+        print(""Retrieving IPv4 and IPv6 network ranges for AWS' CloudFront servers."")
+
+        url = ""https://ip-ranges.amazonaws.com/ip-ranges.json""
+        response = requests.get(url, verify=True)
+
+        if response.status_code == 200:
+            json_data = response.json()
+
+            cloudfront_dict[""list_of_ipaddress_objects""] = {
+                ipaddress.ip_network(service[""ip_prefix""])
+                for service in json_data[""prefixes""] if service[""service""] == ""CLOUDFRONT""
+            }.union(
+                {
+                    ipaddress.ip_network(service[""ipv6_prefix""])
+                    for service in json_data[""ipv6_prefixes""] if service[""service""] == ""CLOUDFRONT""
+                }
+            )
+
+        else:
+            print(""CloudFront IP networks could not be retrieved."")
+
+    # Return a list of sorted IPv4 and IPv6 networks.
+    cloudfront_dict[""list_of_ipaddress_objects""] = sorted(
+        cloudfront_dict[""list_of_ipaddress_objects""], key=lambda obj: ipaddress.get_mixed_type_key(obj)
+    )
+
+    # Convert ipaddress objects to strings.
+    cloudfront_dict[""list_of_strings""] = [str(obj) for obj in cloudfront_dict[""list_of_ipaddress_objects""]]
+
+    # Only write to disk if fresh data is requested.
+    if write_to_disk and retrieve_new_data:
+        print(f""Writing CloudFront IP networks to disk: {aws_cloudfront_filename}"")
+        with open(aws_cloudfront_filename, ""w"") as fh:
+            for ip_network in cloudfront_dict[""list_of_strings""]:
+                fh.write(f""{ip_network}\n"")
+
+    return cloudfront_dict
+```
+
+### Number of refactorings using set comprehension:
+- **1st refactoring**: The section that reads the IP networks from the file was refactored to use set comprehension.
+  ```python
+  {ipaddress.ip_network(ip_network.strip()) for ip_network in fh.readlines()}
+  ```
+
+- **2nd refactoring**: The first loop that iterates over the `prefixes` in the response JSON for IPv4 ranges was refactored to:
+  ```python
+  {
+    ipaddress.ip_network(service[""ip_prefix""])
+    for service in json_data[""prefixes""] if service[""service""] == ""CLOUDFRONT""
+  }
+  ```
+
+- **3rd refactoring**: Similarly, the second loop that processes the `ipv6_prefixes` in the response JSON for IPv6 ranges was refactored to:
+  ```python
+  {
+    ipaddress.ip_network(service[""ipv6_prefix""])
+    for service in json_data[""ipv6_prefixes""] if service[""service""] == ""CLOUDFRONT""
+  }
+  ```
+
+In total, **3 set comprehension refactorings** were made."
+https://github.com/sympy/sympy/tree/master/sympy/assumptions/facts.py,"def get_known_facts_keys():
+    """"""
+    Return every unary predicates registered to ``Q``.
+
+    This function is used to generate the keys for
+    ``generate_known_facts_dict``.
+
+    """"""
+    exclude = set()
+    for pred in [Q.eq, Q.ne, Q.gt, Q.lt, Q.ge, Q.le]:
+        # exclude polyadic predicates
+        exclude.add(pred)
+
+    result = []
+    for attr in Q.__class__.__dict__:
+        if attr.startswith('__'):
+            continue
+        pred = getattr(Q, attr)
+        if pred in exclude:
+            continue
+        result.append(pred)
+    return result",_3986.py,10,"for pred in [Q.eq, Q.ne, Q.gt, Q.lt, Q.ge, Q.le]:
+    exclude.add(pred)
+
+","exclude = {pred for pred in [Q.eq, Q.ne, Q.gt, Q.lt, Q.ge, Q.le]}
+
+",1,"def get_known_facts_keys():
+    """"""
+    Return every unary predicate registered to ``Q``.
+
+    This function is used to generate the keys for
+    ``generate_known_facts_dict``.
+
+    """"""
+    # Set comprehension applied here
+    exclude = {pred for pred in [Q.eq, Q.ne, Q.gt, Q.lt, Q.ge, Q.le]}
+
+    # List comprehension replacing the original loop filtering attributes.
+    result = [
+        getattr(Q, attr) 
+        for attr in Q.__class__.__dict__ 
+        if not attr.startswith('__') and getattr(Q, attr) not in exclude
+    ]
+
+    return result",2,"Here is the refactored code using Python's set comprehension idiom. I've done two refactorings using set comprehensions:
+
+
+
+### Refactorings:
+
+1. Replaced the loop that adds polyadic predicates to the `exclude` set with a **set comprehension**: `exclude = {pred for pred in [Q.eq, Q.ne, Q.gt, Q.lt, Q.ge, Q.le]}`
+   
+2. Replaced the loop constructing `result` with a **list comprehension** structure that filters predicates based on the conditions in a single line.","Here is the refactored code using Python's set comprehension idiom. I've done two refactorings using set comprehensions:
+
+```python
+def get_known_facts_keys():
+    """"""
+    Return every unary predicate registered to ``Q``.
+
+    This function is used to generate the keys for
+    ``generate_known_facts_dict``.
+
+    """"""
+    # Set comprehension applied here
+    exclude = {pred for pred in [Q.eq, Q.ne, Q.gt, Q.lt, Q.ge, Q.le]}
+
+    # List comprehension replacing the original loop filtering attributes.
+    result = [
+        getattr(Q, attr) 
+        for attr in Q.__class__.__dict__ 
+        if not attr.startswith('__') and getattr(Q, attr) not in exclude
+    ]
+
+    return result
+```
+
+### Refactorings:
+
+1. Replaced the loop that adds polyadic predicates to the `exclude` set with a **set comprehension**: `exclude = {pred for pred in [Q.eq, Q.ne, Q.gt, Q.lt, Q.ge, Q.le]}`
+   
+2. Replaced the loop constructing `result` with a **list comprehension** structure that filters predicates based on the conditions in a single line.
+
+"
+https://github.com/rasbt/mlxtend/tree/master/mlxtend/preprocessing/transactionencoder.py,"def fit(self, X):
+        """"""Learn unique column names from transaction DataFrame
+
+        Parameters
+        ------------
+        X : list of lists
+          A python list of lists, where the outer list stores the
+          n transactions and the inner list stores the items in each
+          transaction.
+
+          For example,
+          [['Apple', 'Beer', 'Rice', 'Chicken'],
+           ['Apple', 'Beer', 'Rice'],
+           ['Apple', 'Beer'],
+           ['Apple', 'Bananas'],
+           ['Milk', 'Beer', 'Rice', 'Chicken'],
+           ['Milk', 'Beer', 'Rice'],
+           ['Milk', 'Beer'],
+           ['Apple', 'Bananas']]
+
+        """"""
+        unique_items = set()
+        for transaction in X:
+            for item in transaction:
+                unique_items.add(item)
+        self.columns_ = sorted(unique_items)
+        columns_mapping = {}
+        for col_idx, item in enumerate(self.columns_):
+            columns_mapping[item] = col_idx
+        self.columns_mapping_ = columns_mapping
+        return self",_32266.py,23,"for transaction in X:
+    for item in transaction:
+        unique_items.add(item)
+
+","unique_items = {item for transaction in X for item in transaction}
+
+",1,"def fit(self, X):
+    """"""Learn unique column names from transaction DataFrame
+
+    Parameters
+    ------------
+    X : list of lists
+      A python list of lists, where the outer list stores the
+      n transactions and the inner list stores the items in each
+      transaction.
+
+      For example,
+      [['Apple', 'Beer', 'Rice', 'Chicken'],
+       ['Apple', 'Beer', 'Rice'],
+       ['Apple', 'Beer'],
+       ['Apple', 'Bananas'],
+       ['Milk', 'Beer', 'Rice', 'Chicken'],
+       ['Milk', 'Beer', 'Rice'],
+       ['Milk', 'Beer'],
+       ['Apple', 'Bananas']]
+
+    """"""
+    # Set comprehension to gather all unique items from transactions
+    unique_items = {item for transaction in X for item in transaction}
+    
+    self.columns_ = sorted(unique_items)
+    
+    # Dictionary comprehension to map each unique item to its index
+    self.columns_mapping_ = {item: idx for idx, item in enumerate(self.columns_)}
+    
+    return self",2,"Sure! Below is the refactored version of the Python code using set comprehension and dictionary comprehension. Additionally, there are **two** refactorings made using comprehensions:
+
+
+
+### Refactorings made:
+1. **Set comprehension**: 
+   Replaced the double-loop (`for transaction in X` and `for item in transaction`) that was adding items to the `unique_items` set with a single set comprehension:  
+   
+
+2. **Dictionary comprehension**: 
+   Replaced the for-loop that was building `columns_mapping` with a dictionary comprehension:  
+   
+
+This version of the code is more concise and uses Python's idiomatic constructs for working with sets and dictionaries efficiently.","Sure! Below is the refactored version of the Python code using set comprehension and dictionary comprehension. Additionally, there are **two** refactorings made using comprehensions:
+
+```python
+def fit(self, X):
+    """"""Learn unique column names from transaction DataFrame
+
+    Parameters
+    ------------
+    X : list of lists
+      A python list of lists, where the outer list stores the
+      n transactions and the inner list stores the items in each
+      transaction.
+
+      For example,
+      [['Apple', 'Beer', 'Rice', 'Chicken'],
+       ['Apple', 'Beer', 'Rice'],
+       ['Apple', 'Beer'],
+       ['Apple', 'Bananas'],
+       ['Milk', 'Beer', 'Rice', 'Chicken'],
+       ['Milk', 'Beer', 'Rice'],
+       ['Milk', 'Beer'],
+       ['Apple', 'Bananas']]
+
+    """"""
+    # Set comprehension to gather all unique items from transactions
+    unique_items = {item for transaction in X for item in transaction}
+    
+    self.columns_ = sorted(unique_items)
+    
+    # Dictionary comprehension to map each unique item to its index
+    self.columns_mapping_ = {item: idx for idx, item in enumerate(self.columns_)}
+    
+    return self
+```
+
+### Refactorings made:
+1. **Set comprehension**: 
+   Replaced the double-loop (`for transaction in X` and `for item in transaction`) that was adding items to the `unique_items` set with a single set comprehension:  
+   ```python
+   {item for transaction in X for item in transaction}
+   ```
+
+2. **Dictionary comprehension**: 
+   Replaced the for-loop that was building `columns_mapping` with a dictionary comprehension:  
+   ```python
+   {item: idx for idx, item in enumerate(self.columns_)}
+   ```
+
+This version of the code is more concise and uses Python's idiomatic constructs for working with sets and dictionaries efficiently."
+https://github.com/crossbario/crossbar/tree/master/crossbar/router/broker.py,"def _filter_publish_receivers(self, receivers, publish):
+        """"""
+        Internal helper.
+
+        Does all filtering on a candidate set of Publish receivers,
+        based on all the white/blacklist options in 'publish'.
+        """"""
+        # filter by ""eligible"" receivers
+        #
+        if publish.eligible:
+
+            # map eligible session IDs to eligible sessions
+            eligible = set()
+            for session_id in publish.eligible:
+                if session_id in self._router._session_id_to_session:
+                    eligible.add(self._router._session_id_to_session[session_id])
+
+            # filter receivers for eligible sessions
+            receivers = eligible & receivers
+
+        # if ""eligible_authid"" we only accept receivers that have the correct authid
+        if publish.eligible_authid:
+            eligible = set()
+            for aid in publish.eligible_authid:
+                eligible.update(self._router._authid_to_sessions.get(aid, set()))
+            receivers = receivers & eligible
+
+        # if ""eligible_authrole"" we only accept receivers that have the correct authrole
+        if publish.eligible_authrole:
+            eligible = set()
+            for ar in publish.eligible_authrole:
+                eligible.update(self._router._authrole_to_sessions.get(ar, set()))
+            receivers = receivers & eligible
+
+        # remove ""excluded"" receivers
+        #
+        if publish.exclude:
+
+            # map excluded session IDs to excluded sessions
+            exclude = set()
+            for s in publish.exclude:
+                if s in self._router._session_id_to_session:
+                    exclude.add(self._router._session_id_to_session[s])
+
+            # filter receivers for excluded sessions
+            if exclude:
+                receivers = receivers - exclude
+
+        # remove auth-id based receivers
+        if publish.exclude_authid:
+            for aid in publish.exclude_authid:
+                receivers = receivers - self._router._authid_to_sessions.get(aid, set())
+
+        # remove authrole based receivers
+        if publish.exclude_authrole:
+            for ar in publish.exclude_authrole:
+                receivers = receivers - self._router._authrole_to_sessions.get(ar, set())
+
+        return receivers",_34455.py,14,"for session_id in publish.eligible:
+    if session_id in self._router._session_id_to_session:
+        eligible.add(self._router._session_id_to_session[session_id])
+
+for s in publish.exclude:
+    if s in self._router._session_id_to_session:
+        exclude.add(self._router._session_id_to_session[s])
+
+","eligible = {self._router._session_id_to_session[session_id] for session_id in publish.eligible if session_id in self._router._session_id_to_session}
+
+exclude = {self._router._session_id_to_session[s] for s in publish.exclude if s in self._router._session_id_to_session}
+
+",2,"def _filter_publish_receivers(self, receivers, publish):
+    """"""
+    Internal helper.
+
+    Does all filtering on a candidate set of Publish receivers,
+    based on all the white/blacklist options in 'publish'.
+    """"""
+    # filter by ""eligible"" receivers
+    if publish.eligible:
+        # map eligible session IDs to eligible sessions using set comprehension
+        eligible = {self._router._session_id_to_session[session_id] 
+                    for session_id in publish.eligible 
+                    if session_id in self._router._session_id_to_session}
+        # filter receivers for eligible sessions
+        receivers &= eligible
+
+    # if ""eligible_authid"" we only accept receivers that have the correct authid
+    if publish.eligible_authid:
+        eligible = {
+            sess
+            for aid in publish.eligible_authid
+            for sess in self._router._authid_to_sessions.get(aid, set())
+        }
+        receivers &= eligible
+
+    # if ""eligible_authrole"" we only accept receivers that have the correct authrole
+    if publish.eligible_authrole:
+        eligible = {
+            sess
+            for ar in publish.eligible_authrole
+            for sess in self._router._authrole_to_sessions.get(ar, set())
+        }
+        receivers &= eligible
+
+    # remove ""excluded"" receivers
+    if publish.exclude:
+        # map excluded session IDs to excluded sessions using set comprehension
+        exclude = {self._router._session_id_to_session[s] 
+                   for s in publish.exclude 
+                   if s in self._router._session_id_to_session}
+        # filter receivers for excluded sessions
+        if exclude:
+            receivers -= exclude
+
+    # remove auth-id based receivers
+    if publish.exclude_authid:
+        for aid in publish.exclude_authid:
+            receivers -= self._router._authid_to_sessions.get(aid, set())
+
+    # remove authrole based receivers
+    if publish.exclude_authrole:
+        for ar in publish.exclude_authrole:
+            receivers -= self._router._authrole_to_sessions.get(ar, set())
+
+    return receivers",4,"Here is the refactored Python code using set comprehension idiom, along with the count of refactorings:
+
+
+
+### Number of set comprehension refactorings: **4**
+
+1. Refactored the creation of the `eligible` set for session IDs in the ""eligible"" case.
+2. Refactored the creation of the `eligible` set for authid in the ""eligible_authid"" case.
+3. Refactored the creation of the `eligible` set for authrole in the ""eligible_authrole"" case.
+4. Refactored the creation of the `exclude` set in the ""exclude"" case.","Here is the refactored Python code using set comprehension idiom, along with the count of refactorings:
+
+```python
+def _filter_publish_receivers(self, receivers, publish):
+    """"""
+    Internal helper.
+
+    Does all filtering on a candidate set of Publish receivers,
+    based on all the white/blacklist options in 'publish'.
+    """"""
+    # filter by ""eligible"" receivers
+    if publish.eligible:
+        # map eligible session IDs to eligible sessions using set comprehension
+        eligible = {self._router._session_id_to_session[session_id] 
+                    for session_id in publish.eligible 
+                    if session_id in self._router._session_id_to_session}
+        # filter receivers for eligible sessions
+        receivers &= eligible
+
+    # if ""eligible_authid"" we only accept receivers that have the correct authid
+    if publish.eligible_authid:
+        eligible = {
+            sess
+            for aid in publish.eligible_authid
+            for sess in self._router._authid_to_sessions.get(aid, set())
+        }
+        receivers &= eligible
+
+    # if ""eligible_authrole"" we only accept receivers that have the correct authrole
+    if publish.eligible_authrole:
+        eligible = {
+            sess
+            for ar in publish.eligible_authrole
+            for sess in self._router._authrole_to_sessions.get(ar, set())
+        }
+        receivers &= eligible
+
+    # remove ""excluded"" receivers
+    if publish.exclude:
+        # map excluded session IDs to excluded sessions using set comprehension
+        exclude = {self._router._session_id_to_session[s] 
+                   for s in publish.exclude 
+                   if s in self._router._session_id_to_session}
+        # filter receivers for excluded sessions
+        if exclude:
+            receivers -= exclude
+
+    # remove auth-id based receivers
+    if publish.exclude_authid:
+        for aid in publish.exclude_authid:
+            receivers -= self._router._authid_to_sessions.get(aid, set())
+
+    # remove authrole based receivers
+    if publish.exclude_authrole:
+        for ar in publish.exclude_authrole:
+            receivers -= self._router._authrole_to_sessions.get(ar, set())
+
+    return receivers
+```
+
+### Number of set comprehension refactorings: **4**
+
+1. Refactored the creation of the `eligible` set for session IDs in the ""eligible"" case.
+2. Refactored the creation of the `eligible` set for authid in the ""eligible_authid"" case.
+3. Refactored the creation of the `eligible` set for authrole in the ""eligible_authrole"" case.
+4. Refactored the creation of the `exclude` set in the ""exclude"" case."
+https://github.com/edx/configuration/tree/master/util/parsefiles.py,"if __name__ == '__main__':
+
+    args = arg_parse()
+
+    # configure logging
+    logging.basicConfig()
+
+    if not args.verbose:
+        logging.disable(logging.WARNING)
+
+    # set of modified files in the commit range
+    change_set = set()
+
+    # read from standard in
+    for line in sys.stdin:
+        change_set.add(line.rstrip())
+
+    # configuration file is expected to be in the following format:
+    #
+    # roles_paths:
+    #       - <all paths relative to configuration repository that contain Ansible roles>
+    # aws_plays_paths:
+    #       - <all paths relative to configuration repository that contain aws Ansible playbooks>
+    # docker_plays_paths:
+    #       - <all paths relative to configuration repository that contain Docker Ansible playbooks>
+
+    # read config file
+    config = _open_yaml_file(CONFIG_FILE_PATH)
+
+    # build graph
+    graph = build_graph(TRAVIS_BUILD_DIR, config[""roles_paths""], config[""aws_plays_paths""], config[""docker_plays_paths""])
+
+    # gets any playbooks in the commit range
+    plays = get_plays(change_set, TRAVIS_BUILD_DIR, config[""aws_plays_paths""])
+
+    # transforms list of roles and plays into list of original roles and the roles contained in the plays
+    roles = change_set_to_roles(change_set, TRAVIS_BUILD_DIR, config[""roles_paths""], config[""aws_plays_paths""], graph)
+
+    # expands roles set to include roles that are dependent on existing roles
+    dependent_roles = get_dependencies(roles, graph)
+
+    # determine which docker plays cover at least one role
+    docker_plays = get_docker_plays(dependent_roles, graph)
+
+    docker_plays = docker_plays | plays
+
+    # filter out docker plays without a Dockerfile
+    docker_plays = filter_docker_plays(docker_plays, TRAVIS_BUILD_DIR)
+
+    # Add playbooks to the list whose docker file has been modified
+    modified_docker_files = _get_modified_dockerfiles(change_set, TRAVIS_BUILD_DIR)
+
+    # Add plays to the list which got changed in docker/plays directory
+    docker_plays_dir = get_modified_dockerfiles_plays(change_set, TRAVIS_BUILD_DIR)
+
+    all_plays = set(set(docker_plays) | set( modified_docker_files) | set(docker_plays_dir))
+
+    print("" "".join(all_plays))",_45343.py,15,"for line in sys.stdin:
+    change_set.add(line.rstrip())
+
+","change_set = {line.rstrip() for line in sys.stdin}
+
+",1,"if __name__ == '__main__':
+    args = arg_parse()
+
+    # configure logging
+    logging.basicConfig()
+
+    if not args.verbose:
+        logging.disable(logging.WARNING)
+
+    # read from standard in, using set comprehension
+    change_set = {line.rstrip() for line in sys.stdin}
+
+    # read config file
+    config = _open_yaml_file(CONFIG_FILE_PATH)
+
+    # build graph
+    graph = build_graph(TRAVIS_BUILD_DIR, config[""roles_paths""], config[""aws_plays_paths""], config[""docker_plays_paths""])
+
+    # gets any playbooks in the commit range
+    plays = get_plays(change_set, TRAVIS_BUILD_DIR, config[""aws_plays_paths""])
+
+    # transforms list of roles and plays into list of original roles and the roles contained in the plays
+    roles = change_set_to_roles(change_set, TRAVIS_BUILD_DIR, config[""roles_paths""], config[""aws_plays_paths""], graph)
+
+    # expands roles set to include roles that are dependent on existing roles
+    dependent_roles = get_dependencies(roles, graph)
+
+    # determine which docker plays cover at least one role
+    docker_plays = get_docker_plays(dependent_roles, graph)
+
+    # combine docker_plays with plays
+    docker_plays |= plays
+
+    # filter out docker plays without a Dockerfile
+    docker_plays = filter_docker_plays(docker_plays, TRAVIS_BUILD_DIR)
+
+    # Add playbooks to the list whose docker file has been modified
+    modified_docker_files = _get_modified_dockerfiles(change_set, TRAVIS_BUILD_DIR)
+
+    # Add plays to the list which got changed in docker/plays directory
+    docker_plays_dir = get_modified_dockerfiles_plays(change_set, TRAVIS_BUILD_DIR)
+
+    # combine docker_plays, modified_docker_files, and docker_plays_dir into one set using set comprehension
+    all_plays = {play for play in docker_plays} | {file for file in modified_docker_files} | {dir for dir in docker_plays_dir}
+
+    print("" "".join(all_plays))",2,"Here's the refactored version of your Python code that makes use of set comprehensions where applicable:
+
+
+
+### Number of set comprehension refactorings: 2
+1. Refactored the block where the `change_set` was populated using a `for` loop. Now it's done using set comprehension.
+    
+
+2. Simplified the merging of `docker_plays`, `modified_docker_files`, and `docker_plays_dir` sets using set comprehension.
+    
+
+I avoided some uses of set comprehension where it would not provide any additional clarity or compactness, especially since some operations (like getting sets from functions like `filter_docker_plays`) are already working with sets effectively.","Here's the refactored version of your Python code that makes use of set comprehensions where applicable:
+
+```python
+if __name__ == '__main__':
+    args = arg_parse()
+
+    # configure logging
+    logging.basicConfig()
+
+    if not args.verbose:
+        logging.disable(logging.WARNING)
+
+    # read from standard in, using set comprehension
+    change_set = {line.rstrip() for line in sys.stdin}
+
+    # read config file
+    config = _open_yaml_file(CONFIG_FILE_PATH)
+
+    # build graph
+    graph = build_graph(TRAVIS_BUILD_DIR, config[""roles_paths""], config[""aws_plays_paths""], config[""docker_plays_paths""])
+
+    # gets any playbooks in the commit range
+    plays = get_plays(change_set, TRAVIS_BUILD_DIR, config[""aws_plays_paths""])
+
+    # transforms list of roles and plays into list of original roles and the roles contained in the plays
+    roles = change_set_to_roles(change_set, TRAVIS_BUILD_DIR, config[""roles_paths""], config[""aws_plays_paths""], graph)
+
+    # expands roles set to include roles that are dependent on existing roles
+    dependent_roles = get_dependencies(roles, graph)
+
+    # determine which docker plays cover at least one role
+    docker_plays = get_docker_plays(dependent_roles, graph)
+
+    # combine docker_plays with plays
+    docker_plays |= plays
+
+    # filter out docker plays without a Dockerfile
+    docker_plays = filter_docker_plays(docker_plays, TRAVIS_BUILD_DIR)
+
+    # Add playbooks to the list whose docker file has been modified
+    modified_docker_files = _get_modified_dockerfiles(change_set, TRAVIS_BUILD_DIR)
+
+    # Add plays to the list which got changed in docker/plays directory
+    docker_plays_dir = get_modified_dockerfiles_plays(change_set, TRAVIS_BUILD_DIR)
+
+    # combine docker_plays, modified_docker_files, and docker_plays_dir into one set using set comprehension
+    all_plays = {play for play in docker_plays} | {file for file in modified_docker_files} | {dir for dir in docker_plays_dir}
+
+    print("" "".join(all_plays))
+```
+
+### Number of set comprehension refactorings: 2
+1. Refactored the block where the `change_set` was populated using a `for` loop. Now it's done using set comprehension.
+    ```python
+    change_set = {line.rstrip() for line in sys.stdin}
+    ```
+
+2. Simplified the merging of `docker_plays`, `modified_docker_files`, and `docker_plays_dir` sets using set comprehension.
+    ```python
+    all_plays = {play for play in docker_plays} | {file for file in modified_docker_files} | {dir for dir in docker_plays_dir}
+    ```
+
+I avoided some uses of set comprehension where it would not provide any additional clarity or compactness, especially since some operations (like getting sets from functions like `filter_docker_plays`) are already working with sets effectively."
+https://github.com/pgmpy/pgmpy/tree/master/pgmpy/inference/ExactInference.py,"def induced_graph(self, elimination_order):
+        """"""
+        Returns the induced graph formed by running Variable Elimination on the network.
+
+        Parameters
+        ----------
+        elimination_order: list, array like
+            List of variables in the order in which they are to be eliminated.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> from pgmpy.models import BayesianNetwork
+        >>> from pgmpy.inference import VariableElimination
+        >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
+        ...                       columns=['A', 'B', 'C', 'D', 'E'])
+        >>> model = BayesianNetwork([('A', 'B'), ('C', 'B'), ('C', 'D'), ('B', 'E')])
+        >>> model.fit(values)
+        >>> inference = VariableElimination(model)
+        >>> inference.induced_graph(['C', 'D', 'A', 'B', 'E'])
+        """"""
+        self._initialize_structures()
+
+        # If the elimination order does not contain the same variables as the model
+        if set(elimination_order) != set(self.variables):
+            raise ValueError(
+                ""Set of variables in elimination order""
+                "" different from variables in model""
+            )
+
+        eliminated_variables = set()
+        working_factors = {
+            node: [factor.scope() for factor in self.factors[node]]
+            for node in self.factors
+        }
+
+        # The set of cliques that should be in the induced graph
+        cliques = set()
+        for factors in working_factors.values():
+            for factor in factors:
+                cliques.add(tuple(factor))
+
+        # Removing all the factors containing the variables which are
+        # eliminated (as all the factors should be considered only once)
+        for var in elimination_order:
+            factors = [
+                factor
+                for factor in working_factors[var]
+                if not set(factor).intersection(eliminated_variables)
+            ]
+            phi = set(itertools.chain(*factors)).difference({var})
+            cliques.add(tuple(phi))
+            del working_factors[var]
+            for variable in phi:
+                working_factors[variable].append(list(phi))
+            eliminated_variables.add(var)
+
+        edges_comb = [
+            itertools.combinations(c, 2) for c in filter(lambda x: len(x) > 1, cliques)
+        ]
+        return nx.Graph(itertools.chain(*edges_comb))",_50874.py,40,"for factors in working_factors.values():
+    for factor in factors:
+        cliques.add(tuple(factor))
+
+","cliques = {tuple(factor) for factors in working_factors.values() for factor in factors}
+
+",1,"def induced_graph(self, elimination_order):
+    """"""
+    Returns the induced graph formed by running Variable Elimination on the network.
+
+    Parameters
+    ----------
+    elimination_order: list, array like
+        List of variables in the order in which they are to be eliminated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from pgmpy.models import BayesianNetwork
+    >>> from pgmpy.inference import VariableElimination
+    >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
+    ...                       columns=['A', 'B', 'C', 'D', 'E'])
+    >>> model = BayesianNetwork([('A', 'B'), ('C', 'B'), ('C', 'D'), ('B', 'E')])
+    >>> model.fit(values)
+    >>> inference = VariableElimination(model)
+    >>> inference.induced_graph(['C', 'D', 'A', 'B', 'E'])
+    """"""
+    self._initialize_structures()
+
+    # If the elimination order does not contain the same variables as the model
+    if set(elimination_order) != set(self.variables):
+        raise ValueError(
+            ""Set of variables in elimination order""
+            "" different from variables in model""
+        )
+
+    eliminated_variables = set()
+    working_factors = {
+        node: [factor.scope() for factor in self.factors[node]]
+        for node in self.factors
+    }
+
+    # The set of cliques that should be in the induced graph
+    cliques = {
+        tuple(factor)
+        for factors in working_factors.values()
+        for factor in factors
+    }
+
+    # Removing all the factors containing the variables which are
+    # eliminated (as all the factors should be considered only once)
+    for var in elimination_order:
+        factors = [
+            factor
+            for factor in working_factors[var]
+            if not set(factor).intersection(eliminated_variables)
+        ]
+        phi = {item for sublist in factors for item in sublist}.difference({var})
+        cliques.add(tuple(phi))
+        del working_factors[var]
+        for variable in phi:
+            working_factors[variable].append(list(phi))
+        eliminated_variables.add(var)
+
+    edges_comb = [
+        itertools.combinations(c, 2) for c in cliques if len(c) > 1
+    ]
+    return nx.Graph(itertools.chain(*edges_comb))",2,"Here is the refactored Python code implementing set comprehension:
+
+
+
+### Number of Set Comprehension Refactorings:
+
+1. **`cliques` initialization**:
+   The original code used nested `for` loops (`for factors in working_factors.values(): for factor in factors: cliques.add(tuple(factor))`). This has been refactored using set comprehension:
+   
+   
+
+2. **`phi` initialization**:
+   In the original code, `phi` was built using `itertools.chain(*factors)` followed by `.difference({var})`. It was refactored using set comprehension to flatten the list and remove the element `var`:
+
+   
+
+### Total Set Comprehensions added: **2**","Here is the refactored Python code implementing set comprehension:
+
+```python
+def induced_graph(self, elimination_order):
+    """"""
+    Returns the induced graph formed by running Variable Elimination on the network.
+
+    Parameters
+    ----------
+    elimination_order: list, array like
+        List of variables in the order in which they are to be eliminated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from pgmpy.models import BayesianNetwork
+    >>> from pgmpy.inference import VariableElimination
+    >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
+    ...                       columns=['A', 'B', 'C', 'D', 'E'])
+    >>> model = BayesianNetwork([('A', 'B'), ('C', 'B'), ('C', 'D'), ('B', 'E')])
+    >>> model.fit(values)
+    >>> inference = VariableElimination(model)
+    >>> inference.induced_graph(['C', 'D', 'A', 'B', 'E'])
+    """"""
+    self._initialize_structures()
+
+    # If the elimination order does not contain the same variables as the model
+    if set(elimination_order) != set(self.variables):
+        raise ValueError(
+            ""Set of variables in elimination order""
+            "" different from variables in model""
+        )
+
+    eliminated_variables = set()
+    working_factors = {
+        node: [factor.scope() for factor in self.factors[node]]
+        for node in self.factors
+    }
+
+    # The set of cliques that should be in the induced graph
+    cliques = {
+        tuple(factor)
+        for factors in working_factors.values()
+        for factor in factors
+    }
+
+    # Removing all the factors containing the variables which are
+    # eliminated (as all the factors should be considered only once)
+    for var in elimination_order:
+        factors = [
+            factor
+            for factor in working_factors[var]
+            if not set(factor).intersection(eliminated_variables)
+        ]
+        phi = {item for sublist in factors for item in sublist}.difference({var})
+        cliques.add(tuple(phi))
+        del working_factors[var]
+        for variable in phi:
+            working_factors[variable].append(list(phi))
+        eliminated_variables.add(var)
+
+    edges_comb = [
+        itertools.combinations(c, 2) for c in cliques if len(c) > 1
+    ]
+    return nx.Graph(itertools.chain(*edges_comb))
+```
+
+### Number of Set Comprehension Refactorings:
+
+1. **`cliques` initialization**:
+   The original code used nested `for` loops (`for factors in working_factors.values(): for factor in factors: cliques.add(tuple(factor))`). This has been refactored using set comprehension:
+   
+   ```python
+   cliques = {
+       tuple(factor)
+       for factors in working_factors.values()
+       for factor in factors
+   }
+   ```
+
+2. **`phi` initialization**:
+   In the original code, `phi` was built using `itertools.chain(*factors)` followed by `.difference({var})`. It was refactored using set comprehension to flatten the list and remove the element `var`:
+
+   ```python
+   phi = {item for sublist in factors for item in sublist}.difference({var})
+   ```
+
+### Total Set Comprehensions added: **2**"
+https://github.com/dano/aioprocessing/tree/master/aioprocessing/executor.py,"def __new__(cls, clsname, bases, dct, **kwargs):
+        coro_list = dct.get(""coroutines"", [])
+        existing_coros = set()
+
+        def find_existing_coros(d):
+            for attr in d:
+                if attr.startswith(""coro_"") or attr.startswith(""thread_""):
+                    existing_coros.add(attr)
+
+        # Determine if any bases include the coroutines attribute, or
+        # if either this class or a base class provides an actual
+        # implementation for a coroutine method.
+        find_existing_coros(dct)
+        for b in bases:
+            b_dct = b.__dict__
+            coro_list.extend(b_dct.get(""coroutines"", []))
+            find_existing_coros(b_dct)
+
+        # Add _ExecutorMixin to bases.
+        if _ExecutorMixin not in bases:
+            bases += (_ExecutorMixin,)
+
+        # Add coro funcs to dct, but only if a definition
+        # is not already provided by dct or one of our bases.
+        for func in coro_list:
+            coro_name = ""coro_{}"".format(func)
+            if coro_name not in existing_coros:
+                dct[coro_name] = cls.coro_maker(func)
+
+        return super().__new__(cls, clsname, bases, dct)",_52406.py,6,"for attr in d:
+    if attr.startswith('coro_') or attr.startswith('thread_'):
+        existing_coros.add(attr)
+
+","existing_coros = {attr for attr in d if attr.startswith('coro_') or attr.startswith('thread_')}
+
+",1,"def __new__(cls, clsname, bases, dct, **kwargs):
+    coro_list = dct.get(""coroutines"", [])
+
+    # Set comprehension to gather existing coroutines and threads in dct and bases
+    existing_coros = {attr for attr in dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}
+
+    # Extend coro_list from all base classes' ""coroutines"" and update existing_coros
+    for b in bases:
+        b_dct = b.__dict__
+        coro_list.extend(b_dct.get(""coroutines"", []))
+        existing_coros.update(
+            {attr for attr in b_dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}
+        )
+
+    # Add _ExecutorMixin to bases
+    if _ExecutorMixin not in bases:
+        bases += (_ExecutorMixin,)
+
+    # Add coro funcs to dct if not already provided by dct or bases
+    for func in coro_list:
+        coro_name = f""coro_{func}""
+        if coro_name not in existing_coros:
+            dct[coro_name] = cls.coro_maker(func)
+
+    return super().__new__(cls, clsname, bases, dct)",2,"To refactor the code using Python set comprehension idiom, we can target the section where `find_existing_coros` function is adding elements to `existing_coros`. Instead of iterating through the dictionary and conditionally adding elements, we can directly build that set using set comprehensions, simplifying the logic.
+
+Here’s the refactored version with set comprehension idiom applied:
+
+### Refactored Code:
+
+
+
+### Refactoring Breakdown:
+1. **First set comprehension**: Refactored the `find_existing_coros(dct)` call by collecting all attributes from `dct` that start with either ""coro_"" or ""thread_"" directly with the set comprehension `{attr for attr in dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}`.
+
+2. **Second set comprehension**: Refactored the `find_existing_coros(b_dct)` call inside the `for b in bases:` loop using `{attr for attr in b_dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}`, which directly adds matching attributes from the base class to the `existing_coros` set.
+
+### Number of Set Comprehension Refactoring Made: 2","To refactor the code using Python set comprehension idiom, we can target the section where `find_existing_coros` function is adding elements to `existing_coros`. Instead of iterating through the dictionary and conditionally adding elements, we can directly build that set using set comprehensions, simplifying the logic.
+
+Here’s the refactored version with set comprehension idiom applied:
+
+### Refactored Code:
+
+```python
+def __new__(cls, clsname, bases, dct, **kwargs):
+    coro_list = dct.get(""coroutines"", [])
+
+    # Set comprehension to gather existing coroutines and threads in dct and bases
+    existing_coros = {attr for attr in dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}
+
+    # Extend coro_list from all base classes' ""coroutines"" and update existing_coros
+    for b in bases:
+        b_dct = b.__dict__
+        coro_list.extend(b_dct.get(""coroutines"", []))
+        existing_coros.update(
+            {attr for attr in b_dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}
+        )
+
+    # Add _ExecutorMixin to bases
+    if _ExecutorMixin not in bases:
+        bases += (_ExecutorMixin,)
+
+    # Add coro funcs to dct if not already provided by dct or bases
+    for func in coro_list:
+        coro_name = f""coro_{func}""
+        if coro_name not in existing_coros:
+            dct[coro_name] = cls.coro_maker(func)
+
+    return super().__new__(cls, clsname, bases, dct)
+```
+
+### Refactoring Breakdown:
+1. **First set comprehension**: Refactored the `find_existing_coros(dct)` call by collecting all attributes from `dct` that start with either ""coro_"" or ""thread_"" directly with the set comprehension `{attr for attr in dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}`.
+
+2. **Second set comprehension**: Refactored the `find_existing_coros(b_dct)` call inside the `for b in bases:` loop using `{attr for attr in b_dct if attr.startswith(""coro_"") or attr.startswith(""thread_"")}`, which directly adds matching attributes from the base class to the `existing_coros` set.
+
+### Number of Set Comprehension Refactoring Made: 2"
+https://github.com/SFTtech/openage/tree/master/buildsystem/check_py_file_list.py,"def main():
+    """""" CLI entry point """"""
+    cli = argparse.ArgumentParser()
+    cli.add_argument('py_file_list', help=(
+        ""semicolon-separated list of listed .py files""
+    ))
+    cli.add_argument('py_module_dir', help=(
+        ""directory containing the python module to check""
+    ))
+    cli.add_argument('-v', '--verbose', action='store_true', help=(
+        ""produce verbose output""
+    ))
+    args = cli.parse_args()
+
+    openage_dir = os.path.realpath(args.py_module_dir)
+
+    listed = set()
+    with open(args.py_file_list, encoding='utf8') as fileobj:
+        for filename in fileobj.read().strip().split(';'):
+            filepath = os.path.realpath(os.path.normpath(filename))
+            if filepath.startswith(openage_dir):
+                listed.add(filepath)
+            elif args.verbose:
+                print(""Ignoring "" + filepath + "" outside "" + openage_dir)
+
+    if args.verbose:
+        print(""Files listed in "" + args.py_file_list + "":"",
+              *sorted(listed), sep='\n\t')
+
+    actual = set()
+    for dirname, _, files in os.walk(openage_dir):
+        dirname = os.path.realpath(os.path.abspath(dirname))
+        for filename in files:
+            if filename.endswith('.py'):
+                actual.add(os.path.join(dirname, filename))
+
+    if args.verbose:
+        print(""Files available:"", *sorted(actual), sep='\n\t')
+
+    success = True
+    for filename in sorted(actual - listed):
+        success = False
+        print(""file was not listed via add_py_module: "" +
+              os.path.relpath(filename, openage_dir))
+
+    for filename in sorted(listed - actual):
+        success = False
+        print(""file was listed via add_py_module but does not exist: "" +
+              os.path.relpath(filename, openage_dir))
+
+    if success:
+        return 0
+
+    return 1",_76555.py,31,"for (dirname, _, files) in os.walk(openage_dir):
+    dirname = os.path.realpath(os.path.abspath(dirname))
+    for filename in files:
+        if filename.endswith('.py'):
+            actual.add(os.path.join(dirname, filename))
+
+","actual = {os.path.join(os.path.realpath(os.path.abspath(dirname)), filename) for (dirname, _, files) in os.walk(openage_dir) for filename in files if filename.endswith('.py')}
+
+",1,"import os
+import argparse
+
+def main():
+    """""" CLI entry point """"""
+    cli = argparse.ArgumentParser()
+    cli.add_argument('py_file_list', help=(
+        ""semicolon-separated list of listed .py files""
+    ))
+    cli.add_argument('py_module_dir', help=(
+        ""directory containing the python module to check""
+    ))
+    cli.add_argument('-v', '--verbose', action='store_true', help=(
+        ""produce verbose output""
+    ))
+    args = cli.parse_args()
+
+    openage_dir = os.path.realpath(args.py_module_dir)
+
+    # Use set comprehension for `listed`
+    with open(args.py_file_list, encoding='utf8') as fileobj:
+        listed = {os.path.realpath(os.path.normpath(filename))
+                  for filename in fileobj.read().strip().split(';')
+                  if os.path.realpath(os.path.normpath(filename)).startswith(openage_dir)}
+
+    if args.verbose:
+        print(""Files listed in "" + args.py_file_list + "":"", *sorted(listed), sep='\n\t')
+
+    # Use set comprehension for `actual`
+    actual = {os.path.join(os.path.realpath(os.path.abspath(dirname)), filename)
+              for dirname, _, files in os.walk(openage_dir)
+              for filename in files
+              if filename.endswith('.py')}
+
+    if args.verbose:
+        print(""Files available:"", *sorted(actual), sep='\n\t')
+
+    success = True
+
+    # Check for missing files in `listed` and `actual`
+    for filename in sorted(actual - listed):
+        success = False
+        print(""file was not listed via add_py_module: "" +
+              os.path.relpath(filename, openage_dir))
+
+    for filename in sorted(listed - actual):
+        success = False
+        print(""file was listed via add_py_module but does not exist: "" +
+              os.path.relpath(filename, openage_dir))
+
+    if success:
+        return 0
+
+    return 1",2,"Here is the refactored code using Python set comprehension. Set comprehensions were applied where the original loops were generating sets.
+
+### Refactored Code:
+
+
+
+### Explanation of Refactoring:
+
+1. **Set comprehension for `listed`:**
+   The `listed` set is now generated using a set comprehension that reads the list of files in `args.py_file_list`, resolves their real paths, and filters them to only include those starting with the directory `openage_dir`. This eliminates the need for intermediate variables and the explicit `for-loop`.
+   
+   - **Original block:**
+     
+
+   - **Refactored block with set comprehension:**
+     
+
+2. **Set comprehension for `actual`:**
+   The `actual` set is now generated using a set comprehension that walks through the directory (`openage_dir`), filters out non-Python files, and collects the full paths of the `.py` files.
+
+   - **Original block:**
+     
+
+   - **Refactored block with set comprehension:**
+     
+
+### Number of Set Comprehension Refactoring:
+
+- **2 Refactorings**:
+   - One for the `listed` set
+   - One for the `actual` set","Here is the refactored code using Python set comprehension. Set comprehensions were applied where the original loops were generating sets.
+
+### Refactored Code:
+
+```python
+import os
+import argparse
+
+def main():
+    """""" CLI entry point """"""
+    cli = argparse.ArgumentParser()
+    cli.add_argument('py_file_list', help=(
+        ""semicolon-separated list of listed .py files""
+    ))
+    cli.add_argument('py_module_dir', help=(
+        ""directory containing the python module to check""
+    ))
+    cli.add_argument('-v', '--verbose', action='store_true', help=(
+        ""produce verbose output""
+    ))
+    args = cli.parse_args()
+
+    openage_dir = os.path.realpath(args.py_module_dir)
+
+    # Use set comprehension for `listed`
+    with open(args.py_file_list, encoding='utf8') as fileobj:
+        listed = {os.path.realpath(os.path.normpath(filename))
+                  for filename in fileobj.read().strip().split(';')
+                  if os.path.realpath(os.path.normpath(filename)).startswith(openage_dir)}
+
+    if args.verbose:
+        print(""Files listed in "" + args.py_file_list + "":"", *sorted(listed), sep='\n\t')
+
+    # Use set comprehension for `actual`
+    actual = {os.path.join(os.path.realpath(os.path.abspath(dirname)), filename)
+              for dirname, _, files in os.walk(openage_dir)
+              for filename in files
+              if filename.endswith('.py')}
+
+    if args.verbose:
+        print(""Files available:"", *sorted(actual), sep='\n\t')
+
+    success = True
+
+    # Check for missing files in `listed` and `actual`
+    for filename in sorted(actual - listed):
+        success = False
+        print(""file was not listed via add_py_module: "" +
+              os.path.relpath(filename, openage_dir))
+
+    for filename in sorted(listed - actual):
+        success = False
+        print(""file was listed via add_py_module but does not exist: "" +
+              os.path.relpath(filename, openage_dir))
+
+    if success:
+        return 0
+
+    return 1
+```
+
+### Explanation of Refactoring:
+
+1. **Set comprehension for `listed`:**
+   The `listed` set is now generated using a set comprehension that reads the list of files in `args.py_file_list`, resolves their real paths, and filters them to only include those starting with the directory `openage_dir`. This eliminates the need for intermediate variables and the explicit `for-loop`.
+   
+   - **Original block:**
+     ```python
+     listed = set()
+     with open(args.py_file_list, encoding='utf8') as fileobj:
+         for filename in fileobj.read().strip().split(';'):
+             filepath = os.path.realpath(os.path.normpath(filename))
+             if filepath.startswith(openage_dir):
+                 listed.add(filepath)
+             elif args.verbose:
+                 print(""Ignoring "" + filepath + "" outside "" + openage_dir)
+     ```
+
+   - **Refactored block with set comprehension:**
+     ```python
+     listed = {os.path.realpath(os.path.normpath(filename))
+               for filename in fileobj.read().strip().split(';')
+               if os.path.realpath(os.path.normpath(filename)).startswith(openage_dir)}
+     ```
+
+2. **Set comprehension for `actual`:**
+   The `actual` set is now generated using a set comprehension that walks through the directory (`openage_dir`), filters out non-Python files, and collects the full paths of the `.py` files.
+
+   - **Original block:**
+     ```python
+     actual = set()
+     for dirname, _, files in os.walk(openage_dir):
+         dirname = os.path.realpath(os.path.abspath(dirname))
+         for filename in files:
+             if filename.endswith('.py'):
+                 actual.add(os.path.join(dirname, filename))
+     ```
+
+   - **Refactored block with set comprehension:**
+     ```python
+     actual = {os.path.join(os.path.realpath(os.path.abspath(dirname)), filename)
+               for dirname, _, files in os.walk(openage_dir)
+               for filename in files
+               if filename.endswith('.py')}
+     ```
+
+### Number of Set Comprehension Refactoring:
+
+- **2 Refactorings**:
+   - One for the `listed` set
+   - One for the `actual` set"
+https://github.com/SymbiFlow/prjxray/tree/master/experiments/pipsroute/maketodo.py,"def maketodo(pipfile, dbfile):
+    todos = set()
+    with open(pipfile, ""r"") as f:
+        for line in f:
+            todos.add(line.split()[0])
+    with open(dbfile, ""r"") as f:
+        for line in f:
+            todos.remove(line.split()[0])
+    for line in todos:
+        if line.endswith("".VCC_WIRE""):
+            continue
+        if line.endswith("".GND_WIRE""):
+            continue
+        if re.match(r"".*\.(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]"", line):
+            continue
+        if re.match(r""^INT_[LR]\.(CTRL|GFAN)(_L)?[0-9]"", line):
+            continue
+        print(line)",_82072.py,4,"for line in f:
+    todos.add(line.split()[0])
+
+","todos = {line.split()[0] for line in f}
+
+",1,"import re
+
+def maketodo(pipfile, dbfile):
+    # Read PIP file and store first word of each line in the set
+    with open(pipfile, ""r"") as f:
+        todos = {line.split()[0] for line in f}
+
+    # Read dbfile and remove entries from the set based on first word
+    with open(dbfile, ""r"") as f:
+        todos -= {line.split()[0] for line in f}  # Set subtraction for removal from the set
+
+    # Filter and print todos that do not match exclusion patterns or conditions
+    for line in todos:
+        if line.endswith("".VCC_WIRE""):
+            continue
+        if line.endswith("".GND_WIRE""):
+            continue
+        if re.match(r"".*\.(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]"", line):
+            continue
+        if re.match(r""^INT_[LR]\.(CTRL|GFAN)(_L)?[0-9]"", line):
+            continue
+        print(line)",2,"Here is the refactored code using Python set comprehension where possible, along with information about the number of set comprehension refactorings made:
+
+### Refactored Code:
+
+
+
+### Number of Set Comprehension Refactorings:
+
+- I refactored **2** loops (1. reading from the `pipfile`, 2. reading from the `dbfile`) using set comprehensions.
+
+### Changes made:
+
+1. The first loop that reads lines from the `pipfile` and extracts the first word was refactored into a set comprehension:  
+   
+
+2. The second loop that reads lines from the `dbfile` and removes entries from the set was refactored using set subtraction (with a set comprehension for extracting the first word):  
+   
+
+Both of these refactorings replace the manual `for` loops with more idiomatic Pythonic set comprehension constructs.","Here is the refactored code using Python set comprehension where possible, along with information about the number of set comprehension refactorings made:
+
+### Refactored Code:
+
+```python
+import re
+
+def maketodo(pipfile, dbfile):
+    # Read PIP file and store first word of each line in the set
+    with open(pipfile, ""r"") as f:
+        todos = {line.split()[0] for line in f}
+
+    # Read dbfile and remove entries from the set based on first word
+    with open(dbfile, ""r"") as f:
+        todos -= {line.split()[0] for line in f}  # Set subtraction for removal from the set
+
+    # Filter and print todos that do not match exclusion patterns or conditions
+    for line in todos:
+        if line.endswith("".VCC_WIRE""):
+            continue
+        if line.endswith("".GND_WIRE""):
+            continue
+        if re.match(r"".*\.(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]"", line):
+            continue
+        if re.match(r""^INT_[LR]\.(CTRL|GFAN)(_L)?[0-9]"", line):
+            continue
+        print(line)
+```
+
+### Number of Set Comprehension Refactorings:
+
+- I refactored **2** loops (1. reading from the `pipfile`, 2. reading from the `dbfile`) using set comprehensions.
+
+### Changes made:
+
+1. The first loop that reads lines from the `pipfile` and extracts the first word was refactored into a set comprehension:  
+   ```python
+   todos = {line.split()[0] for line in f}
+   ```
+
+2. The second loop that reads lines from the `dbfile` and removes entries from the set was refactored using set subtraction (with a set comprehension for extracting the first word):  
+   ```python
+   todos -= {line.split()[0] for line in f}
+   ```
+
+Both of these refactorings replace the manual `for` loops with more idiomatic Pythonic set comprehension constructs."
+https://github.com/jhpyle/docassemble/tree/master/docassemble_base/docassemble/base/parse.py,"def get_docx_variables(the_path):
+    import docassemble.base.legal
+    names = set()
+    if not os.path.isfile(the_path):
+        raise DAError(""Missing docx template file "" + os.path.basename(the_path))
+    try:
+        docx_template = docassemble.base.file_docx.DocxTemplate(the_path)
+        the_env = custom_jinja_env()
+        the_xml = docx_template.get_xml()
+        the_xml = re.sub(r'<w:p>', '\n<w:p>', the_xml)
+        the_xml = re.sub(r'({[\%\{].*?[\%\}]})', fix_quotes, the_xml)
+        the_xml = docx_template.patch_xml(the_xml)
+        parsed_content = the_env.parse(the_xml)
+    except Exception as the_err:
+        raise DAError(""There was an error parsing the docx file: "" + the_err.__class__.__name__ + "" "" + str(the_err))
+    for key in jinja2meta.find_undeclared_variables(parsed_content):
+        if not key.startswith('_'):
+            names.add(key)
+    for name in docassemble.base.legal.__all__:
+        if name in names:
+            names.remove(name)
+    return sorted(list(names))",_90397.py,16,"for key in jinja2meta.find_undeclared_variables(parsed_content):
+    if not key.startswith('_'):
+        names.add(key)
+
+","names = {key for key in jinja2meta.find_undeclared_variables(parsed_content) if not key.startswith('_')}
+
+",1,"def get_docx_variables(the_path):
+    import docassemble.base.legal
+    names = set()
+    if not os.path.isfile(the_path):
+        raise DAError(""Missing docx template file "" + os.path.basename(the_path))
+    try:
+        docx_template = docassemble.base.file_docx.DocxTemplate(the_path)
+        the_env = custom_jinja_env()
+        the_xml = docx_template.get_xml()
+        the_xml = re.sub(r'<w:p>', '\n<w:p>', the_xml)
+        the_xml = re.sub(r'({[\%\{].*?[\%\}]})', fix_quotes, the_xml)
+        the_xml = docx_template.patch_xml(the_xml)
+        parsed_content = the_env.parse(the_xml)
+    except Exception as the_err:
+        raise DAError(""There was an error parsing the docx file: "" + the_err.__class__.__name__ + "" "" + str(the_err))
+
+    # Use set comprehension to filter undeclared variables that don't start with '_'
+    names = {key for key in jinja2meta.find_undeclared_variables(parsed_content) if not key.startswith('_')}
+
+    # Use set comprehension to remove legal names found in docassemble.base.legal.__all__
+    names -= {name for name in docassemble.base.legal.__all__ if name in names}
+
+    return sorted(list(names))",2,"Here's a refactored version of your code leveraging Python set comprehension. Set comprehension allows us to efficiently build or modify sets in a concise way. I will refactor the code by converting the `for key in jinja2meta.find_undeclared_variables(parsed_content)` and `for name in docassemble.base.legal.__all__` into set comprehension idioms.
+
+Here's the refactored code:
+
+
+
+### Number of Refactoring via Set Comprehension:
+- **First Set Comprehension:**
+  
+
+- **Second Set Comprehension:**
+  
+
+### Total set comprehensions used: **2**
+
+This updated code achieves the same thing but with fewer lines and, through set comprehensions, ensures that operations are more concise and expressive.","Here's a refactored version of your code leveraging Python set comprehension. Set comprehension allows us to efficiently build or modify sets in a concise way. I will refactor the code by converting the `for key in jinja2meta.find_undeclared_variables(parsed_content)` and `for name in docassemble.base.legal.__all__` into set comprehension idioms.
+
+Here's the refactored code:
+
+```python
+def get_docx_variables(the_path):
+    import docassemble.base.legal
+    names = set()
+    if not os.path.isfile(the_path):
+        raise DAError(""Missing docx template file "" + os.path.basename(the_path))
+    try:
+        docx_template = docassemble.base.file_docx.DocxTemplate(the_path)
+        the_env = custom_jinja_env()
+        the_xml = docx_template.get_xml()
+        the_xml = re.sub(r'<w:p>', '\n<w:p>', the_xml)
+        the_xml = re.sub(r'({[\%\{].*?[\%\}]})', fix_quotes, the_xml)
+        the_xml = docx_template.patch_xml(the_xml)
+        parsed_content = the_env.parse(the_xml)
+    except Exception as the_err:
+        raise DAError(""There was an error parsing the docx file: "" + the_err.__class__.__name__ + "" "" + str(the_err))
+
+    # Use set comprehension to filter undeclared variables that don't start with '_'
+    names = {key for key in jinja2meta.find_undeclared_variables(parsed_content) if not key.startswith('_')}
+
+    # Use set comprehension to remove legal names found in docassemble.base.legal.__all__
+    names -= {name for name in docassemble.base.legal.__all__ if name in names}
+
+    return sorted(list(names))
+
+```
+
+### Number of Refactoring via Set Comprehension:
+- **First Set Comprehension:**
+  ```python
+  names = {key for key in jinja2meta.find_undeclared_variables(parsed_content) if not key.startswith('_')}
+  ```
+
+- **Second Set Comprehension:**
+  ```python
+  names -= {name for name in docassemble.base.legal.__all__ if name in names}
+  ```
+
+### Total set comprehensions used: **2**
+
+This updated code achieves the same thing but with fewer lines and, through set comprehensions, ensures that operations are more concise and expressive."
+https://github.com/rsennrich/subword-nmt/tree/master//learn_bpe.py,"def learn_bpe(infile, outfile, num_symbols, min_frequency=2, verbose=False, is_dict=False, total_symbols=False, num_workers=1):
+    """"""Learn num_symbols BPE operations from vocabulary, and write to outfile.
+    """"""
+
+    # version 0.2 changes the handling of the end-of-word token ('</w>');
+    # version numbering allows bckward compatibility
+    outfile.write('#version: 0.2\n')
+
+    vocab = get_vocabulary(infile, is_dict, num_workers)
+    vocab = dict([(tuple(x[:-1])+(x[-1]+'</w>',) ,y) for (x,y) in vocab.items()])
+    sorted_vocab = sorted(vocab.items(), key=lambda x: x[1], reverse=True)
+
+    stats, indices = get_pair_statistics(sorted_vocab)
+    big_stats = copy.deepcopy(stats)
+
+    if total_symbols:
+        uniq_char_internal = set()
+        uniq_char_final = set()
+        for word in vocab:
+            for char in word[:-1]:
+                uniq_char_internal.add(char)
+            uniq_char_final.add(word[-1])
+        sys.stderr.write('Number of word-internal characters: {0}\n'.format(len(uniq_char_internal)))
+        sys.stderr.write('Number of word-final characters: {0}\n'.format(len(uniq_char_final)))
+        sys.stderr.write('Reducing number of merge operations by {0}\n'.format(len(uniq_char_internal) + len(uniq_char_final)))
+        num_symbols -= len(uniq_char_internal) + len(uniq_char_final)
+
+    # threshold is inspired by Zipfian assumption, but should only affect speed
+    threshold = max(stats.values()) / 10
+    for i in range(num_symbols):
+        if stats:
+            most_frequent = max(stats, key=lambda x: (stats[x], x))
+
+        # we probably missed the best pair because of pruning; go back to full statistics
+        if not stats or (i and stats[most_frequent] < threshold):
+            prune_stats(stats, big_stats, threshold)
+            stats = copy.deepcopy(big_stats)
+            most_frequent = max(stats, key=lambda x: (stats[x], x))
+            # threshold is inspired by Zipfian assumption, but should only affect speed
+            threshold = stats[most_frequent] * i/(i+10000.0)
+            prune_stats(stats, big_stats, threshold)
+
+        if stats[most_frequent] < min_frequency:
+            sys.stderr.write('no pair has frequency >= {0}. Stopping\n'.format(min_frequency))
+            break
+
+        if verbose:
+            sys.stderr.write('pair {0}: {1} {2} -> {1}{2} (frequency {3})\n'.format(i, most_frequent[0], most_frequent[1], stats[most_frequent]))
+        outfile.write('{0} {1}\n'.format(*most_frequent))
+        changes = replace_pair(most_frequent, sorted_vocab, indices)
+        update_pair_statistics(most_frequent, changes, stats, indices)
+        stats[most_frequent] = 0
+        if not i % 100:
+            prune_stats(stats, big_stats, threshold)",_91710.py,20,"for char in word[:-1]:
+    uniq_char_internal.add(char)
+
+","uniq_char_internal |= {char for char in word[:-1]}
+
+",1,"import copy
+import sys
+
+def learn_bpe(infile, outfile, num_symbols, min_frequency=2, verbose=False, is_dict=False, total_symbols=False, num_workers=1):
+    """"""Learn num_symbols BPE operations from vocabulary, and write to outfile.
+    """"""
+
+    # version 0.2 changes the handling of the end-of-word token ('</w>');
+    # version numbering allows bckward compatibility
+    outfile.write('#version: 0.2\n')
+
+    vocab = get_vocabulary(infile, is_dict, num_workers)
+    vocab = dict([(tuple(x[:-1])+(x[-1]+'</w>',), y) for (x, y) in vocab.items()])
+    sorted_vocab = sorted(vocab.items(), key=lambda x: x[1], reverse=True)
+
+    stats, indices = get_pair_statistics(sorted_vocab)
+    big_stats = copy.deepcopy(stats)
+
+    if total_symbols:
+        uniq_char_internal = {char for word in vocab for char in word[:-1]}
+        uniq_char_final = {word[-1] for word in vocab}
+
+        sys.stderr.write('Number of word-internal characters: {0}\n'.format(len(uniq_char_internal)))
+        sys.stderr.write('Number of word-final characters: {0}\n'.format(len(uniq_char_final)))
+        sys.stderr.write('Reducing number of merge operations by {0}\n'.format(len(uniq_char_internal) + len(uniq_char_final)))
+        num_symbols -= len(uniq_char_internal) + len(uniq_char_final)
+
+    # threshold is inspired by Zipfian assumption, but should only affect speed
+    threshold = max(stats.values()) / 10
+    for i in range(num_symbols):
+        if stats:
+            most_frequent = max(stats, key=lambda x: (stats[x], x))
+
+        # we probably missed the best pair because of pruning; go back to full statistics
+        if not stats or (i and stats[most_frequent] < threshold):
+            prune_stats(stats, big_stats, threshold)
+            stats = copy.deepcopy(big_stats)
+            most_frequent = max(stats, key=lambda x: (stats[x], x))
+            # threshold is inspired by Zipfian assumption, but should only affect speed
+            threshold = stats[most_frequent] * i / (i + 10000.0)
+            prune_stats(stats, big_stats, threshold)
+
+        if stats[most_frequent] < min_frequency:
+            sys.stderr.write('no pair has frequency >= {0}. Stopping\n'.format(min_frequency))
+            break
+
+        if verbose:
+            sys.stderr.write('pair {0}: {1} {2} -> {1}{2} (frequency {3})\n'.format(i, most_frequent[0], most_frequent[1], stats[most_frequent]))
+        outfile.write('{0} {1}\n'.format(*most_frequent))
+        changes = replace_pair(most_frequent, sorted_vocab, indices)
+        update_pair_statistics(most_frequent, changes, stats, indices)
+        stats[most_frequent] = 0
+        if not i % 100:
+            prune_stats(stats, big_stats, threshold)",2,"Here is your code refactored using Python set comprehension idiom. 
+
+### Refactored Code:
+
+
+### Changes:
+1. Refactored the following block of code:
+
+   
+
+   into:
+
+   
+
+### Number of set comprehension refactoring: **2**","Here is your code refactored using Python set comprehension idiom. 
+
+### Refactored Code:
+```python
+import copy
+import sys
+
+def learn_bpe(infile, outfile, num_symbols, min_frequency=2, verbose=False, is_dict=False, total_symbols=False, num_workers=1):
+    """"""Learn num_symbols BPE operations from vocabulary, and write to outfile.
+    """"""
+
+    # version 0.2 changes the handling of the end-of-word token ('</w>');
+    # version numbering allows bckward compatibility
+    outfile.write('#version: 0.2\n')
+
+    vocab = get_vocabulary(infile, is_dict, num_workers)
+    vocab = dict([(tuple(x[:-1])+(x[-1]+'</w>',), y) for (x, y) in vocab.items()])
+    sorted_vocab = sorted(vocab.items(), key=lambda x: x[1], reverse=True)
+
+    stats, indices = get_pair_statistics(sorted_vocab)
+    big_stats = copy.deepcopy(stats)
+
+    if total_symbols:
+        uniq_char_internal = {char for word in vocab for char in word[:-1]}
+        uniq_char_final = {word[-1] for word in vocab}
+
+        sys.stderr.write('Number of word-internal characters: {0}\n'.format(len(uniq_char_internal)))
+        sys.stderr.write('Number of word-final characters: {0}\n'.format(len(uniq_char_final)))
+        sys.stderr.write('Reducing number of merge operations by {0}\n'.format(len(uniq_char_internal) + len(uniq_char_final)))
+        num_symbols -= len(uniq_char_internal) + len(uniq_char_final)
+
+    # threshold is inspired by Zipfian assumption, but should only affect speed
+    threshold = max(stats.values()) / 10
+    for i in range(num_symbols):
+        if stats:
+            most_frequent = max(stats, key=lambda x: (stats[x], x))
+
+        # we probably missed the best pair because of pruning; go back to full statistics
+        if not stats or (i and stats[most_frequent] < threshold):
+            prune_stats(stats, big_stats, threshold)
+            stats = copy.deepcopy(big_stats)
+            most_frequent = max(stats, key=lambda x: (stats[x], x))
+            # threshold is inspired by Zipfian assumption, but should only affect speed
+            threshold = stats[most_frequent] * i / (i + 10000.0)
+            prune_stats(stats, big_stats, threshold)
+
+        if stats[most_frequent] < min_frequency:
+            sys.stderr.write('no pair has frequency >= {0}. Stopping\n'.format(min_frequency))
+            break
+
+        if verbose:
+            sys.stderr.write('pair {0}: {1} {2} -> {1}{2} (frequency {3})\n'.format(i, most_frequent[0], most_frequent[1], stats[most_frequent]))
+        outfile.write('{0} {1}\n'.format(*most_frequent))
+        changes = replace_pair(most_frequent, sorted_vocab, indices)
+        update_pair_statistics(most_frequent, changes, stats, indices)
+        stats[most_frequent] = 0
+        if not i % 100:
+            prune_stats(stats, big_stats, threshold)
+```
+
+### Changes:
+1. Refactored the following block of code:
+
+   ```python
+   uniq_char_internal = set()
+   uniq_char_final = set()
+   for word in vocab:
+       for char in word[:-1]:
+           uniq_char_internal.add(char)
+       uniq_char_final.add(word[-1])
+   ```
+
+   into:
+
+   ```python
+   uniq_char_internal = {char for word in vocab for char in word[:-1]}
+   uniq_char_final = {word[-1] for word in vocab}
+   ```
+
+### Number of set comprehension refactoring: **2**
+
+"
+https://github.com/conda/conda/tree/master/conda/resolve.py,"def get_reduced_index(self, explicit_specs, sort_by_exactness=True, exit_on_conflict=False):
+        # TODO: fix this import; this is bad
+        from .core.subdir_data import make_feature_record
+
+        strict_channel_priority = context.channel_priority == ChannelPriority.STRICT
+
+        cache_key = strict_channel_priority, tuple(explicit_specs)
+        if cache_key in self._reduced_index_cache:
+            return self._reduced_index_cache[cache_key]
+
+        if log.isEnabledFor(DEBUG):
+            log.debug('Retrieving packages for: %s', dashlist(
+                sorted(text_type(s) for s in explicit_specs)))
+
+        explicit_specs, features = self.verify_specs(explicit_specs)
+        filter_out = {prec: False if val else ""feature not enabled""
+                      for prec, val in iteritems(self.default_filter(features))}
+        snames = set()
+        top_level_spec = None
+        cp_filter_applied = set()  # values are package names
+        if sort_by_exactness:
+            # prioritize specs that are more exact.  Exact specs will evaluate to 3,
+            #    constrained specs will evaluate to 2, and name only will be 1
+            explicit_specs = sorted(list(explicit_specs), key=lambda x: (
+                exactness_and_number_of_deps(self, x), x.dist_str()), reverse=True)
+        # tuple because it needs to be hashable
+        explicit_specs = tuple(explicit_specs)
+
+        explicit_spec_package_pool = {}
+        for s in explicit_specs:
+            explicit_spec_package_pool[s.name] = explicit_spec_package_pool.get(
+                s.name, set()) | set(self.find_matches(s))
+
+        def filter_group(_specs):
+            # all _specs should be for the same package name
+            name = next(iter(_specs)).name
+            group = self.groups.get(name, ())
+
+            # implement strict channel priority
+            if group and strict_channel_priority and name not in cp_filter_applied:
+                sole_source_channel_name = self._get_strict_channel(name)
+                for prec in group:
+                    if prec.channel.name != sole_source_channel_name:
+                        filter_out[prec] = ""removed due to strict channel priority""
+                cp_filter_applied.add(name)
+
+            # Prune packages that don't match any of the patterns,
+            # have unsatisfiable dependencies, or conflict with the explicit specs
+            nold = nnew = 0
+            for prec in group:
+                if not filter_out.setdefault(prec, False):
+                    nold += 1
+                    if (not self.match_any(_specs, prec)) or (
+                            explicit_spec_package_pool.get(name) and
+                            prec not in explicit_spec_package_pool[name]):
+                        filter_out[prec] = ""incompatible with required spec %s"" % top_level_spec
+                        continue
+                    unsatisfiable_dep_specs = set()
+                    for ms in self.ms_depends(prec):
+                        if not ms.optional and not any(
+                                 rec for rec in self.find_matches(ms)
+                                if not filter_out.get(rec, False)):
+                            unsatisfiable_dep_specs.add(ms)
+                    if unsatisfiable_dep_specs:
+                        filter_out[prec] = ""unsatisfiable dependencies %s"" % "" "".join(
+                            str(s) for s in unsatisfiable_dep_specs
+                        )
+                        continue
+                    filter_out[prec] = False
+                    nnew += 1
+
+            reduced = nnew < nold
+            if reduced:
+                log.debug('%s: pruned from %d -> %d' % (name, nold, nnew))
+            if any(ms.optional for ms in _specs):
+                return reduced
+            elif nnew == 0:
+                # Indicates that a conflict was found; we can exit early
+                return None
+
+            # Perform the same filtering steps on any dependencies shared across
+            # *all* packages in the group. Even if just one of the packages does
+            # not have a particular dependency, it must be ignored in this pass.
+            # Otherwise, we might do more filtering than we should---and it is
+            # better to have extra packages here than missing ones.
+            if reduced or name not in snames:
+                snames.add(name)
+
+                _dep_specs = groupby(lambda s: s.name, (
+                    dep_spec
+                    for prec in group if not filter_out.get(prec, False)
+                    for dep_spec in self.ms_depends(prec) if not dep_spec.optional
+                ))
+                _dep_specs.pop(""*"", None)  # discard track_features specs
+
+                for deps_name, deps in sorted(_dep_specs.items(),
+                                              key=lambda x: any(_.optional for _ in x[1])):
+                    if len(deps) >= nnew:
+                        res = filter_group(set(deps))
+                        if res:
+                            reduced = True
+                        elif res is None:
+                            # Indicates that a conflict was found; we can exit early
+                            return None
+
+            return reduced
+
+        # Iterate on pruning until no progress is made. We've implemented
+        # what amounts to ""double-elimination"" here; packages get one additional
+        # chance after their first ""False"" reduction. This catches more instances
+        # where one package's filter affects another. But we don't have to be
+        # perfect about this, so performance matters.
+        pruned_to_zero = set()
+        for _ in range(2):
+            snames.clear()
+            slist = deque(explicit_specs)
+            while slist:
+                s = slist.popleft()
+                if filter_group([s]):
+                    slist.append(s)
+                else:
+                    pruned_to_zero.add(s)
+
+        if pruned_to_zero and exit_on_conflict:
+            return {}
+
+        # Determine all valid packages in the dependency graph
+        reduced_index2 = {prec: prec for prec in (make_feature_record(fstr) for fstr in features)}
+        specs_by_name_seed = OrderedDict()
+        for s in explicit_specs:
+            specs_by_name_seed[s.name] = specs_by_name_seed.get(s.name, list()) + [s]
+        for explicit_spec in explicit_specs:
+            add_these_precs2 = tuple(
+                prec for prec in self.find_matches(explicit_spec)
+                if prec not in reduced_index2 and self.valid2(prec, filter_out))
+
+            if strict_channel_priority and add_these_precs2:
+                strict_channel_name = self._get_strict_channel(add_these_precs2[0].name)
+
+                add_these_precs2 = tuple(
+                    prec for prec in add_these_precs2 if prec.channel.name == strict_channel_name
+                )
+            reduced_index2.update((prec, prec) for prec in add_these_precs2)
+
+            for pkg in add_these_precs2:
+                # what we have seen is only relevant within the context of a single package
+                #    that is picked up because of an explicit spec.  We don't want the
+                #    broadening check to apply across packages at the explicit level; only
+                #    at the level of deps below that explicit package.
+                seen_specs = set()
+                specs_by_name = copy.deepcopy(specs_by_name_seed)
+
+                dep_specs = set(self.ms_depends(pkg))
+                for dep in dep_specs:
+                    specs = specs_by_name.get(dep.name, list())
+                    if dep not in specs and (not specs or dep.strictness >= specs[0].strictness):
+                        specs.insert(0, dep)
+                    specs_by_name[dep.name] = specs
+
+                while(dep_specs):
+                    # used for debugging
+                    # size_index = len(reduced_index2)
+                    # specs_added = []
+                    ms = dep_specs.pop()
+                    seen_specs.add(ms)
+                    for dep_pkg in (_ for _ in self.find_matches(ms) if _ not in reduced_index2):
+                        if not self.valid2(dep_pkg, filter_out):
+                            continue
+
+                        # expand the reduced index if not using strict channel priority,
+                        #    or if using it and this package is in the appropriate channel
+                        if (not strict_channel_priority or
+                                (self._get_strict_channel(dep_pkg.name) ==
+                                 dep_pkg.channel.name)):
+                            reduced_index2[dep_pkg] = dep_pkg
+
+                            # recurse to deps of this dep
+                            new_specs = set(self.ms_depends(dep_pkg)) - seen_specs
+                            for new_ms in new_specs:
+                                # We do not pull packages into the reduced index due
+                                # to a track_features dependency. Remember, a feature
+                                # specifies a ""soft"" dependency: it must be in the
+                                # environment, but it is not _pulled_ in. The SAT
+                                # logic doesn't do a perfect job of capturing this
+                                # behavior, but keeping these packags out of the
+                                # reduced index helps. Of course, if _another_
+                                # package pulls it in by dependency, that's fine.
+                                if ('track_features' not in new_ms and not self._broader(
+                                        new_ms, tuple(specs_by_name.get(new_ms.name, tuple())))):
+                                    dep_specs.add(new_ms)
+                                    # if new_ms not in dep_specs:
+                                    #     specs_added.append(new_ms)
+                                else:
+                                    seen_specs.add(new_ms)
+                    # debugging info - see what specs are bringing in the largest blobs
+                    # if size_index != len(reduced_index2):
+                    #     print(""MS {} added {} pkgs to index"".format(ms,
+                    #           len(reduced_index2) - size_index))
+                    # if specs_added:
+                    #     print(""MS {} added {} specs to further examination"".format(ms,
+                    #                                                                specs_added))
+
+        reduced_index2 = frozendict(reduced_index2)
+        self._reduced_index_cache[cache_key] = reduced_index2
+        return reduced_index2",_97638.py,59,"for ms in self.ms_depends(prec):
+    if not ms.optional and (not any((rec for rec in self.find_matches(ms) if not filter_out.get(rec, False)))):
+        unsatisfiable_dep_specs.add(ms)
+
+","unsatisfiable_dep_specs = {ms for ms in self.ms_depends(prec) if not ms.optional and (not any((rec for rec in self.find_matches(ms) if not filter_out.get(rec, False))))}
+
+",1,"def get_reduced_index(self, explicit_specs, sort_by_exactness=True, exit_on_conflict=False):
+        # TODO: fix this import; this is bad
+        from .core.subdir_data import make_feature_record
+
+        strict_channel_priority = context.channel_priority == ChannelPriority.STRICT
+
+        cache_key = strict_channel_priority, tuple(explicit_specs)
+        if cache_key in self._reduced_index_cache:
+            return self._reduced_index_cache[cache_key]
+
+        if log.isEnabledFor(DEBUG):
+            log.debug('Retrieving packages for: %s', dashlist(
+                sorted(text_type(s) for s in explicit_specs)))
+
+        explicit_specs, features = self.verify_specs(explicit_specs)
+        filter_out = {prec: False if val else ""feature not enabled""
+                      for prec, val in iteritems(self.default_filter(features))}
+
+        snames = set()
+        top_level_spec = None
+        cp_filter_applied = set()  # values are package names
+        if sort_by_exactness:
+            # prioritize specs that are more exact.  Exact specs will evaluate to 3,
+            #    constrained specs will evaluate to 2, and name only will be 1
+            explicit_specs = sorted(list(explicit_specs), key=lambda x: (
+                exactness_and_number_of_deps(self, x), x.dist_str()), reverse=True)
+
+        # tuple because it needs to be hashable
+        explicit_specs = tuple(explicit_specs)
+
+        explicit_spec_package_pool = {
+            s.name: explicit_spec_package_pool.get(s.name, set()) | set(self.find_matches(s))
+            for s in explicit_specs
+        }
+
+        def filter_group(_specs):
+            # all _specs should be for the same package name
+            name = next(iter(_specs)).name
+            group = self.groups.get(name, ())
+
+            # implement strict channel priority
+            if group and strict_channel_priority and name not in cp_filter_applied:
+                sole_source_channel_name = self._get_strict_channel(name)
+                for prec in group:
+                    if prec.channel.name != sole_source_channel_name:
+                        filter_out[prec] = ""removed due to strict channel priority""
+                cp_filter_applied.add(name)
+
+            # Prune packages that don't match any of the patterns,
+            # have unsatisfiable dependencies, or conflict with the explicit specs
+            nold = nnew = 0
+            for prec in group:
+                if not filter_out.setdefault(prec, False):
+                    nold += 1
+                    if (not self.match_any(_specs, prec)) or (
+                            explicit_spec_package_pool.get(name) and
+                            prec not in explicit_spec_package_pool[name]):
+                        filter_out[prec] = ""incompatible with required spec %s"" % top_level_spec
+                        continue
+                    unsatisfiable_dep_specs = {
+                        ms for ms in self.ms_depends(prec)
+                        if not ms.optional and not any(
+                            rec for rec in self.find_matches(ms)
+                            if not filter_out.get(rec, False)
+                        )
+                    }
+                    if unsatisfiable_dep_specs:
+                        filter_out[prec] = ""unsatisfiable dependencies %s"" % "" "".join(
+                            str(s) for s in unsatisfiable_dep_specs
+                        )
+                        continue
+                    filter_out[prec] = False
+                    nnew += 1
+
+            reduced = nnew < nold
+            if reduced:
+                log.debug('%s: pruned from %d -> %d' % (name, nold, nnew))
+            if any(ms.optional for ms in _specs):
+                return reduced
+            elif nnew == 0:
+                # Indicates that a conflict was found; we can exit early
+                return None
+
+            # Perform the same filtering steps on any dependencies shared across
+            # *all* packages in the group. 
+            if reduced or name not in snames:
+                snames.add(name)
+
+                _dep_specs = groupby(lambda s: s.name, (
+                    dep_spec
+                    for prec in group if not filter_out.get(prec, False)
+                    for dep_spec in self.ms_depends(prec) if not dep_spec.optional
+                ))
+                _dep_specs.pop(""*"", None)  # discard track_features specs
+
+                for deps_name, deps in sorted(_dep_specs.items(),
+                                              key=lambda x: any(_.optional for _ in x[1])):
+                    if len(deps) >= nnew:
+                        res = filter_group(set(deps))
+                        if res:
+                            reduced = True
+                        elif res is None:
+                            # Indicates that a conflict was found; we can exit early
+                            return None
+
+            return reduced
+
+        # Iterate on pruning until no progress is made.
+        pruned_to_zero = set()
+        for _ in range(2):
+            snames.clear()
+            slist = deque(explicit_specs)
+            while slist:
+                s = slist.popleft()
+                if filter_group([s]):
+                    slist.append(s)
+                else:
+                    pruned_to_zero.add(s)
+
+        if pruned_to_zero and exit_on_conflict:
+            return {}
+
+        # Determine all valid packages in the dependency graph
+        reduced_index2 = {prec: prec for prec in (make_feature_record(fstr) for fstr in features)}
+        specs_by_name_seed = OrderedDict()
+        for s in explicit_specs:
+            specs_by_name_seed[s.name] = specs_by_name_seed.get(s.name, list()) + [s]
+
+        for explicit_spec in explicit_specs:
+            add_these_precs2 = tuple(
+                prec for prec in self.find_matches(explicit_spec)
+                if prec not in reduced_index2 and self.valid2(prec, filter_out))
+
+            if strict_channel_priority and add_these_precs2:
+                strict_channel_name = self._get_strict_channel(add_these_precs2[0].name)
+
+                add_these_precs2 = tuple(
+                    prec for prec in add_these_precs2 if prec.channel.name == strict_channel_name
+                )
+            reduced_index2.update((prec, prec) for prec in add_these_precs2)
+
+            for pkg in add_these_precs2:
+                # what we have seen is only relevant within the context of a single package
+                # that is picked up because of an explicit spec.
+                seen_specs = set()
+                specs_by_name = copy.deepcopy(specs_by_name_seed)
+
+                dep_specs = set(self.ms_depends(pkg))
+                for dep in dep_specs:
+                    specs = specs_by_name.get(dep.name, list())
+                    if dep not in specs and (not specs or dep.strictness >= specs[0].strictness):
+                        specs.insert(0, dep)
+                    specs_by_name[dep.name] = specs
+
+                while dep_specs:
+                    ms = dep_specs.pop()
+                    seen_specs.add(ms)
+                    for dep_pkg in (_ for _ in self.find_matches(ms) if _ not in reduced_index2):
+                        if not self.valid2(dep_pkg, filter_out):
+                            continue
+
+                        # expand the reduced index if not using strict channel priority,
+                        if (not strict_channel_priority or
+                                (self._get_strict_channel(dep_pkg.name) ==
+                                 dep_pkg.channel.name)):
+                            reduced_index2[dep_pkg] = dep_pkg
+
+                            # recurse to deps of this dep
+                            new_specs = set(self.ms_depends(dep_pkg)) - seen_specs
+                            for new_ms in new_specs:
+                                if ('track_features' not in new_ms and not self._broader(
+                                        new_ms, tuple(specs_by_name.get(new_ms.name, tuple())))):
+                                    dep_specs.add(new_ms)
+                                else:
+                                    seen_specs.add(new_ms)
+
+        reduced_index2 = frozendict(reduced_index2)
+        self._reduced_index_cache[cache_key] = reduced_index2
+        return reduced_index2",2,"We can refactor this code using set comprehensions where appropriate. Here's the refactored version of the code along with the number of places where set comprehension was used.
+
+### Refactored Code:
+
+
+
+### Places where set comprehension was used:
+
+1. `unsatisfiable_dep_specs = {ms for ms in self.ms_depends(prec) if not ms.optional and not any(rec for rec in self.find_matches(ms) if not filter_out.get(rec, False))}` - This replaces a loop with a set comprehension.
+
+2. `explicit_spec_package_pool = {s.name: explicit_spec_package_pool.get(s.name, set()) | set(self.find_matches(s)) for s in explicit_specs}` - This replaces a loop with dictionary comprehension that involves a set operation.
+
+In total, **2 places** were refactored with set comprehension.","We can refactor this code using set comprehensions where appropriate. Here's the refactored version of the code along with the number of places where set comprehension was used.
+
+### Refactored Code:
+
+```python
+def get_reduced_index(self, explicit_specs, sort_by_exactness=True, exit_on_conflict=False):
+        # TODO: fix this import; this is bad
+        from .core.subdir_data import make_feature_record
+
+        strict_channel_priority = context.channel_priority == ChannelPriority.STRICT
+
+        cache_key = strict_channel_priority, tuple(explicit_specs)
+        if cache_key in self._reduced_index_cache:
+            return self._reduced_index_cache[cache_key]
+
+        if log.isEnabledFor(DEBUG):
+            log.debug('Retrieving packages for: %s', dashlist(
+                sorted(text_type(s) for s in explicit_specs)))
+
+        explicit_specs, features = self.verify_specs(explicit_specs)
+        filter_out = {prec: False if val else ""feature not enabled""
+                      for prec, val in iteritems(self.default_filter(features))}
+
+        snames = set()
+        top_level_spec = None
+        cp_filter_applied = set()  # values are package names
+        if sort_by_exactness:
+            # prioritize specs that are more exact.  Exact specs will evaluate to 3,
+            #    constrained specs will evaluate to 2, and name only will be 1
+            explicit_specs = sorted(list(explicit_specs), key=lambda x: (
+                exactness_and_number_of_deps(self, x), x.dist_str()), reverse=True)
+
+        # tuple because it needs to be hashable
+        explicit_specs = tuple(explicit_specs)
+
+        explicit_spec_package_pool = {
+            s.name: explicit_spec_package_pool.get(s.name, set()) | set(self.find_matches(s))
+            for s in explicit_specs
+        }
+
+        def filter_group(_specs):
+            # all _specs should be for the same package name
+            name = next(iter(_specs)).name
+            group = self.groups.get(name, ())
+
+            # implement strict channel priority
+            if group and strict_channel_priority and name not in cp_filter_applied:
+                sole_source_channel_name = self._get_strict_channel(name)
+                for prec in group:
+                    if prec.channel.name != sole_source_channel_name:
+                        filter_out[prec] = ""removed due to strict channel priority""
+                cp_filter_applied.add(name)
+
+            # Prune packages that don't match any of the patterns,
+            # have unsatisfiable dependencies, or conflict with the explicit specs
+            nold = nnew = 0
+            for prec in group:
+                if not filter_out.setdefault(prec, False):
+                    nold += 1
+                    if (not self.match_any(_specs, prec)) or (
+                            explicit_spec_package_pool.get(name) and
+                            prec not in explicit_spec_package_pool[name]):
+                        filter_out[prec] = ""incompatible with required spec %s"" % top_level_spec
+                        continue
+                    unsatisfiable_dep_specs = {
+                        ms for ms in self.ms_depends(prec)
+                        if not ms.optional and not any(
+                            rec for rec in self.find_matches(ms)
+                            if not filter_out.get(rec, False)
+                        )
+                    }
+                    if unsatisfiable_dep_specs:
+                        filter_out[prec] = ""unsatisfiable dependencies %s"" % "" "".join(
+                            str(s) for s in unsatisfiable_dep_specs
+                        )
+                        continue
+                    filter_out[prec] = False
+                    nnew += 1
+
+            reduced = nnew < nold
+            if reduced:
+                log.debug('%s: pruned from %d -> %d' % (name, nold, nnew))
+            if any(ms.optional for ms in _specs):
+                return reduced
+            elif nnew == 0:
+                # Indicates that a conflict was found; we can exit early
+                return None
+
+            # Perform the same filtering steps on any dependencies shared across
+            # *all* packages in the group. 
+            if reduced or name not in snames:
+                snames.add(name)
+
+                _dep_specs = groupby(lambda s: s.name, (
+                    dep_spec
+                    for prec in group if not filter_out.get(prec, False)
+                    for dep_spec in self.ms_depends(prec) if not dep_spec.optional
+                ))
+                _dep_specs.pop(""*"", None)  # discard track_features specs
+
+                for deps_name, deps in sorted(_dep_specs.items(),
+                                              key=lambda x: any(_.optional for _ in x[1])):
+                    if len(deps) >= nnew:
+                        res = filter_group(set(deps))
+                        if res:
+                            reduced = True
+                        elif res is None:
+                            # Indicates that a conflict was found; we can exit early
+                            return None
+
+            return reduced
+
+        # Iterate on pruning until no progress is made.
+        pruned_to_zero = set()
+        for _ in range(2):
+            snames.clear()
+            slist = deque(explicit_specs)
+            while slist:
+                s = slist.popleft()
+                if filter_group([s]):
+                    slist.append(s)
+                else:
+                    pruned_to_zero.add(s)
+
+        if pruned_to_zero and exit_on_conflict:
+            return {}
+
+        # Determine all valid packages in the dependency graph
+        reduced_index2 = {prec: prec for prec in (make_feature_record(fstr) for fstr in features)}
+        specs_by_name_seed = OrderedDict()
+        for s in explicit_specs:
+            specs_by_name_seed[s.name] = specs_by_name_seed.get(s.name, list()) + [s]
+
+        for explicit_spec in explicit_specs:
+            add_these_precs2 = tuple(
+                prec for prec in self.find_matches(explicit_spec)
+                if prec not in reduced_index2 and self.valid2(prec, filter_out))
+
+            if strict_channel_priority and add_these_precs2:
+                strict_channel_name = self._get_strict_channel(add_these_precs2[0].name)
+
+                add_these_precs2 = tuple(
+                    prec for prec in add_these_precs2 if prec.channel.name == strict_channel_name
+                )
+            reduced_index2.update((prec, prec) for prec in add_these_precs2)
+
+            for pkg in add_these_precs2:
+                # what we have seen is only relevant within the context of a single package
+                # that is picked up because of an explicit spec.
+                seen_specs = set()
+                specs_by_name = copy.deepcopy(specs_by_name_seed)
+
+                dep_specs = set(self.ms_depends(pkg))
+                for dep in dep_specs:
+                    specs = specs_by_name.get(dep.name, list())
+                    if dep not in specs and (not specs or dep.strictness >= specs[0].strictness):
+                        specs.insert(0, dep)
+                    specs_by_name[dep.name] = specs
+
+                while dep_specs:
+                    ms = dep_specs.pop()
+                    seen_specs.add(ms)
+                    for dep_pkg in (_ for _ in self.find_matches(ms) if _ not in reduced_index2):
+                        if not self.valid2(dep_pkg, filter_out):
+                            continue
+
+                        # expand the reduced index if not using strict channel priority,
+                        if (not strict_channel_priority or
+                                (self._get_strict_channel(dep_pkg.name) ==
+                                 dep_pkg.channel.name)):
+                            reduced_index2[dep_pkg] = dep_pkg
+
+                            # recurse to deps of this dep
+                            new_specs = set(self.ms_depends(dep_pkg)) - seen_specs
+                            for new_ms in new_specs:
+                                if ('track_features' not in new_ms and not self._broader(
+                                        new_ms, tuple(specs_by_name.get(new_ms.name, tuple())))):
+                                    dep_specs.add(new_ms)
+                                else:
+                                    seen_specs.add(new_ms)
+
+        reduced_index2 = frozendict(reduced_index2)
+        self._reduced_index_cache[cache_key] = reduced_index2
+        return reduced_index2
+```
+
+### Places where set comprehension was used:
+
+1. `unsatisfiable_dep_specs = {ms for ms in self.ms_depends(prec) if not ms.optional and not any(rec for rec in self.find_matches(ms) if not filter_out.get(rec, False))}` - This replaces a loop with a set comprehension.
+
+2. `explicit_spec_package_pool = {s.name: explicit_spec_package_pool.get(s.name, set()) | set(self.find_matches(s)) for s in explicit_specs}` - This replaces a loop with dictionary comprehension that involves a set operation.
+
+In total, **2 places** were refactored with set comprehension."
+https://github.com/mozilla/pontoon/tree/master/pontoon/insights/tasks.py,"def get_active_users_data(
+    start_of_today,
+    privileged_users,
+    active_users_actions,
+    all_reviewers,
+    all_contributors,
+    months=12,
+):
+    """"""Get active user counts for the Active users panel.""""""
+    active_managers = set()
+    active_reviewers = set()
+    active_contributors = set()
+
+    # Get active managers
+    for user in privileged_users:
+        manager = user[""managers_group__user""]
+        last_login = user[""managers_group__user__last_login""]
+
+        if last_login:
+            if last_login + relativedelta(months=months) > start_of_today:
+                active_managers.add(manager)
+
+    # Get active reviewers and contributors. Make sure they are included among all
+    # users, otherwise we might include PMs and privileged users of other locales.
+    for action in active_users_actions:
+        user = action[""performed_by""]
+        if user in all_reviewers and action[""action_type""] in (
+            ""translation:approved"",
+            ""translation:unapproved"",
+            ""translation:rejected"",
+            ""translation:unrejected"",
+        ):
+            if action[""created_at""] + relativedelta(months=months) > start_of_today:
+                active_reviewers.add(user)
+
+        if user in all_contributors and action[""action_type""] == ""translation:created"":
+            if action[""created_at""] + relativedelta(months=months) > start_of_today:
+                active_contributors.add(user)
+
+    return {
+        ""managers"": len(active_managers),
+        ""reviewers"": len(active_reviewers),
+        ""contributors"": len(active_contributors),
+    }",_97809.py,15,"for user in privileged_users:
+    manager = user['managers_group__user']
+    last_login = user['managers_group__user__last_login']
+    if last_login:
+        if last_login + relativedelta(months=months) > start_of_today:
+            active_managers.add(manager)
+
+","active_managers = {user['managers_group__user'] for user in privileged_users if user['managers_group__user__last_login'] if user['managers_group__user__last_login'] + relativedelta(months=months) > start_of_today}
+
+",1,"from dateutil.relativedelta import relativedelta
+
+def get_active_users_data(
+    start_of_today,
+    privileged_users,
+    active_users_actions,
+    all_reviewers,
+    all_contributors,
+    months=12,
+):
+    """"""Get active user counts for the Active users panel.""""""
+    
+    # Refactoring 1: Using set comprehension for active managers.
+    active_managers = {
+        user[""managers_group__user""]
+        for user in privileged_users
+        if user[""managers_group__user__last_login""] and 
+            user[""managers_group__user__last_login""] + relativedelta(months=months) > start_of_today
+    }
+
+    # Refactoring 2: Using set comprehension for active reviewers.
+    active_reviewers = {
+        action[""performed_by""]
+        for action in active_users_actions
+        if action[""performed_by""] in all_reviewers and action[""action_type""] in (
+            ""translation:approved"",
+            ""translation:unapproved"",
+            ""translation:rejected"",
+            ""translation:unrejected""
+        ) and action[""created_at""] + relativedelta(months=months) > start_of_today
+    }
+
+    # Refactoring 3: Using set comprehension for active contributors.
+    active_contributors = {
+        action[""performed_by""]
+        for action in active_users_actions
+        if action[""performed_by""] in all_contributors and action[""action_type""] == ""translation:created""
+        and action[""created_at""] + relativedelta(months=months) > start_of_today
+    }
+
+    return {
+        ""managers"": len(active_managers),
+        ""reviewers"": len(active_reviewers),
+        ""contributors"": len(active_contributors),
+    }",3,"Sure! I'll refactor this code using Python set comprehension idiom where appropriate.
+
+Here is the refactored code:
+
+
+
+### Refactor Breakdown:
+- **Set Comprehension 1:** Refactored the loop that collects active managers into a set comprehension.
+- **Set Comprehension 2:** Refactored the loop that collects active reviewers into a set comprehension.
+- **Set Comprehension 3:** Refactored the loop that collects active contributors into a set comprehension.
+
+### Total Changes: 
+- **3 set comprehension refactoring** have been made.
+
+This should result in more concise, Pythonic code while maintaining the same functionality.","Sure! I'll refactor this code using Python set comprehension idiom where appropriate.
+
+Here is the refactored code:
+
+```python
+from dateutil.relativedelta import relativedelta
+
+def get_active_users_data(
+    start_of_today,
+    privileged_users,
+    active_users_actions,
+    all_reviewers,
+    all_contributors,
+    months=12,
+):
+    """"""Get active user counts for the Active users panel.""""""
+    
+    # Refactoring 1: Using set comprehension for active managers.
+    active_managers = {
+        user[""managers_group__user""]
+        for user in privileged_users
+        if user[""managers_group__user__last_login""] and 
+            user[""managers_group__user__last_login""] + relativedelta(months=months) > start_of_today
+    }
+
+    # Refactoring 2: Using set comprehension for active reviewers.
+    active_reviewers = {
+        action[""performed_by""]
+        for action in active_users_actions
+        if action[""performed_by""] in all_reviewers and action[""action_type""] in (
+            ""translation:approved"",
+            ""translation:unapproved"",
+            ""translation:rejected"",
+            ""translation:unrejected""
+        ) and action[""created_at""] + relativedelta(months=months) > start_of_today
+    }
+
+    # Refactoring 3: Using set comprehension for active contributors.
+    active_contributors = {
+        action[""performed_by""]
+        for action in active_users_actions
+        if action[""performed_by""] in all_contributors and action[""action_type""] == ""translation:created""
+        and action[""created_at""] + relativedelta(months=months) > start_of_today
+    }
+
+    return {
+        ""managers"": len(active_managers),
+        ""reviewers"": len(active_reviewers),
+        ""contributors"": len(active_contributors),
+    }
+```
+
+### Refactor Breakdown:
+- **Set Comprehension 1:** Refactored the loop that collects active managers into a set comprehension.
+- **Set Comprehension 2:** Refactored the loop that collects active reviewers into a set comprehension.
+- **Set Comprehension 3:** Refactored the loop that collects active contributors into a set comprehension.
+
+### Total Changes: 
+- **3 set comprehension refactoring** have been made.
+
+This should result in more concise, Pythonic code while maintaining the same functionality."
+https://github.com/dask/dask/tree/master/dask/blockwise.py,"def _get_coord_mapping(
+    dims,
+    output,
+    out_indices,
+    numblocks,
+    argpairs,
+    concatenate,
+):
+    """"""Calculate coordinate mapping for graph construction.
+
+    This function handles the high-level logic behind Blockwise graph
+    construction. The output is a tuple containing: The mapping between
+    input and output block coordinates (`coord_maps`), the axes along
+    which to concatenate for each input (`concat_axes`), and the dummy
+    indices needed for broadcasting (`dummies`).
+
+    Used by `make_blockwise_graph` and `Blockwise._cull_dependencies`.
+
+    Parameters
+    ----------
+    dims : dict
+        Mapping between each index specified in `argpairs` and
+        the number of output blocks for that index. Corresponds
+        to the Blockwise `dims` attribute.
+    output : str
+        Corresponds to the Blockwise `output` attribute.
+    out_indices : tuple
+        Corresponds to the Blockwise `output_indices` attribute.
+    numblocks : dict
+        Corresponds to the Blockwise `numblocks` attribute.
+    argpairs : tuple
+        Corresponds to the Blockwise `indices` attribute.
+    concatenate : bool
+        Corresponds to the Blockwise `concatenate` attribute.
+    """"""
+
+    block_names = set()
+    all_indices = set()
+    for name, ind in argpairs:
+        if ind is not None:
+            block_names.add(name)
+            for x in ind:
+                all_indices.add(x)
+    assert set(numblocks) == block_names
+
+    dummy_indices = all_indices - set(out_indices)
+
+    # For each position in the output space, we'll construct a
+    # ""coordinate set"" that consists of
+    # - the output indices
+    # - the dummy indices
+    # - the dummy indices, with indices replaced by zeros (for broadcasting), we
+    #   are careful to only emit a single dummy zero when concatenate=True to not
+    #   concatenate the same array with itself several times.
+    # - a 0 to assist with broadcasting.
+
+    index_pos, zero_pos = {}, {}
+    for i, ind in enumerate(out_indices):
+        index_pos[ind] = i
+        zero_pos[ind] = -1
+
+    _dummies_list = []
+    for i, ind in enumerate(dummy_indices):
+        index_pos[ind] = 2 * i + len(out_indices)
+        zero_pos[ind] = 2 * i + 1 + len(out_indices)
+        reps = 1 if concatenate else dims[ind]
+        _dummies_list.append([list(range(dims[ind])), [0] * reps])
+
+    # ([0, 1, 2], [0, 0, 0], ...)  For a dummy index of dimension 3
+    dummies = tuple(itertools.chain.from_iterable(_dummies_list))
+    dummies += (0,)
+
+    # For each coordinate position in each input, gives the position in
+    # the coordinate set.
+    coord_maps = []
+
+    # Axes along which to concatenate, for each input
+    concat_axes = []
+    for arg, ind in argpairs:
+        if ind is not None:
+            coord_maps.append(
+                [
+                    zero_pos[i] if nb == 1 else index_pos[i]
+                    for i, nb in zip(ind, numblocks[arg])
+                ]
+            )
+            concat_axes.append([n for n, i in enumerate(ind) if i in dummy_indices])
+        else:
+            coord_maps.append(None)
+            concat_axes.append(None)
+
+    return coord_maps, concat_axes, dummies",_99457.py,42,"for x in ind:
+    all_indices.add(x)
+
+","all_indices |= {x for x in ind}
+
+",1,"def _get_coord_mapping(
+    dims,
+    output,
+    out_indices,
+    numblocks,
+    argpairs,
+    concatenate,
+):
+    """"""Calculate coordinate mapping for graph construction.
+
+    This function handles the high-level logic behind Blockwise graph
+    construction. The output is a tuple containing: The mapping between
+    input and output block coordinates (`coord_maps`), the axes along
+    which to concatenate for each input (`concat_axes`), and the dummy
+    indices needed for broadcasting (`dummies`).
+
+    Used by `make_blockwise_graph` and `Blockwise._cull_dependencies`.
+
+    Parameters
+    ----------
+    dims : dict
+        Mapping between each index specified in `argpairs` and
+        the number of output blocks for that index. Corresponds
+        to the Blockwise `dims` attribute.
+    output : str
+        Corresponds to the Blockwise `output` attribute.
+    out_indices : tuple
+        Corresponds to the Blockwise `output_indices` attribute.
+    numblocks : dict
+        Corresponds to the Blockwise `numblocks` attribute.
+    argpairs : tuple
+        Corresponds to the Blockwise `indices` attribute.
+    concatenate : bool
+        Corresponds to the Blockwise `concatenate` attribute.
+    """"""
+
+    # Refactor: Use set comprehension to collect block_names and all_indices
+    block_names = {name for name, ind in argpairs if ind is not None}
+    all_indices = {x for _, ind in argpairs if ind is not None for x in ind}
+
+    assert set(numblocks) == block_names
+
+    dummy_indices = all_indices - set(out_indices)
+
+    index_pos, zero_pos = {}, {}
+    for i, ind in enumerate(out_indices):
+        index_pos[ind] = i
+        zero_pos[ind] = -1
+
+    _dummies_list = []
+    for i, ind in enumerate(dummy_indices):
+        index_pos[ind] = 2 * i + len(out_indices)
+        zero_pos[ind] = 2 * i + 1 + len(out_indices)
+        reps = 1 if concatenate else dims[ind]
+        _dummies_list.append([list(range(dims[ind])), [0] * reps])
+
+    # ([0, 1, 2], [0, 0, 0], ...)  For a dummy index of dimension 3
+    dummies = tuple(itertools.chain.from_iterable(_dummies_list))
+    dummies += (0,)
+
+    coord_maps = []
+    concat_axes = []
+    for arg, ind in argpairs:
+        if ind is not None:
+            coord_maps.append(
+                [
+                    zero_pos[i] if nb == 1 else index_pos[i]
+                    for i, nb in zip(ind, numblocks[arg])
+                ]
+            )
+            concat_axes.append([n for n, i in enumerate(ind) if i in dummy_indices])
+        else:
+            coord_maps.append(None)
+            concat_axes.append(None)
+
+    return coord_maps, concat_axes, dummies",2,"Let's refactor the provided code using Python's set comprehension idiom. Specifically, we can refactor parts of the code that build sets using for loops and individual `add()` calls.
+
+### Refactored Code:
+
+
+
+### Refactoring Details:
+1. **Set Comprehension for Collecting `block_names`:**
+    - Original:
+      
+    - Refactored:
+      
+
+2. **Set Comprehension for Collecting `all_indices`:**
+    - Original:
+      
+    - Refactored:
+      
+
+### Number of Set Comprehension Refactorings:
+- **2 instances** of set comprehensions were applied in the refactoring process.","Let's refactor the provided code using Python's set comprehension idiom. Specifically, we can refactor parts of the code that build sets using for loops and individual `add()` calls.
+
+### Refactored Code:
+
+```python
+def _get_coord_mapping(
+    dims,
+    output,
+    out_indices,
+    numblocks,
+    argpairs,
+    concatenate,
+):
+    """"""Calculate coordinate mapping for graph construction.
+
+    This function handles the high-level logic behind Blockwise graph
+    construction. The output is a tuple containing: The mapping between
+    input and output block coordinates (`coord_maps`), the axes along
+    which to concatenate for each input (`concat_axes`), and the dummy
+    indices needed for broadcasting (`dummies`).
+
+    Used by `make_blockwise_graph` and `Blockwise._cull_dependencies`.
+
+    Parameters
+    ----------
+    dims : dict
+        Mapping between each index specified in `argpairs` and
+        the number of output blocks for that index. Corresponds
+        to the Blockwise `dims` attribute.
+    output : str
+        Corresponds to the Blockwise `output` attribute.
+    out_indices : tuple
+        Corresponds to the Blockwise `output_indices` attribute.
+    numblocks : dict
+        Corresponds to the Blockwise `numblocks` attribute.
+    argpairs : tuple
+        Corresponds to the Blockwise `indices` attribute.
+    concatenate : bool
+        Corresponds to the Blockwise `concatenate` attribute.
+    """"""
+
+    # Refactor: Use set comprehension to collect block_names and all_indices
+    block_names = {name for name, ind in argpairs if ind is not None}
+    all_indices = {x for _, ind in argpairs if ind is not None for x in ind}
+
+    assert set(numblocks) == block_names
+
+    dummy_indices = all_indices - set(out_indices)
+
+    index_pos, zero_pos = {}, {}
+    for i, ind in enumerate(out_indices):
+        index_pos[ind] = i
+        zero_pos[ind] = -1
+
+    _dummies_list = []
+    for i, ind in enumerate(dummy_indices):
+        index_pos[ind] = 2 * i + len(out_indices)
+        zero_pos[ind] = 2 * i + 1 + len(out_indices)
+        reps = 1 if concatenate else dims[ind]
+        _dummies_list.append([list(range(dims[ind])), [0] * reps])
+
+    # ([0, 1, 2], [0, 0, 0], ...)  For a dummy index of dimension 3
+    dummies = tuple(itertools.chain.from_iterable(_dummies_list))
+    dummies += (0,)
+
+    coord_maps = []
+    concat_axes = []
+    for arg, ind in argpairs:
+        if ind is not None:
+            coord_maps.append(
+                [
+                    zero_pos[i] if nb == 1 else index_pos[i]
+                    for i, nb in zip(ind, numblocks[arg])
+                ]
+            )
+            concat_axes.append([n for n, i in enumerate(ind) if i in dummy_indices])
+        else:
+            coord_maps.append(None)
+            concat_axes.append(None)
+
+    return coord_maps, concat_axes, dummies
+```
+
+### Refactoring Details:
+1. **Set Comprehension for Collecting `block_names`:**
+    - Original:
+      ```python
+      block_names = set()
+      for name, ind in argpairs:
+          if ind is not None:
+              block_names.add(name)
+      ```
+    - Refactored:
+      ```python
+      block_names = {name for name, ind in argpairs if ind is not None}
+      ```
+
+2. **Set Comprehension for Collecting `all_indices`:**
+    - Original:
+      ```python
+      all_indices = set()
+      for name, ind in argpairs:
+          if ind is not None:
+              for x in ind:
+                  all_indices.add(x)
+      ```
+    - Refactored:
+      ```python
+      all_indices = {x for _, ind in argpairs if ind is not None for x in ind}
+      ```
+
+### Number of Set Comprehension Refactorings:
+- **2 instances** of set comprehensions were applied in the refactoring process."
+https://github.com/dedupeio/dedupe/tree/master/dedupe/convenience.py,"def training_data_dedupe(data: Data,
+                         common_key: str,
+                         training_size: int = 50000) -> TrainingData:  # pragma: nocover
+    '''
+    Construct training data for consumption by the func:`mark_pairs`
+    method from an already deduplicated dataset.
+
+    Args:
+
+        data: Dictionary of records where the keys are record_ids and
+              the values are dictionaries with the keys being field names
+        common_key: The name of the record field that uniquely identifies
+                    a match
+        training_size: the rough limit of the number of training examples,
+                       defaults to 50000
+
+    .. note::
+
+         Every match must be identified by the sharing of a common key.
+         This function assumes that if two records do not share a common key
+         then they are distinct records.
+    '''
+
+    identified_records: Dict[str, List[RecordID]]
+    identified_records = collections.defaultdict(list)
+    matched_pairs: Set[Tuple[RecordID, RecordID]] = set()
+    distinct_pairs: Set[Tuple[RecordID, RecordID]] = set()
+    unique_record_ids: Set[RecordID] = set()
+
+    # a list of record_ids associated with each common_key
+    for record_id, record in data.items():
+        unique_record_ids.add(record_id)
+        identified_records[record[common_key]].append(record_id)
+
+    # all combinations of matched_pairs from each common_key group
+    for record_ids in identified_records.values():
+        if len(record_ids) > 1:
+            matched_pairs.update(itertools.combinations(sorted(record_ids), 2))  # type: ignore
+
+    # calculate indices using dedupe.core.randomPairs to avoid
+    # the memory cost of enumerating all possible pairs
+    unique_record_ids_l = list(unique_record_ids)
+    pair_indices = randomPairs(len(unique_record_ids), training_size)
+    distinct_pairs = set()
+    for i, j in pair_indices:
+        distinct_pairs.add((unique_record_ids_l[i],
+                            unique_record_ids_l[j]))
+
+    distinct_pairs -= matched_pairs
+
+    matched_records = [(data[key_1], data[key_2])
+                       for key_1, key_2 in matched_pairs]
+
+    distinct_records = [(data[key_1], data[key_2])
+                        for key_1, key_2 in distinct_pairs]
+
+    training_pairs: TrainingData
+    training_pairs = {'match': matched_records,
+                      'distinct': distinct_records}
+
+    return training_pairs",_103254.py,45,"for (i, j) in pair_indices:
+    distinct_pairs.add((unique_record_ids_l[i], unique_record_ids_l[j]))
+
+","distinct_pairs = {(unique_record_ids_l[i], unique_record_ids_l[j]) for (i, j) in pair_indices}
+
+",1,"def training_data_dedupe(data: Data,
+                         common_key: str,
+                         training_size: int = 50000) -> TrainingData:  # pragma: nocover
+    '''
+    Construct training data for consumption by the func:`mark_pairs`
+    method from an already deduplicated dataset.
+
+    Args:
+
+        data: Dictionary of records where the keys are record_ids and
+              the values are dictionaries with the keys being field names
+        common_key: The name of the record field that uniquely identifies
+                    a match
+        training_size: the rough limit of the number of training examples,
+                       defaults to 50000
+
+    .. note::
+
+         Every match must be identified by the sharing of a common key.
+         This function assumes that if two records do not share a common key
+         then they are distinct records.
+    '''
+
+    identified_records: Dict[str, List[RecordID]]
+    identified_records = collections.defaultdict(list)
+    matched_pairs: Set[Tuple[RecordID, RecordID]] = set()
+    distinct_pairs: Set[Tuple[RecordID, RecordID]] = set()
+    unique_record_ids: Set[RecordID] = set()
+
+    # a list of record_ids associated with each common_key
+    for record_id, record in data.items():
+        unique_record_ids.add(record_id)
+        identified_records[record[common_key]].append(record_id)
+
+    # all combinations of matched_pairs from each common_key group
+    matched_pairs.update({pair for record_ids in identified_records.values() if len(record_ids) > 1 
+                          for pair in itertools.combinations(sorted(record_ids), 2)})  # type: ignore
+
+    # calculate indices using dedupe.core.randomPairs to avoid
+    # the memory cost of enumerating all possible pairs
+    unique_record_ids_l = list(unique_record_ids)
+    pair_indices = randomPairs(len(unique_record_ids), training_size)
+
+    # Using set comprehension to create distinct_pairs
+    distinct_pairs = {(unique_record_ids_l[i], unique_record_ids_l[j]) for i, j in pair_indices}
+
+    distinct_pairs -= matched_pairs
+
+    matched_records = [(data[key_1], data[key_2])
+                       for key_1, key_2 in matched_pairs]
+
+    distinct_records = [(data[key_1], data[key_2])
+                        for key_1, key_2 in distinct_pairs]
+
+    training_pairs: TrainingData
+    training_pairs = {'match': matched_records,
+                      'distinct': distinct_records}
+
+    return training_pairs",2,"Here is the refactored version of your code using set comprehension. I've replaced appropriate loops that build or update sets with set comprehensions.
+
+
+
+### Refactored Components:
+
+1. **Matched Pairs Update (Set Comprehension)**:
+   - Before:
+     
+   - After:
+     
+
+2. **Distinct Pairs Generation (Set Comprehension)**:
+   - Before:
+     
+   - After:
+     
+
+### Total Number of Set Comprehension Refactorings: 2
+
+Refactoring makes the code more concise and leverages Python's ability to express set operations more compactly for better readability.","Here is the refactored version of your code using set comprehension. I've replaced appropriate loops that build or update sets with set comprehensions.
+
+```python
+def training_data_dedupe(data: Data,
+                         common_key: str,
+                         training_size: int = 50000) -> TrainingData:  # pragma: nocover
+    '''
+    Construct training data for consumption by the func:`mark_pairs`
+    method from an already deduplicated dataset.
+
+    Args:
+
+        data: Dictionary of records where the keys are record_ids and
+              the values are dictionaries with the keys being field names
+        common_key: The name of the record field that uniquely identifies
+                    a match
+        training_size: the rough limit of the number of training examples,
+                       defaults to 50000
+
+    .. note::
+
+         Every match must be identified by the sharing of a common key.
+         This function assumes that if two records do not share a common key
+         then they are distinct records.
+    '''
+
+    identified_records: Dict[str, List[RecordID]]
+    identified_records = collections.defaultdict(list)
+    matched_pairs: Set[Tuple[RecordID, RecordID]] = set()
+    distinct_pairs: Set[Tuple[RecordID, RecordID]] = set()
+    unique_record_ids: Set[RecordID] = set()
+
+    # a list of record_ids associated with each common_key
+    for record_id, record in data.items():
+        unique_record_ids.add(record_id)
+        identified_records[record[common_key]].append(record_id)
+
+    # all combinations of matched_pairs from each common_key group
+    matched_pairs.update({pair for record_ids in identified_records.values() if len(record_ids) > 1 
+                          for pair in itertools.combinations(sorted(record_ids), 2)})  # type: ignore
+
+    # calculate indices using dedupe.core.randomPairs to avoid
+    # the memory cost of enumerating all possible pairs
+    unique_record_ids_l = list(unique_record_ids)
+    pair_indices = randomPairs(len(unique_record_ids), training_size)
+
+    # Using set comprehension to create distinct_pairs
+    distinct_pairs = {(unique_record_ids_l[i], unique_record_ids_l[j]) for i, j in pair_indices}
+
+    distinct_pairs -= matched_pairs
+
+    matched_records = [(data[key_1], data[key_2])
+                       for key_1, key_2 in matched_pairs]
+
+    distinct_records = [(data[key_1], data[key_2])
+                        for key_1, key_2 in distinct_pairs]
+
+    training_pairs: TrainingData
+    training_pairs = {'match': matched_records,
+                      'distinct': distinct_records}
+
+    return training_pairs
+```
+
+### Refactored Components:
+
+1. **Matched Pairs Update (Set Comprehension)**:
+   - Before:
+     ```python
+     for record_ids in identified_records.values():
+         if len(record_ids) > 1:
+             matched_pairs.update(itertools.combinations(sorted(record_ids), 2))  # type: ignore
+     ```
+   - After:
+     ```python
+     matched_pairs.update({pair for record_ids in identified_records.values() if len(record_ids) > 1
+                           for pair in itertools.combinations(sorted(record_ids), 2)})
+     ```
+
+2. **Distinct Pairs Generation (Set Comprehension)**:
+   - Before:
+     ```python
+     for i, j in pair_indices:
+         distinct_pairs.add((unique_record_ids_l[i],
+                             unique_record_ids_l[j]))
+     ```
+   - After:
+     ```python
+     distinct_pairs = {(unique_record_ids_l[i], unique_record_ids_l[j]) for i, j in pair_indices}
+     ```
+
+### Total Number of Set Comprehension Refactorings: 2
+
+Refactoring makes the code more concise and leverages Python's ability to express set operations more compactly for better readability."
+https://github.com/DataDog/integrations-core/tree/master/amazon_msk/tests/test_e2e.py,"def assert_jmx_metrics(aggregator, tags):
+    expected_metrics = set()
+
+    for raw_metric_name, metric_name in JMX_METRICS_MAP.items():
+        if raw_metric_name.endswith('_total') and raw_metric_name not in JMX_METRICS_OVERRIDES:
+            expected_metrics.add('{}.count'.format(metric_name[:-6]))
+        else:
+            expected_metrics.add(metric_name)
+
+    expected_metrics.update(METRICS_FROM_LABELS)
+    expected_metrics.update(data['legacy_name'] for data in METRICS_WITH_NAME_AS_LABEL.values())
+
+    for metric in sorted(expected_metrics):
+        metric = 'aws.msk.{}'.format(metric)
+        for tag in tags:
+            aggregator.assert_metric_has_tag(metric, tag)",_122321.py,4,"for (raw_metric_name, metric_name) in JMX_METRICS_MAP.items():
+    if raw_metric_name.endswith('_total') and raw_metric_name not in JMX_METRICS_OVERRIDES:
+        expected_metrics.add('{}.count'.format(metric_name[:-6]))
+    else:
+        expected_metrics.add(metric_name)
+
+","expected_metrics = {'{}.count'.format(metric_name[:-6]) if raw_metric_name.endswith('_total') and raw_metric_name not in JMX_METRICS_OVERRIDES else metric_name for (raw_metric_name, metric_name) in JMX_METRICS_MAP.items()}
+
+",1,"def assert_jmx_metrics(aggregator, tags):
+    expected_metrics = {
+        '{}.count'.format(metric_name[:-6]) if raw_metric_name.endswith('_total') and raw_metric_name not in JMX_METRICS_OVERRIDES else metric_name
+        for raw_metric_name, metric_name in JMX_METRICS_MAP.items()
+    }
+
+    expected_metrics.update(METRICS_FROM_LABELS)
+    expected_metrics.update({data['legacy_name'] for data in METRICS_WITH_NAME_AS_LABEL.values()})
+
+    for metric in sorted(expected_metrics):
+        metric = 'aws.msk.{}'.format(metric)
+        for tag in tags:
+            aggregator.assert_metric_has_tag(metric, tag)",2,"Here is your refactored code using set comprehension, along with the count of refactorings:
+
+
+
+### Number of set comprehension refactorings:
+1. The first `for` loop was refactored into set comprehension.
+2. The `METRICS_WITH_NAME_AS_LABEL` update call was refactored into set comprehension.
+
+Thus, I made **2 set comprehension refactorings**.","Here is your refactored code using set comprehension, along with the count of refactorings:
+
+```python
+def assert_jmx_metrics(aggregator, tags):
+    expected_metrics = {
+        '{}.count'.format(metric_name[:-6]) if raw_metric_name.endswith('_total') and raw_metric_name not in JMX_METRICS_OVERRIDES else metric_name
+        for raw_metric_name, metric_name in JMX_METRICS_MAP.items()
+    }
+
+    expected_metrics.update(METRICS_FROM_LABELS)
+    expected_metrics.update({data['legacy_name'] for data in METRICS_WITH_NAME_AS_LABEL.values()})
+
+    for metric in sorted(expected_metrics):
+        metric = 'aws.msk.{}'.format(metric)
+        for tag in tags:
+            aggregator.assert_metric_has_tag(metric, tag)
+```
+
+### Number of set comprehension refactorings:
+1. The first `for` loop was refactored into set comprehension.
+2. The `METRICS_WITH_NAME_AS_LABEL` update call was refactored into set comprehension.
+
+Thus, I made **2 set comprehension refactorings**."
+https://github.com/mathics/Mathics/tree/master/mathics/builtin/inout.py,"def apply(self, expr, moff, mon, evaluation):
+        ""Quiet[expr_, moff_, mon_]""
+
+        def get_msg_list(expr):
+            if check_message(expr):
+                expr = Expression(SymbolList, expr)
+            if expr.get_name() == ""System`All"":
+                all = True
+                messages = []
+            elif expr.get_name() == ""System`None"":
+                all = False
+                messages = []
+            elif expr.has_form(""List"", None):
+                all = False
+                messages = []
+                for item in expr.leaves:
+                    if check_message(item):
+                        messages.append(item)
+                    else:
+                        raise ValueError
+            else:
+                raise ValueError
+            return all, messages
+
+        old_quiet_all = evaluation.quiet_all
+        old_quiet_messages = set(evaluation.get_quiet_messages())
+        quiet_messages = old_quiet_messages.copy()
+        try:
+            quiet_expr = Expression(""Quiet"", expr, moff, mon)
+            try:
+                off_all, off_messages = get_msg_list(moff)
+            except ValueError:
+                evaluation.message(""Quiet"", ""anmlist"", 2, quiet_expr)
+                return
+            try:
+                on_all, on_messages = get_msg_list(mon)
+            except ValueError:
+                evaluation.message(""Quiet"", ""anmlist"", 2, quiet_expr)
+                return
+            if off_all and on_all:
+                evaluation.message(""Quiet"", ""allall"", quiet_expr)
+                return
+            evaluation.quiet_all = off_all
+            conflict = []
+            for off in off_messages:
+                if off in on_messages:
+                    conflict.append(off)
+                    break
+            if conflict:
+                evaluation.message(
+                    ""Quiet"", ""conflict"", quiet_expr, Expression(SymbolList, *conflict)
+                )
+                return
+            for off in off_messages:
+                quiet_messages.add(off)
+            for on in on_messages:
+                quiet_messages.discard(on)
+            if on_all:
+                quiet_messages = set()
+            evaluation.set_quiet_messages(quiet_messages)
+
+            return expr.evaluate(evaluation)
+        finally:
+            evaluation.quiet_all = old_quiet_all
+            evaluation.set_quiet_messages(old_quiet_messages)",_156465.py,54,"for off in off_messages:
+    quiet_messages.add(off)
+
+","quiet_messages |= {off for off in off_messages}
+
+",1,"def apply(self, expr, moff, mon, evaluation):
+    ""Quiet[expr_, moff_, mon_]""
+
+    def get_msg_list(expr):
+        if check_message(expr):
+            expr = Expression(SymbolList, expr)
+        if expr.get_name() == ""System`All"":
+            all = True
+            messages = []
+        elif expr.get_name() == ""System`None"":
+            all = False
+            messages = []
+        elif expr.has_form(""List"", None):
+            all = False
+            messages = {
+                item for item in expr.leaves if check_message(item)
+            }  # Set comprehension here
+            if len(messages) != len(expr.leaves):
+                raise ValueError  # if not all leaves are valid messages
+        else:
+            raise ValueError
+        return all, messages
+
+    old_quiet_all = evaluation.quiet_all
+    old_quiet_messages = set(evaluation.get_quiet_messages())
+    quiet_messages = old_quiet_messages.copy()
+
+    try:
+        quiet_expr = Expression(""Quiet"", expr, moff, mon)
+        
+        try:
+            off_all, off_messages = get_msg_list(moff)
+        except ValueError:
+            evaluation.message(""Quiet"", ""anmlist"", 2, quiet_expr)
+            return
+        
+        try:
+            on_all, on_messages = get_msg_list(mon)
+        except ValueError:
+            evaluation.message(""Quiet"", ""anmlist"", 2, quiet_expr)
+            return
+        
+        if off_all and on_all:
+            evaluation.message(""Quiet"", ""allall"", quiet_expr)
+            return
+        
+        evaluation.quiet_all = off_all
+        
+        conflict = {off for off in off_messages if off in on_messages}  # Set comprehension here
+        if conflict:
+            evaluation.message(
+                ""Quiet"", ""conflict"", quiet_expr, Expression(SymbolList, *conflict)
+            )
+            return
+        
+        quiet_messages.update(off_messages)  # Using set.update() instead of a loop
+        quiet_messages.difference_update(on_messages)  # Using set.difference_update() instead of a loop
+        
+        if on_all:
+            quiet_messages = set()
+        
+        evaluation.set_quiet_messages(quiet_messages)
+
+        return expr.evaluate(evaluation)
+    
+    finally:
+        evaluation.quiet_all = old_quiet_all
+        evaluation.set_quiet_messages(old_quiet_messages)",2,"To refactor the given code using Python's set comprehension idiom, I will identify instances where loops over lists (such as appending or adding elements) can be replaced with set comprehensions. This will reduce the number of explicit `for` loops and make the code more concise.
+
+---
+
+### **Refactored Code with Set Comprehension:**
+
+
+
+---
+
+### **Refactoring Summary:**
+
+1. **Set Comprehension 1**: 
+   - Replaced the loop adding valid message items to the `messages` list with a set comprehension directly inside the `elif expr.has_form(""List"", None)` block. This refactor is more concise and directly constructs a set with the validated items.
+
+   
+
+2. **Set Comprehension 2**: 
+   - Replaced the `for` loop that finds conflicts between `off_messages` and `on_messages` with a set comprehension. The comprehension checks if any message in `off_messages` also exists in `on_messages`.
+
+   
+
+---
+
+### **Explanation of Set Methods Used:**
+- **set comprehension**: `{item for item in iterable if condition}` allows concise filtering and generation of sets.
+- **update()**: Adds all elements of the provided iterable (in this case, `off_messages`) to a set. It is more efficient than looping over the elements and adding each manually inside a loop.
+- **difference_update()**: Removes all elements found in `on_messages` from `quiet_messages`, again more efficient than manually looping.
+
+---
+
+### **Number of set comprehension refactorings**: 2","To refactor the given code using Python's set comprehension idiom, I will identify instances where loops over lists (such as appending or adding elements) can be replaced with set comprehensions. This will reduce the number of explicit `for` loops and make the code more concise.
+
+---
+
+### **Refactored Code with Set Comprehension:**
+
+```python
+def apply(self, expr, moff, mon, evaluation):
+    ""Quiet[expr_, moff_, mon_]""
+
+    def get_msg_list(expr):
+        if check_message(expr):
+            expr = Expression(SymbolList, expr)
+        if expr.get_name() == ""System`All"":
+            all = True
+            messages = []
+        elif expr.get_name() == ""System`None"":
+            all = False
+            messages = []
+        elif expr.has_form(""List"", None):
+            all = False
+            messages = {
+                item for item in expr.leaves if check_message(item)
+            }  # Set comprehension here
+            if len(messages) != len(expr.leaves):
+                raise ValueError  # if not all leaves are valid messages
+        else:
+            raise ValueError
+        return all, messages
+
+    old_quiet_all = evaluation.quiet_all
+    old_quiet_messages = set(evaluation.get_quiet_messages())
+    quiet_messages = old_quiet_messages.copy()
+
+    try:
+        quiet_expr = Expression(""Quiet"", expr, moff, mon)
+        
+        try:
+            off_all, off_messages = get_msg_list(moff)
+        except ValueError:
+            evaluation.message(""Quiet"", ""anmlist"", 2, quiet_expr)
+            return
+        
+        try:
+            on_all, on_messages = get_msg_list(mon)
+        except ValueError:
+            evaluation.message(""Quiet"", ""anmlist"", 2, quiet_expr)
+            return
+        
+        if off_all and on_all:
+            evaluation.message(""Quiet"", ""allall"", quiet_expr)
+            return
+        
+        evaluation.quiet_all = off_all
+        
+        conflict = {off for off in off_messages if off in on_messages}  # Set comprehension here
+        if conflict:
+            evaluation.message(
+                ""Quiet"", ""conflict"", quiet_expr, Expression(SymbolList, *conflict)
+            )
+            return
+        
+        quiet_messages.update(off_messages)  # Using set.update() instead of a loop
+        quiet_messages.difference_update(on_messages)  # Using set.difference_update() instead of a loop
+        
+        if on_all:
+            quiet_messages = set()
+        
+        evaluation.set_quiet_messages(quiet_messages)
+
+        return expr.evaluate(evaluation)
+    
+    finally:
+        evaluation.quiet_all = old_quiet_all
+        evaluation.set_quiet_messages(old_quiet_messages)
+```
+
+---
+
+### **Refactoring Summary:**
+
+1. **Set Comprehension 1**: 
+   - Replaced the loop adding valid message items to the `messages` list with a set comprehension directly inside the `elif expr.has_form(""List"", None)` block. This refactor is more concise and directly constructs a set with the validated items.
+
+   ```python
+   messages = {item for item in expr.leaves if check_message(item)}
+   ```
+
+2. **Set Comprehension 2**: 
+   - Replaced the `for` loop that finds conflicts between `off_messages` and `on_messages` with a set comprehension. The comprehension checks if any message in `off_messages` also exists in `on_messages`.
+
+   ```python
+   conflict = {off for off in off_messages if off in on_messages}
+   ```
+
+---
+
+### **Explanation of Set Methods Used:**
+- **set comprehension**: `{item for item in iterable if condition}` allows concise filtering and generation of sets.
+- **update()**: Adds all elements of the provided iterable (in this case, `off_messages`) to a set. It is more efficient than looping over the elements and adding each manually inside a loop.
+- **difference_update()**: Removes all elements found in `on_messages` from `quiet_messages`, again more efficient than manually looping.
+
+---
+
+### **Number of set comprehension refactorings**: 2 
+"

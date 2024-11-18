@@ -1,0 +1,2645 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/virt-manager/virt-manager/tree/master/virtManager/clone.py,"def _build_cloner(self):
+        conn = self.conn.get_backend()
+        orig_name = self.vm.get_name()
+        new_name = self.widget(""clone-new-name"").get_text()
+        cloner = Cloner(conn, src_name=orig_name)
+        if new_name:
+            cloner.set_clone_name(new_name)
+        return cloner",_11.py,2,"conn = self.conn.get_backend()
+orig_name = self.vm.get_name()
+
+new_name = self.widget('clone-new-name').get_text()
+cloner = Cloner(conn, src_name=orig_name)
+
+","conn , orig_name  = self.conn.get_backend(), self.vm.get_name()
+
+new_name , cloner  = self.widget('clone-new-name').get_text(), Cloner(conn, src_name=orig_name)
+
+",2,"def _build_cloner(self):
+        conn, orig_name, new_name = self.conn.get_backend(), self.vm.get_name(), self.widget(""clone-new-name"").get_text()
+        cloner = Cloner(conn, src_name=orig_name)
+        if new_name:
+            cloner.set_clone_name(new_name)
+        return cloner",1.0,"Here is the refactored code using the Python ""assign multiple targets"" idiom:
+
+
+
+### Explanation:
+I have performed **one refactoring** where I assigned three targets (`conn`, `orig_name`, and `new_name`) into a single assignment statement.
+
+Refactoring count: **1**","Here is the refactored code using the Python ""assign multiple targets"" idiom:
+
+```python
+def _build_cloner(self):
+        conn, orig_name, new_name = self.conn.get_backend(), self.vm.get_name(), self.widget(""clone-new-name"").get_text()
+        cloner = Cloner(conn, src_name=orig_name)
+        if new_name:
+            cloner.set_clone_name(new_name)
+        return cloner
+```
+
+### Explanation:
+I have performed **one refactoring** where I assigned three targets (`conn`, `orig_name`, and `new_name`) into a single assignment statement.
+
+Refactoring count: **1**"
+https://github.com/dask/dask/tree/master/dask/array/slicing.py,"def _slice_1d(dim_shape, lengths, index):
+    """"""Returns a dict of {blocknum: slice}
+
+    This function figures out where each slice should start in each
+    block for a single dimension. If the slice won't return any elements
+    in the block, that block will not be in the output.
+
+    Parameters
+    ----------
+
+    dim_shape - the number of elements in this dimension.
+      This should be a positive, non-zero integer
+    blocksize - the number of elements per block in this dimension
+      This should be a positive, non-zero integer
+    index - a description of the elements in this dimension that we want
+      This might be an integer, a slice(), or an Ellipsis
+
+    Returns
+    -------
+
+    dictionary where the keys are the integer index of the blocks that
+      should be sliced and the values are the slices
+
+    Examples
+    --------
+
+    Trivial slicing
+
+    >>> _slice_1d(100, [60, 40], slice(None, None, None))
+    {0: slice(None, None, None), 1: slice(None, None, None)}
+
+    100 length array cut into length 20 pieces, slice 0:35
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(0, 35))
+    {0: slice(None, None, None), 1: slice(0, 15, 1)}
+
+    Support irregular blocks and various slices
+
+    >>> _slice_1d(100, [20, 10, 10, 10, 25, 25], slice(10, 35))
+    {0: slice(10, 20, 1), 1: slice(None, None, None), 2: slice(0, 5, 1)}
+
+    Support step sizes
+
+    >>> _slice_1d(100, [15, 14, 13], slice(10, 41, 3))
+    {0: slice(10, 15, 3), 1: slice(1, 14, 3), 2: slice(2, 12, 3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(0, 100, 40))  # step > blocksize
+    {0: slice(0, 20, 40), 2: slice(0, 20, 40), 4: slice(0, 20, 40)}
+
+    Also support indexing single elements
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], 25)
+    {1: 5}
+
+    And negative slicing
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, 0, -3)) # doctest: +NORMALIZE_WHITESPACE
+    {4: slice(-1, -21, -3),
+     3: slice(-2, -21, -3),
+     2: slice(-3, -21, -3),
+     1: slice(-1, -21, -3),
+     0: slice(-2, -20, -3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, 12, -3)) # doctest: +NORMALIZE_WHITESPACE
+    {4: slice(-1, -21, -3),
+     3: slice(-2, -21, -3),
+     2: slice(-3, -21, -3),
+     1: slice(-1, -21, -3),
+     0: slice(-2, -8, -3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, -12, -3))
+    {4: slice(-1, -12, -3)}
+    """"""
+    chunk_boundaries = cached_cumsum(lengths)
+
+    if isinstance(index, Integral):
+        # use right-side search to be consistent with previous result
+        i = bisect.bisect_right(chunk_boundaries, index)
+        if i > 0:
+            # the very first chunk has no relative shift
+            ind = index - chunk_boundaries[i - 1]
+        else:
+            ind = index
+        return {int(i): int(ind)}
+
+    assert isinstance(index, slice)
+
+    if index == colon:
+        return {k: colon for k in range(len(lengths))}
+
+    step = index.step or 1
+    if step > 0:
+        start = index.start or 0
+        stop = index.stop if index.stop is not None else dim_shape
+    else:
+        start = index.start if index.start is not None else dim_shape - 1
+        start = dim_shape - 1 if start >= dim_shape else start
+        stop = -(dim_shape + 1) if index.stop is None else index.stop
+
+    # posify start and stop
+    if start < 0:
+        start += dim_shape
+    if stop < 0:
+        stop += dim_shape
+
+    d = dict()
+    if step > 0:
+        istart = bisect.bisect_right(chunk_boundaries, start)
+        istop = bisect.bisect_left(chunk_boundaries, stop)
+
+        # the bound is not exactly tight; make it tighter?
+        istop = min(istop + 1, len(lengths))
+
+        # jump directly to istart
+        if istart > 0:
+            start = start - chunk_boundaries[istart - 1]
+            stop = stop - chunk_boundaries[istart - 1]
+
+        for i in range(istart, istop):
+            length = lengths[i]
+            if start < length and stop > 0:
+                d[i] = slice(start, min(stop, length), step)
+                start = (start - length) % step
+            else:
+                start = start - length
+            stop -= length
+    else:
+        rstart = start  # running start
+
+        istart = bisect.bisect_left(chunk_boundaries, start)
+        istop = bisect.bisect_right(chunk_boundaries, stop)
+
+        # the bound is not exactly tight; make it tighter?
+        istart = min(istart + 1, len(chunk_boundaries) - 1)
+        istop = max(istop - 1, -1)
+
+        for i in range(istart, istop, -1):
+            chunk_stop = chunk_boundaries[i]
+            # create a chunk start and stop
+            if i == 0:
+                chunk_start = 0
+            else:
+                chunk_start = chunk_boundaries[i - 1]
+
+            # if our slice is in this chunk
+            if (chunk_start <= rstart < chunk_stop) and (rstart > stop):
+                d[i] = slice(
+                    rstart - chunk_stop,
+                    max(chunk_start - chunk_stop - 1, stop - chunk_stop),
+                    step,
+                )
+
+                # compute the next running start point,
+                offset = (rstart - (chunk_start - 1)) % step
+                rstart = chunk_start + offset - 1
+
+    # replace 0:20:1 with : if appropriate
+    for k, v in d.items():
+        if v == slice(0, lengths[k], 1):
+            d[k] = slice(None, None, None)
+
+    if not d:  # special case x[:0]
+        d[0] = slice(0, 0, 1)
+
+    return d",_120.py,93,"start = index.start or 0
+stop = index.stop if index.stop is not None else dim_shape
+
+istart = bisect.bisect_right(chunk_boundaries, start)
+istop = bisect.bisect_left(chunk_boundaries, stop)
+
+start = start - chunk_boundaries[istart - 1]
+stop = stop - chunk_boundaries[istart - 1]
+
+d[i] = slice(start, min(stop, length), step)
+start = (start - length) % step
+
+d[i] = slice(rstart - chunk_stop, max(chunk_start - chunk_stop - 1, stop - chunk_stop), step)
+offset = (rstart - (chunk_start - 1)) % step
+
+","start , stop  = index.start or 0, index.stop if index.stop is not None else dim_shape
+
+istart , istop  = bisect.bisect_right(chunk_boundaries, start), bisect.bisect_left(chunk_boundaries, stop)
+
+start , stop  = start - chunk_boundaries[istart - 1], stop - chunk_boundaries[istart - 1]
+
+d[i] , start  = slice(start, min(stop, length), step), (start - length) % step
+
+d[i] , offset  = slice(rstart - chunk_stop, max(chunk_start - chunk_stop - 1, stop - chunk_stop), step), (rstart - (chunk_start - 1)) % step
+
+",5,"def _slice_1d(dim_shape, lengths, index):
+    """"""Returns a dict of {blocknum: slice}
+
+    This function figures out where each slice should start in each
+    block for a single dimension. If the slice won't return any elements
+    in the block, that block will not be in the output.
+
+    Parameters
+    ----------
+
+    dim_shape - the number of elements in this dimension.
+      This should be a positive, non-zero integer
+    blocksize - the number of elements per block in this dimension
+      This should be a positive, non-zero integer
+    index - a description of the elements in this dimension that we want
+      This might be an integer, a slice(), or an Ellipsis
+
+    Returns
+    -------
+
+    dictionary where the keys are the integer index of the blocks that
+      should be sliced and the values are the slices
+
+    Examples
+    --------
+
+    Trivial slicing
+
+    >>> _slice_1d(100, [60, 40], slice(None, None, None))
+    {0: slice(None, None, None), 1: slice(None, None, None)}
+
+    100 length array cut into length 20 pieces, slice 0:35
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(0, 35))
+    {0: slice(None, None, None), 1: slice(0, 15, 1)}
+
+    Support irregular blocks and various slices
+
+    >>> _slice_1d(100, [20, 10, 10, 10, 25, 25], slice(10, 35))
+    {0: slice(10, 20, 1), 1: slice(None, None, None), 2: slice(0, 5, 1)}
+
+    Support step sizes
+
+    >>> _slice_1d(100, [15, 14, 13], slice(10, 41, 3))
+    {0: slice(10, 15, 3), 1: slice(1, 14, 3), 2: slice(2, 12, 3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(0, 100, 40))  # step > blocksize
+    {0: slice(0, 20, 40), 2: slice(0, 20, 40), 4: slice(0, 20, 40)}
+
+    Also support indexing single elements
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], 25)
+    {1: 5}
+
+    And negative slicing
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, 0, -3)) # doctest: +NORMALIZE_WHITESPACE
+    {4: slice(-1, -21, -3),
+     3: slice(-2, -21, -3),
+     2: slice(-3, -21, -3),
+     1: slice(-1, -21, -3),
+     0: slice(-2, -20, -3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, 12, -3)) # doctest: +NORMALIZE_WHITESPACE
+    {4: slice(-1, -21, -3),
+     3: slice(-2, -21, -3),
+     2: slice(-3, -21, -3),
+     1: slice(-1, -21, -3),
+     0: slice(-2, -8, -3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, -12, -3))
+    {4: slice(-1, -12, -3)}
+    """"""
+    chunk_boundaries = cached_cumsum(lengths)
+
+    if isinstance(index, Integral):
+        # use right-side search to be consistent with previous result
+        i = bisect.bisect_right(chunk_boundaries, index)
+        ind = index - chunk_boundaries[i - 1] if i > 0 else index
+        return {int(i): int(ind)}
+
+    assert isinstance(index, slice)
+
+    if index == colon:
+        return {k: colon for k in range(len(lengths))}
+
+    step = index.step or 1
+    if step > 0:
+        start = index.start or 0
+        stop = index.stop if index.stop is not None else dim_shape
+    else:
+        start = index.start if index.start is not None else dim_shape - 1
+        start = dim_shape - 1 if start >= dim_shape else start
+        stop = -(dim_shape + 1) if index.stop is None else index.stop
+
+    # posify start and stop
+    if start < 0:
+        start += dim_shape
+    if stop < 0:
+        stop += dim_shape
+
+    d = dict()
+    if step > 0:
+        istart, istop = bisect.bisect_right(chunk_boundaries, start), bisect.bisect_left(chunk_boundaries, stop)
+        istop = min(istop + 1, len(lengths))
+
+        # jump directly to istart
+        if istart > 0:
+            start, stop = start - chunk_boundaries[istart - 1], stop - chunk_boundaries[istart - 1]
+
+        for i in range(istart, istop):
+            length = lengths[i]
+            if start < length and stop > 0:
+                d[i] = slice(start, min(stop, length), step)
+                start = (start - length) % step
+            else:
+                start = start - length
+            stop -= length
+    else:
+        rstart = start  # running start
+
+        istart, istop = bisect.bisect_left(chunk_boundaries, start), bisect.bisect_right(chunk_boundaries, stop)
+        istart, istop = min(istart + 1, len(chunk_boundaries) - 1), max(istop - 1, -1)
+
+        for i in range(istart, istop, -1):
+            chunk_start = 0 if i == 0 else chunk_boundaries[i - 1]
+            chunk_stop = chunk_boundaries[i]
+
+            # if our slice is in this chunk
+            if (chunk_start <= rstart < chunk_stop) and (rstart > stop):
+                d[i] = slice(
+                    rstart - chunk_stop,
+                    max(chunk_start - chunk_stop - 1, stop - chunk_stop),
+                    step
+                )
+
+                # compute the next running start point,
+                offset = (rstart - (chunk_start - 1)) % step
+                rstart = chunk_start + offset - 1
+
+    # replace 0:20:1 with : if appropriate
+    for k, v in d.items():
+        if v == slice(0, lengths[k], 1):
+            d[k] = slice(None, None, None)
+
+    if not d:  # special case x[:0]
+        d[0] = slice(0, 0, 1)
+
+    return d",1.0,"Here is your refactored code using Python's ""assign multiple targets"" idiom. I have identified one area where multiple variables are assigned in a single statement — the refactor count is noted below.
+
+
+
+#### Summary of refactoring:
+1. The main area of refactoring was the use of tuple unpacking for `istart` and `istop` assignments, reducing two individual assignments to one. Thus, **only 1 refactoring** has been performed using the target-multiple idiom (`istart, istop = ...`).","Here is your refactored code using Python's ""assign multiple targets"" idiom. I have identified one area where multiple variables are assigned in a single statement — the refactor count is noted below.
+
+```python
+def _slice_1d(dim_shape, lengths, index):
+    """"""Returns a dict of {blocknum: slice}
+
+    This function figures out where each slice should start in each
+    block for a single dimension. If the slice won't return any elements
+    in the block, that block will not be in the output.
+
+    Parameters
+    ----------
+
+    dim_shape - the number of elements in this dimension.
+      This should be a positive, non-zero integer
+    blocksize - the number of elements per block in this dimension
+      This should be a positive, non-zero integer
+    index - a description of the elements in this dimension that we want
+      This might be an integer, a slice(), or an Ellipsis
+
+    Returns
+    -------
+
+    dictionary where the keys are the integer index of the blocks that
+      should be sliced and the values are the slices
+
+    Examples
+    --------
+
+    Trivial slicing
+
+    >>> _slice_1d(100, [60, 40], slice(None, None, None))
+    {0: slice(None, None, None), 1: slice(None, None, None)}
+
+    100 length array cut into length 20 pieces, slice 0:35
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(0, 35))
+    {0: slice(None, None, None), 1: slice(0, 15, 1)}
+
+    Support irregular blocks and various slices
+
+    >>> _slice_1d(100, [20, 10, 10, 10, 25, 25], slice(10, 35))
+    {0: slice(10, 20, 1), 1: slice(None, None, None), 2: slice(0, 5, 1)}
+
+    Support step sizes
+
+    >>> _slice_1d(100, [15, 14, 13], slice(10, 41, 3))
+    {0: slice(10, 15, 3), 1: slice(1, 14, 3), 2: slice(2, 12, 3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(0, 100, 40))  # step > blocksize
+    {0: slice(0, 20, 40), 2: slice(0, 20, 40), 4: slice(0, 20, 40)}
+
+    Also support indexing single elements
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], 25)
+    {1: 5}
+
+    And negative slicing
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, 0, -3)) # doctest: +NORMALIZE_WHITESPACE
+    {4: slice(-1, -21, -3),
+     3: slice(-2, -21, -3),
+     2: slice(-3, -21, -3),
+     1: slice(-1, -21, -3),
+     0: slice(-2, -20, -3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, 12, -3)) # doctest: +NORMALIZE_WHITESPACE
+    {4: slice(-1, -21, -3),
+     3: slice(-2, -21, -3),
+     2: slice(-3, -21, -3),
+     1: slice(-1, -21, -3),
+     0: slice(-2, -8, -3)}
+
+    >>> _slice_1d(100, [20, 20, 20, 20, 20], slice(100, -12, -3))
+    {4: slice(-1, -12, -3)}
+    """"""
+    chunk_boundaries = cached_cumsum(lengths)
+
+    if isinstance(index, Integral):
+        # use right-side search to be consistent with previous result
+        i = bisect.bisect_right(chunk_boundaries, index)
+        ind = index - chunk_boundaries[i - 1] if i > 0 else index
+        return {int(i): int(ind)}
+
+    assert isinstance(index, slice)
+
+    if index == colon:
+        return {k: colon for k in range(len(lengths))}
+
+    step = index.step or 1
+    if step > 0:
+        start = index.start or 0
+        stop = index.stop if index.stop is not None else dim_shape
+    else:
+        start = index.start if index.start is not None else dim_shape - 1
+        start = dim_shape - 1 if start >= dim_shape else start
+        stop = -(dim_shape + 1) if index.stop is None else index.stop
+
+    # posify start and stop
+    if start < 0:
+        start += dim_shape
+    if stop < 0:
+        stop += dim_shape
+
+    d = dict()
+    if step > 0:
+        istart, istop = bisect.bisect_right(chunk_boundaries, start), bisect.bisect_left(chunk_boundaries, stop)
+        istop = min(istop + 1, len(lengths))
+
+        # jump directly to istart
+        if istart > 0:
+            start, stop = start - chunk_boundaries[istart - 1], stop - chunk_boundaries[istart - 1]
+
+        for i in range(istart, istop):
+            length = lengths[i]
+            if start < length and stop > 0:
+                d[i] = slice(start, min(stop, length), step)
+                start = (start - length) % step
+            else:
+                start = start - length
+            stop -= length
+    else:
+        rstart = start  # running start
+
+        istart, istop = bisect.bisect_left(chunk_boundaries, start), bisect.bisect_right(chunk_boundaries, stop)
+        istart, istop = min(istart + 1, len(chunk_boundaries) - 1), max(istop - 1, -1)
+
+        for i in range(istart, istop, -1):
+            chunk_start = 0 if i == 0 else chunk_boundaries[i - 1]
+            chunk_stop = chunk_boundaries[i]
+
+            # if our slice is in this chunk
+            if (chunk_start <= rstart < chunk_stop) and (rstart > stop):
+                d[i] = slice(
+                    rstart - chunk_stop,
+                    max(chunk_start - chunk_stop - 1, stop - chunk_stop),
+                    step
+                )
+
+                # compute the next running start point,
+                offset = (rstart - (chunk_start - 1)) % step
+                rstart = chunk_start + offset - 1
+
+    # replace 0:20:1 with : if appropriate
+    for k, v in d.items():
+        if v == slice(0, lengths[k], 1):
+            d[k] = slice(None, None, None)
+
+    if not d:  # special case x[:0]
+        d[0] = slice(0, 0, 1)
+
+    return d
+```
+
+#### Summary of refactoring:
+1. The main area of refactoring was the use of tuple unpacking for `istart` and `istop` assignments, reducing two individual assignments to one. Thus, **only 1 refactoring** has been performed using the target-multiple idiom (`istart, istop = ...`).
+"
+https://github.com/kundajelab/deeplift/tree/master/tests/conversion/sequential/test_conv1d_model_valid_padding.py,"def setUp(self):
+        self.inp = (np.random.randn(10*10*51)
+                    .reshape(10,10,51)).transpose(0,2,1)
+        self.keras_model = keras.models.Sequential()
+        self.keras_model.add(keras.layers.InputLayer((51,10)))
+        conv_layer = keras.layers.convolutional.Convolution1D(
+                        nb_filter=2, filter_length=4, subsample_length=2,
+                        activation=""relu"", input_shape=(51,10))
+        self.keras_model.add(conv_layer)
+        self.keras_model.add(keras.layers.pooling.MaxPooling1D(
+                             pool_length=4, stride=2)) 
+        self.keras_model.add(keras.layers.pooling.AveragePooling1D(
+                             pool_length=4, stride=2)) 
+        self.keras_model.add(keras.layers.Flatten())
+        self.keras_model.add(keras.layers.Dense(output_dim=1))
+        self.keras_model.add(keras.layers.core.Activation(""sigmoid""))
+        self.keras_model.compile(loss=""mse"", optimizer=""sgd"")
+        self.keras_output_fprop_func = compile_func(
+                        [self.keras_model.layers[0].input,
+                         K.learning_phase()],
+                        self.keras_model.layers[-1].output)
+
+        grad = tf.gradients(tf.reduce_sum(
+            self.keras_model.layers[-2].output[:,0]),
+            [self.keras_model.layers[0].input])[0]
+        self.grad_func = compile_func(
+            [self.keras_model.layers[0].input,
+             K.learning_phase()], grad) 
+
+        self.saved_file_path = ""conv1model_validpadding.h5""
+        if (os.path.isfile(self.saved_file_path)):
+            os.remove(self.saved_file_path)
+        self.keras_model.save(self.saved_file_path)",_128.py,18,"self.keras_output_fprop_func = compile_func([self.keras_model.layers[0].input, K.learning_phase()], self.keras_model.layers[-1].output)
+grad = tf.gradients(tf.reduce_sum(self.keras_model.layers[-2].output[:, 0]), [self.keras_model.layers[0].input])[0]
+self.grad_func = compile_func([self.keras_model.layers[0].input, K.learning_phase()], grad)
+self.saved_file_path = 'conv1model_validpadding.h5'
+
+self.inp = np.random.randn(10 * 10 * 51).reshape(10, 10, 51).transpose(0, 2, 1)
+self.keras_model = keras.models.Sequential()
+
+self.grad_func = compile_func([self.keras_model.layers[0].input, K.learning_phase()], grad)
+self.saved_file_path = 'conv1model_validpadding.h5'
+
+","self.keras_output_fprop_func, grad, self.grad_func, self.saved_file_path = compile_func([self.keras_model.layers[0].input, K.learning_phase()], self.keras_model.layers[-1].output), tf.gradients(tf.reduce_sum(self.keras_model.layers[-2].output[:, 0]), [self.keras_model.layers[0].input])[0], compile_func([self.keras_model.layers[0].input, K.learning_phase()], grad), 'conv1model_validpadding.h5'
+
+self.inp , self.keras_model  = np.random.randn(10 * 10 * 51).reshape(10, 10, 51).transpose(0, 2, 1), keras.models.Sequential()
+
+self.grad_func , self.saved_file_path  = compile_func([self.keras_model.layers[0].input, K.learning_phase()], grad), 'conv1model_validpadding.h5'
+
+",3,"def setUp(self):
+        self.inp = np.random.randn(10*10*51).reshape(10,10,51).transpose(0,2,1)
+        
+        self.keras_model = keras.models.Sequential()
+        self.keras_model.add(keras.layers.InputLayer((51,10)))
+        
+        conv_layer = keras.layers.convolutional.Convolution1D(
+            nb_filter=2, filter_length=4, subsample_length=2, 
+            activation=""relu"", input_shape=(51,10))
+        
+        self.keras_model.add(conv_layer)
+        self.keras_model.add(keras.layers.pooling.MaxPooling1D(pool_length=4, stride=2))
+        self.keras_model.add(keras.layers.pooling.AveragePooling1D(pool_length=4, stride=2))
+        self.keras_model.add(keras.layers.Flatten())
+        self.keras_model.add(keras.layers.Dense(output_dim=1))
+        self.keras_model.add(keras.layers.core.Activation(""sigmoid""))
+        
+        # Combining optimizer and loss compilation in one statement
+        self.keras_model.compile(loss=""mse"", optimizer=""sgd"")
+        
+        self.keras_output_fprop_func, grad = (
+            compile_func(
+                [self.keras_model.layers[0].input, K.learning_phase()],
+                self.keras_model.layers[-1].output),
+            tf.gradients(
+                tf.reduce_sum(self.keras_model.layers[-2].output[:, 0]),
+                [self.keras_model.layers[0].input])[0]
+        )
+        
+        self.grad_func = compile_func([self.keras_model.layers[0].input, K.learning_phase()], grad)
+
+        self.saved_file_path = ""conv1model_validpadding.h5""
+        
+        # Using multiple assignment to avoid checking and deleting separately
+        exists, remove = os.path.isfile(self.saved_file_path), os.remove if os.path.isfile(self.saved_file_path) else None
+        if exists:
+            remove(self.saved_file_path)
+        
+        self.keras_model.save(self.saved_file_path)",2.0,"Here is the refactored code with the use of the Python ""multiple targets"" assignment idiom:
+
+
+
+### Refactorings made:
+1. Combined the lines for `self.keras_output_fprop_func` and `grad` into a single `multiple assignment` operation.
+2. Combined the file existence check and removal into a single `multiple assignment` operation.
+
+**Total number of assign multiple targets refactorings made: 2**","Here is the refactored code with the use of the Python ""multiple targets"" assignment idiom:
+
+```python
+def setUp(self):
+        self.inp = np.random.randn(10*10*51).reshape(10,10,51).transpose(0,2,1)
+        
+        self.keras_model = keras.models.Sequential()
+        self.keras_model.add(keras.layers.InputLayer((51,10)))
+        
+        conv_layer = keras.layers.convolutional.Convolution1D(
+            nb_filter=2, filter_length=4, subsample_length=2, 
+            activation=""relu"", input_shape=(51,10))
+        
+        self.keras_model.add(conv_layer)
+        self.keras_model.add(keras.layers.pooling.MaxPooling1D(pool_length=4, stride=2))
+        self.keras_model.add(keras.layers.pooling.AveragePooling1D(pool_length=4, stride=2))
+        self.keras_model.add(keras.layers.Flatten())
+        self.keras_model.add(keras.layers.Dense(output_dim=1))
+        self.keras_model.add(keras.layers.core.Activation(""sigmoid""))
+        
+        # Combining optimizer and loss compilation in one statement
+        self.keras_model.compile(loss=""mse"", optimizer=""sgd"")
+        
+        self.keras_output_fprop_func, grad = (
+            compile_func(
+                [self.keras_model.layers[0].input, K.learning_phase()],
+                self.keras_model.layers[-1].output),
+            tf.gradients(
+                tf.reduce_sum(self.keras_model.layers[-2].output[:, 0]),
+                [self.keras_model.layers[0].input])[0]
+        )
+        
+        self.grad_func = compile_func([self.keras_model.layers[0].input, K.learning_phase()], grad)
+
+        self.saved_file_path = ""conv1model_validpadding.h5""
+        
+        # Using multiple assignment to avoid checking and deleting separately
+        exists, remove = os.path.isfile(self.saved_file_path), os.remove if os.path.isfile(self.saved_file_path) else None
+        if exists:
+            remove(self.saved_file_path)
+        
+        self.keras_model.save(self.saved_file_path)
+```
+
+### Refactorings made:
+1. Combined the lines for `self.keras_output_fprop_func` and `grad` into a single `multiple assignment` operation.
+2. Combined the file existence check and removal into a single `multiple assignment` operation.
+
+**Total number of assign multiple targets refactorings made: 2**"
+https://github.com/dingjiansw101/AerialDetection/tree/master/mmdet/models/detectors/base.py,"def show_result(self,
+                    data,
+                    result,
+                    img_norm_cfg,
+                    dataset=None,
+                    score_thr=0.3):
+        if isinstance(result, tuple):
+            bbox_result, segm_result = result
+        else:
+            bbox_result, segm_result = result, None
+
+        img_tensor = data['img'][0]
+        img_metas = data['img_meta'][0].data[0]
+        imgs = tensor2imgs(img_tensor, **img_norm_cfg)
+        assert len(imgs) == len(img_metas)
+
+        if dataset is None:
+            class_names = self.CLASSES
+        elif isinstance(dataset, str):
+            class_names = get_classes(dataset)
+        elif isinstance(dataset, (list, tuple)):
+            class_names = dataset
+        else:
+            raise TypeError(
+                'dataset must be a valid dataset name or a sequence'
+                ' of class names, not {}'.format(type(dataset)))
+
+        for img, img_meta in zip(imgs, img_metas):
+            h, w, _ = img_meta['img_shape']
+            img_show = img[:h, :w, :]
+
+            bboxes = np.vstack(bbox_result)
+            # draw segmentation masks
+            if segm_result is not None:
+                segms = mmcv.concat_list(segm_result)
+                inds = np.where(bboxes[:, -1] > score_thr)[0]
+                for i in inds:
+                    color_mask = np.random.randint(
+                        0, 256, (1, 3), dtype=np.uint8)
+                    mask = maskUtils.decode(segms[i]).astype(np.bool)
+                    img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
+            # draw bounding boxes
+            labels = [
+                np.full(bbox.shape[0], i, dtype=np.int32)
+                for i, bbox in enumerate(bbox_result)
+            ]
+            labels = np.concatenate(labels)
+            mmcv.imshow_det_bboxes(
+                img_show,
+                bboxes,
+                labels,
+                class_names=class_names,
+                score_thr=score_thr)",_131.py,13,"img_metas = data['img_meta'][0].data[0]
+imgs = tensor2imgs(img_tensor, **img_norm_cfg)
+
+img_show = img[:h, :w, :]
+bboxes = np.vstack(bbox_result)
+
+segms = mmcv.concat_list(segm_result)
+inds = np.where(bboxes[:, -1] > score_thr)[0]
+
+color_mask = np.random.randint(0, 256, (1, 3), dtype=np.uint8)
+mask = maskUtils.decode(segms[i]).astype(np.bool)
+
+","img_metas , imgs  = data['img_meta'][0].data[0], tensor2imgs(img_tensor, **img_norm_cfg)
+
+img_show , bboxes  = img[:h, :w, :], np.vstack(bbox_result)
+
+segms , inds  = mmcv.concat_list(segm_result), np.where(bboxes[:, -1] > score_thr)[0]
+
+color_mask , mask  = np.random.randint(0, 256, (1, 3), dtype=np.uint8), maskUtils.decode(segms[i]).astype(np.bool)
+
+",4,"def show_result(self,
+                data,
+                result,
+                img_norm_cfg,
+                dataset=None,
+                score_thr=0.3):
+    # Using multiple target assignment idiom
+    bbox_result, segm_result = result if isinstance(result, tuple) else (result, None)
+
+    img_tensor, img_metas = data['img'][0], data['img_meta'][0].data[0]
+    imgs = tensor2imgs(img_tensor, **img_norm_cfg)
+    assert len(imgs) == len(img_metas)
+
+    # Determine the class_names
+    if dataset is None:
+        class_names = self.CLASSES
+    elif isinstance(dataset, str):
+        class_names = get_classes(dataset)
+    elif isinstance(dataset, (list, tuple)):
+        class_names = dataset
+    else:
+        raise TypeError(
+            'dataset must be a valid dataset name or a sequence'
+            ' of class names, not {}'.format(type(dataset)))
+
+    for img, img_meta in zip(imgs, img_metas):
+        h, w, _ = img_meta['img_shape']
+        img_show = img[:h, :w, :]
+
+        bboxes = np.vstack(bbox_result)
+        # draw segmentation masks
+        if segm_result is not None:
+            segms = mmcv.concat_list(segm_result)
+            inds = np.where(bboxes[:, -1] > score_thr)[0]
+            for i in inds:
+                color_mask = np.random.randint(
+                    0, 256, (1, 3), dtype=np.uint8)
+                mask = maskUtils.decode(segms[i]).astype(np.bool)
+                img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
+        
+        # draw bounding boxes
+        labels = [
+            np.full(bbox.shape[0], i, dtype=np.int32)
+            for i, bbox in enumerate(bbox_result)
+        ]
+        labels = np.concatenate(labels)
+        mmcv.imshow_det_bboxes(
+            img_show,
+            bboxes,
+            labels,
+            class_names=class_names,
+            score_thr=score_thr)",2.0,"Here is the refactored version of the code utilizing Python's multiple target assignment idiom:
+
+
+
+### Refactor Changes and Rationale
+1. **bbox_result, segm_result = result if isinstance(result, tuple) else (result, None)**:  
+   The original code had:
+   
+   This block can be simplified by using multiple target assignment in an `if-else` expression.
+
+2. **img_tensor, img_metas = data['img'][0], data['img_meta'][0].data[0]**:  
+   The original code sequentially assigns `img_tensor` and `img_metas` from the dictionary `data`. With the multiple assignment idiom, we can combine those two separate assignments into one line.
+
+### Number of Refactoring
+- **Number of refactorings:** 2  
+  (1) assignment of `bbox_result` and `segm_result`, and  
+  (2) assignment of `img_tensor` and `img_metas`.","Here is the refactored version of the code utilizing Python's multiple target assignment idiom:
+
+```python
+def show_result(self,
+                data,
+                result,
+                img_norm_cfg,
+                dataset=None,
+                score_thr=0.3):
+    # Using multiple target assignment idiom
+    bbox_result, segm_result = result if isinstance(result, tuple) else (result, None)
+
+    img_tensor, img_metas = data['img'][0], data['img_meta'][0].data[0]
+    imgs = tensor2imgs(img_tensor, **img_norm_cfg)
+    assert len(imgs) == len(img_metas)
+
+    # Determine the class_names
+    if dataset is None:
+        class_names = self.CLASSES
+    elif isinstance(dataset, str):
+        class_names = get_classes(dataset)
+    elif isinstance(dataset, (list, tuple)):
+        class_names = dataset
+    else:
+        raise TypeError(
+            'dataset must be a valid dataset name or a sequence'
+            ' of class names, not {}'.format(type(dataset)))
+
+    for img, img_meta in zip(imgs, img_metas):
+        h, w, _ = img_meta['img_shape']
+        img_show = img[:h, :w, :]
+
+        bboxes = np.vstack(bbox_result)
+        # draw segmentation masks
+        if segm_result is not None:
+            segms = mmcv.concat_list(segm_result)
+            inds = np.where(bboxes[:, -1] > score_thr)[0]
+            for i in inds:
+                color_mask = np.random.randint(
+                    0, 256, (1, 3), dtype=np.uint8)
+                mask = maskUtils.decode(segms[i]).astype(np.bool)
+                img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
+        
+        # draw bounding boxes
+        labels = [
+            np.full(bbox.shape[0], i, dtype=np.int32)
+            for i, bbox in enumerate(bbox_result)
+        ]
+        labels = np.concatenate(labels)
+        mmcv.imshow_det_bboxes(
+            img_show,
+            bboxes,
+            labels,
+            class_names=class_names,
+            score_thr=score_thr)
+```
+
+### Refactor Changes and Rationale
+1. **bbox_result, segm_result = result if isinstance(result, tuple) else (result, None)**:  
+   The original code had:
+   ```python
+   if isinstance(result, tuple):
+       bbox_result, segm_result = result
+   else:
+       bbox_result, segm_result = result, None
+   ```
+   This block can be simplified by using multiple target assignment in an `if-else` expression.
+
+2. **img_tensor, img_metas = data['img'][0], data['img_meta'][0].data[0]**:  
+   The original code sequentially assigns `img_tensor` and `img_metas` from the dictionary `data`. With the multiple assignment idiom, we can combine those two separate assignments into one line.
+
+### Number of Refactoring
+- **Number of refactorings:** 2  
+  (1) assignment of `bbox_result` and `segm_result`, and  
+  (2) assignment of `img_tensor` and `img_metas`."
+https://github.com/JosephKJ/OWOD/tree/master/projects/DensePose/tests/test_frame_selector.py,"def test_frame_selector_random_k_2(self):
+        _SEED = 43
+        _K = 10
+        random.seed(_SEED)
+        selector = RandomKFramesSelector(_K)
+        frame_tss = list(range(0, 6, 2))
+        _SELECTED_GT = [0, 2, 4]
+        selected = selector(frame_tss)
+        self.assertEqual(_SELECTED_GT, selected)",_139.py,2,"_SEED = 43
+_K = 10
+
+selector = RandomKFramesSelector(_K)
+frame_tss = list(range(0, 6, 2))
+
+_SELECTED_GT = [0, 2, 4]
+selected = selector(frame_tss)
+
+","_SEED , _K  = 43, 10
+
+selector , frame_tss  = RandomKFramesSelector(_K), list(range(0, 6, 2))
+
+_SELECTED_GT , selected  = [0, 2, 4], selector(frame_tss)
+
+",3,"def test_frame_selector_random_k_2(self):
+    _SEED, _K = 43, 10  # Combined assignments
+    random.seed(_SEED)
+    selector = RandomKFramesSelector(_K)
+    frame_tss = list(range(0, 6, 2))
+    _SELECTED_GT = [0, 2, 4]
+    selected = selector(frame_tss)
+    self.assertEqual(_SELECTED_GT, selected)",1.0,"Here's the refactored version of the provided Python code using the ""assign multiple targets"" idiom. In this case, we can combine the assignment of `_SEED` and `_K` into a single statement.
+
+### Refactored Code:
+
+
+
+### Number of Refactorings:
+- **1 refactoring** (the assignments of `_SEED` and `_K` are combined).","Here's the refactored version of the provided Python code using the ""assign multiple targets"" idiom. In this case, we can combine the assignment of `_SEED` and `_K` into a single statement.
+
+### Refactored Code:
+
+```python
+def test_frame_selector_random_k_2(self):
+    _SEED, _K = 43, 10  # Combined assignments
+    random.seed(_SEED)
+    selector = RandomKFramesSelector(_K)
+    frame_tss = list(range(0, 6, 2))
+    _SELECTED_GT = [0, 2, 4]
+    selected = selector(frame_tss)
+    self.assertEqual(_SELECTED_GT, selected)
+```
+
+### Number of Refactorings:
+- **1 refactoring** (the assignments of `_SEED` and `_K` are combined)."
+https://github.com/TDAmeritrade/stumpy/tree/master/tests/test_stumped.py,"def test_stumped_one_subsequence_inf_self_join(
+    T_A, T_B, substitution_location_B, dask_cluster
+):
+    with Client(dask_cluster) as dask_client:
+        m = 3
+
+        T_B_sub = T_B.copy()
+        T_B_sub[substitution_location_B] = np.inf
+
+        zone = int(np.ceil(m / 4))
+        ref_mp = naive.stump(T_B_sub, m, exclusion_zone=zone)
+        comp_mp = stumped(dask_client, T_B_sub, m, ignore_trivial=True)
+        naive.replace_inf(ref_mp)
+        naive.replace_inf(comp_mp)
+        npt.assert_almost_equal(ref_mp, comp_mp)",_15.py,5,"m = 3
+T_B_sub = T_B.copy()
+
+T_B_sub[substitution_location_B] = np.inf
+zone = int(np.ceil(m / 4))
+
+ref_mp = naive.stump(T_B_sub, m, exclusion_zone=zone)
+comp_mp = stumped(dask_client, T_B_sub, m, ignore_trivial=True)
+
+","m , T_B_sub  = 3, T_B.copy()
+
+T_B_sub[substitution_location_B] , zone  = np.inf, int(np.ceil(m / 4))
+
+ref_mp , comp_mp  = naive.stump(T_B_sub, m, exclusion_zone=zone), stumped(dask_client, T_B_sub, m, ignore_trivial=True)
+
+",3,"def test_stumped_one_subsequence_inf_self_join(
+    T_A, T_B, substitution_location_B, dask_cluster
+):
+    with Client(dask_cluster) as dask_client:
+        m, T_B_sub = 3, T_B.copy()
+
+        T_B_sub[substitution_location_B] = np.inf
+
+        zone, ref_mp, comp_mp = int(np.ceil(m / 4)), naive.stump(T_B_sub, m, exclusion_zone=zone), stumped(dask_client, T_B_sub, m, ignore_trivial=True)
+        
+        naive.replace_inf(ref_mp)
+        naive.replace_inf(comp_mp)
+        
+        npt.assert_almost_equal(ref_mp, comp_mp)",2.0,"Here is the refactored code using Python's assign multiple targets idiom, as requested:
+
+
+
+### Refactoring Explanation:
+1. I assigned the variables `m` and `T_B_sub` on the same line.
+2. I also assigned the variables `zone`, `ref_mp`, and `comp_mp` on the same line.
+
+### Number of assign multiple targets refactoring:
+- **2** refactorings using multiple target assignment.","Here is the refactored code using Python's assign multiple targets idiom, as requested:
+
+```python
+def test_stumped_one_subsequence_inf_self_join(
+    T_A, T_B, substitution_location_B, dask_cluster
+):
+    with Client(dask_cluster) as dask_client:
+        m, T_B_sub = 3, T_B.copy()
+
+        T_B_sub[substitution_location_B] = np.inf
+
+        zone, ref_mp, comp_mp = int(np.ceil(m / 4)), naive.stump(T_B_sub, m, exclusion_zone=zone), stumped(dask_client, T_B_sub, m, ignore_trivial=True)
+        
+        naive.replace_inf(ref_mp)
+        naive.replace_inf(comp_mp)
+        
+        npt.assert_almost_equal(ref_mp, comp_mp)
+```
+
+### Refactoring Explanation:
+1. I assigned the variables `m` and `T_B_sub` on the same line.
+2. I also assigned the variables `zone`, `ref_mp`, and `comp_mp` on the same line.
+
+### Number of assign multiple targets refactoring:
+- **2** refactorings using multiple target assignment."
+https://github.com/p5py/p5/tree/master/p5/pmath/curves.py,"def quadratic_point(start, control, stop, parameter):
+    """"""Return the coordinates of a point along a bezier curve.
+
+    :param point_1: The start point of the curve.
+    :type point_1: float or n-tuple.
+
+    :param point_3: The control point of the curve.
+    :type point_3: float or n-tuple.
+
+    :param point_4: The end point of the curve.
+    :type point_4: float or n-tuple.
+
+    :param parameter: The parameter for the required point location
+        along the curve. Should be in the range [0.0, 1.0] where 0
+        indicates the start of the curve and 1 indicates the end of
+        the curve.
+    :type parameter: float
+
+    :returns: The coordinate of the point at the required location
+        along the curve.
+    :rtype: float or n-tuple
+
+    """"""
+    is_iterable = isinstance(start, Iterable)
+    if not is_iterable:
+        start, control, stop = (start,), (control,), (stop,)
+
+    t = parameter
+    t_ = 1 - parameter
+    P = [start, control, stop]
+    coeffs = [t_ * t_, 2 * t * t_, t * t]
+    ans = tuple(sum(pt[i] * c for pt, c in zip(P, coeffs)) for i in range(len(start)))
+    # Unpack answer if input is not iterable
+    if not is_iterable:
+        ans = ans[0]
+    return ans",_156.py,28,"t = parameter
+t_ = 1 - parameter
+
+P = [start, control, stop]
+coeffs = [t_ * t_, 2 * t * t_, t * t]
+
+","t , t_  = parameter, 1 - parameter
+
+P , coeffs  = [start, control, stop], [t_ * t_, 2 * t * t_, t * t]
+
+",2,"from collections.abc import Iterable
+
+def quadratic_point(start, control, stop, parameter):
+    """"""Return the coordinates of a point along a bezier curve.
+
+    :param point_1: The start point of the curve.
+    :type point_1: float or n-tuple.
+
+    :param point_3: The control point of the curve.
+    :type point_3: float or n-tuple.
+
+    :param point_4: The end point of the curve.
+    :type point_4: float or n-tuple.
+
+    :param parameter: The parameter for the required point location
+        along the curve. Should be in the range [0.0, 1.0] where 0
+        indicates the start of the curve and 1 indicates the end of
+        the curve.
+    :type parameter: float
+
+    :returns: The coordinate of the point at the required location
+        along the curve.
+    :rtype: float or n-tuple
+    """"""
+    is_iterable = isinstance(start, Iterable)
+    if not is_iterable:
+        start, control, stop = (start,), (control,), (stop,)
+
+    t = parameter
+    t_ = 1 - parameter
+    
+    P, coeffs = [start, control, stop], [t_ * t_, 2 * t * t_, t * t]
+    ans = tuple(sum(pt[i] * c for pt, c in zip(P, coeffs)) for i in range(len(start)))
+
+    # Unpack answer if input is not iterable
+    if not is_iterable:
+        ans = ans[0]
+    return ans",1.0,"Here's the refactored version of your code using the multiple-target assignment idiom, along with the explanation:
+
+
+
+### Refactoring Explanation:
+1. **Multiple target assignment** was used in the line:
+   
+   This is a single refactoring because two variables (`P` and `coeffs`) are being assigned with a single `=`.
+
+### Number of refactorings:
+- **1** multiple-target refactor.","Here's the refactored version of your code using the multiple-target assignment idiom, along with the explanation:
+
+```python
+from collections.abc import Iterable
+
+def quadratic_point(start, control, stop, parameter):
+    """"""Return the coordinates of a point along a bezier curve.
+
+    :param point_1: The start point of the curve.
+    :type point_1: float or n-tuple.
+
+    :param point_3: The control point of the curve.
+    :type point_3: float or n-tuple.
+
+    :param point_4: The end point of the curve.
+    :type point_4: float or n-tuple.
+
+    :param parameter: The parameter for the required point location
+        along the curve. Should be in the range [0.0, 1.0] where 0
+        indicates the start of the curve and 1 indicates the end of
+        the curve.
+    :type parameter: float
+
+    :returns: The coordinate of the point at the required location
+        along the curve.
+    :rtype: float or n-tuple
+    """"""
+    is_iterable = isinstance(start, Iterable)
+    if not is_iterable:
+        start, control, stop = (start,), (control,), (stop,)
+
+    t = parameter
+    t_ = 1 - parameter
+    
+    P, coeffs = [start, control, stop], [t_ * t_, 2 * t * t_, t * t]
+    ans = tuple(sum(pt[i] * c for pt, c in zip(P, coeffs)) for i in range(len(start)))
+
+    # Unpack answer if input is not iterable
+    if not is_iterable:
+        ans = ans[0]
+    return ans
+```
+
+### Refactoring Explanation:
+1. **Multiple target assignment** was used in the line:
+   ```python
+   P, coeffs = [start, control, stop], [t_ * t_, 2 * t * t_, t * t]
+   ```
+   This is a single refactoring because two variables (`P` and `coeffs`) are being assigned with a single `=`.
+
+### Number of refactorings:
+- **1** multiple-target refactor."
+https://github.com/ansible/galaxy/tree/master/lib/galaxy/datatypes/data.py,"def split(cls, input_datasets, subdir_generator_function, split_params):
+        """"""
+        Split the input files by line.
+        """"""
+        if split_params is None:
+            return
+
+        if len(input_datasets) > 1:
+            raise Exception(""Text file splitting does not support multiple files"")
+        input_files = [ds.file_name for ds in input_datasets]
+
+        lines_per_file = None
+        chunk_size = None
+        if split_params['split_mode'] == 'number_of_parts':
+            lines_per_file = []
+
+            # Computing the length is expensive!
+            def _file_len(fname):
+                with open(fname) as f:
+                    return sum(1 for _ in f)
+            length = _file_len(input_files[0])
+            parts = int(split_params['split_size'])
+            if length < parts:
+                parts = length
+            len_each, remainder = divmod(length, parts)
+            while length > 0:
+                chunk = len_each
+                if remainder > 0:
+                    chunk += 1
+                lines_per_file.append(chunk)
+                remainder -= 1
+                length -= chunk
+        elif split_params['split_mode'] == 'to_size':
+            chunk_size = int(split_params['split_size'])
+        else:
+            raise Exception(f""Unsupported split mode {split_params['split_mode']}"")
+
+        f = open(input_files[0])
+        try:
+            chunk_idx = 0
+            file_done = False
+            part_file = None
+            while not file_done:
+                if lines_per_file is None:
+                    this_chunk_size = chunk_size
+                elif chunk_idx < len(lines_per_file):
+                    this_chunk_size = lines_per_file[chunk_idx]
+                    chunk_idx += 1
+                lines_remaining = this_chunk_size
+                part_file = None
+                while lines_remaining > 0:
+                    a_line = f.readline()
+                    if a_line == '':
+                        file_done = True
+                        break
+                    if part_file is None:
+                        part_dir = subdir_generator_function()
+                        part_path = os.path.join(part_dir, os.path.basename(input_files[0]))
+                        part_file = open(part_path, 'w')
+                    part_file.write(a_line)
+                    lines_remaining -= 1
+        except Exception as e:
+            log.error('Unable to split files: %s', unicodify(e))
+            raise
+        finally:
+            f.close()
+            if part_file:
+                part_file.close()",_22.py,10,"input_files = [ds.file_name for ds in input_datasets]
+lines_per_file = None
+chunk_size = None
+
+length = _file_len(input_files[0])
+parts = int(split_params['split_size'])
+
+chunk_idx = 0
+file_done = False
+part_file = None
+
+lines_remaining = this_chunk_size
+part_file = None
+
+","input_files , lines_per_file , chunk_size  = [ds.file_name for ds in input_datasets], None, None
+
+length , parts  = _file_len(input_files[0]), int(split_params['split_size'])
+
+chunk_idx , file_done , part_file  = 0, False, None
+
+lines_remaining , part_file  = this_chunk_size, None
+
+",4,"def split(cls, input_datasets, subdir_generator_function, split_params):
+    """"""
+    Split the input files by line.
+    """"""
+    if split_params is None:
+        return
+
+    if len(input_datasets) > 1:
+        raise Exception(""Text file splitting does not support multiple files"")
+    
+    input_files = [ds.file_name for ds in input_datasets]
+
+    # Use the multiple targets assignment idiom
+    lines_per_file = chunk_size = None
+    
+    if split_params['split_mode'] == 'number_of_parts':
+        lines_per_file = []
+
+        # Computing the length is expensive!
+        def _file_len(fname):
+            with open(fname) as f:
+                return sum(1 for _ in f)
+        
+        length = _file_len(input_files[0])
+        parts = int(split_params['split_size'])
+
+        if length < parts:
+            parts = length
+        
+        len_each, remainder = divmod(length, parts)
+
+        while length > 0:
+            chunk = len_each
+            if remainder > 0:
+                chunk += 1
+            lines_per_file.append(chunk)
+            remainder -= 1
+            length -= chunk
+
+    elif split_params['split_mode'] == 'to_size':
+        chunk_size = int(split_params['split_size'])
+    
+    else:
+        raise Exception(f""Unsupported split mode {split_params['split_mode']}"")
+
+    f = open(input_files[0])
+    try:
+        chunk_idx = 0
+        file_done = False
+        part_file = None
+        
+        while not file_done:
+            if lines_per_file is None:
+                this_chunk_size = chunk_size
+            elif chunk_idx < len(lines_per_file):
+                this_chunk_size = lines_per_file[chunk_idx]
+                chunk_idx += 1
+
+            lines_remaining, part_file = this_chunk_size, None
+
+            while lines_remaining > 0:
+                a_line = f.readline()
+
+                if a_line == '':
+                    file_done = True
+                    break
+
+                if part_file is None:
+                    part_dir = subdir_generator_function()
+                    part_path = os.path.join(part_dir, os.path.basename(input_files[0]))
+                    part_file = open(part_path, 'w')
+                
+                part_file.write(a_line)
+                lines_remaining -= 1
+    
+    except Exception as e:
+        log.error('Unable to split files: %s', unicodify(e))
+        raise
+
+    finally:
+        f.close()
+        if part_file:
+            part_file.close()",2.0,"Here is the refactored code using Python's **assign multiple targets** idiom. I've combined several initializations using this technique to reduce verbosity when multiple variables are assigned to `None` or other initial values.
+
+### Refactored Code: 
+
+
+
+### Refactorings:
+
+1. **First refactoring:**
+   
+   Explanation: Both `lines_per_file` and `chunk_size` are initially set to **None**. This reduces redundancy by assigning them together.
+
+2. **Second refactoring:**
+   
+   Explanation: Instead of assigning `lines_remaining` and `part_file` in separate statements inside the loop, they are both assigned in one line.
+
+---
+
+### Number of refactorings: **2**","Here is the refactored code using Python's **assign multiple targets** idiom. I've combined several initializations using this technique to reduce verbosity when multiple variables are assigned to `None` or other initial values.
+
+### Refactored Code: 
+
+```python
+def split(cls, input_datasets, subdir_generator_function, split_params):
+    """"""
+    Split the input files by line.
+    """"""
+    if split_params is None:
+        return
+
+    if len(input_datasets) > 1:
+        raise Exception(""Text file splitting does not support multiple files"")
+    
+    input_files = [ds.file_name for ds in input_datasets]
+
+    # Use the multiple targets assignment idiom
+    lines_per_file = chunk_size = None
+    
+    if split_params['split_mode'] == 'number_of_parts':
+        lines_per_file = []
+
+        # Computing the length is expensive!
+        def _file_len(fname):
+            with open(fname) as f:
+                return sum(1 for _ in f)
+        
+        length = _file_len(input_files[0])
+        parts = int(split_params['split_size'])
+
+        if length < parts:
+            parts = length
+        
+        len_each, remainder = divmod(length, parts)
+
+        while length > 0:
+            chunk = len_each
+            if remainder > 0:
+                chunk += 1
+            lines_per_file.append(chunk)
+            remainder -= 1
+            length -= chunk
+
+    elif split_params['split_mode'] == 'to_size':
+        chunk_size = int(split_params['split_size'])
+    
+    else:
+        raise Exception(f""Unsupported split mode {split_params['split_mode']}"")
+
+    f = open(input_files[0])
+    try:
+        chunk_idx = 0
+        file_done = False
+        part_file = None
+        
+        while not file_done:
+            if lines_per_file is None:
+                this_chunk_size = chunk_size
+            elif chunk_idx < len(lines_per_file):
+                this_chunk_size = lines_per_file[chunk_idx]
+                chunk_idx += 1
+
+            lines_remaining, part_file = this_chunk_size, None
+
+            while lines_remaining > 0:
+                a_line = f.readline()
+
+                if a_line == '':
+                    file_done = True
+                    break
+
+                if part_file is None:
+                    part_dir = subdir_generator_function()
+                    part_path = os.path.join(part_dir, os.path.basename(input_files[0]))
+                    part_file = open(part_path, 'w')
+                
+                part_file.write(a_line)
+                lines_remaining -= 1
+    
+    except Exception as e:
+        log.error('Unable to split files: %s', unicodify(e))
+        raise
+
+    finally:
+        f.close()
+        if part_file:
+            part_file.close()
+```
+
+### Refactorings:
+
+1. **First refactoring:**
+   ```python
+   lines_per_file = chunk_size = None
+   ```
+   Explanation: Both `lines_per_file` and `chunk_size` are initially set to **None**. This reduces redundancy by assigning them together.
+
+2. **Second refactoring:**
+   ```python
+   lines_remaining, part_file = this_chunk_size, None
+   ```
+   Explanation: Instead of assigning `lines_remaining` and `part_file` in separate statements inside the loop, they are both assigned in one line.
+
+---
+
+### Number of refactorings: **2**
+
+"
+https://github.com/Arthur151/ROMP/tree/master/romp/lib/evaluation/pw3d_eval/evaluate.py,"def joint_angle_error(pred_mat, gt_mat):
+    """"""
+    Compute the geodesic distance between the two input matrices.
+    :param pred_mat: predicted rotation matrices. Shape: ( Seq, 9g, 3, 3)
+    :param gt_mat: ground truth rotation matrices. Shape: ( Seq, 24, 3, 3)
+    :return: Mean geodesic distance between input matrices.
+    """"""
+
+    gt_mat = gt_mat[:, SMPL_OR_JOINTS, :, :]
+
+    # Reshape the matrices into B x 3 x 3 arrays
+    r1 = np.reshape(pred_mat, [-1, 3, 3])
+    r2 = np.reshape(gt_mat, [-1, 3, 3])
+
+    # Transpose gt matrices
+    r2t = np.transpose(r2, [0, 2, 1])
+
+    # compute R1 * R2.T, if prediction and target match, this will be the identity matrix
+    r = np.matmul(r1, r2t)
+
+    angles = []
+    # Convert rotation matrix to axis angle representation and find the angle
+    for i in range(r1.shape[0]):
+        aa, _ = cv2.Rodrigues(r[i])
+        angles.append(np.linalg.norm(aa))
+
+    return np.mean(np.array(angles))",_221.py,12,"r1 = np.reshape(pred_mat, [-1, 3, 3])
+r2 = np.reshape(gt_mat, [-1, 3, 3])
+
+r = np.matmul(r1, r2t)
+angles = []
+
+","r1 , r2  = np.reshape(pred_mat, [-1, 3, 3]), np.reshape(gt_mat, [-1, 3, 3])
+
+r , angles  = np.matmul(r1, r2t), []
+
+",2,"def joint_angle_error(pred_mat, gt_mat):
+    """"""
+    Compute the geodesic distance between the two input matrices.
+    :param pred_mat: predicted rotation matrices. Shape: ( Seq, 9g, 3, 3)
+    :param gt_mat: ground truth rotation matrices. Shape: ( Seq, 24, 3, 3)
+    :return: Mean geodesic distance between input matrices.
+    """"""
+
+    gt_mat = gt_mat[:, SMPL_OR_JOINTS, :, :]
+
+    # Reshape the matrices into B x 3 x 3 arrays and transpose gt matrices in one line
+    r1, r2 = np.reshape(pred_mat, [-1, 3, 3]), np.reshape(gt_mat, [-1, 3, 3])
+    r2t = np.transpose(r2, [0, 2, 1])
+
+    # compute R1 * R2.T, if prediction and target match, this will be the identity matrix
+    r = np.matmul(r1, r2t)
+
+    angles = []
+    # Convert rotation matrix to axis angle representation and find the angle
+    for i in range(r1.shape[0]):
+        aa, _ = cv2.Rodrigues(r[i])
+        angles.append(np.linalg.norm(aa))
+
+    return np.mean(np.array(angles))",1.0,"We can refactor the code by applying the Python ""assign multiple targets"" idiom where applicable. Below is the refactored code:
+
+### Refactored Code:
+
+
+### Explanation:
+1. **First refactor**: 
+   - We used multiple target assignment in the line:
+     
+   - This assigns `r1` and `r2` in a single line by reshaping `pred_mat` and `gt_mat`, respectively.
+
+### Number of refactorings:
+- **One** refactoring made (since `r1` and `r2` are assigned in one line).","We can refactor the code by applying the Python ""assign multiple targets"" idiom where applicable. Below is the refactored code:
+
+### Refactored Code:
+```python
+def joint_angle_error(pred_mat, gt_mat):
+    """"""
+    Compute the geodesic distance between the two input matrices.
+    :param pred_mat: predicted rotation matrices. Shape: ( Seq, 9g, 3, 3)
+    :param gt_mat: ground truth rotation matrices. Shape: ( Seq, 24, 3, 3)
+    :return: Mean geodesic distance between input matrices.
+    """"""
+
+    gt_mat = gt_mat[:, SMPL_OR_JOINTS, :, :]
+
+    # Reshape the matrices into B x 3 x 3 arrays and transpose gt matrices in one line
+    r1, r2 = np.reshape(pred_mat, [-1, 3, 3]), np.reshape(gt_mat, [-1, 3, 3])
+    r2t = np.transpose(r2, [0, 2, 1])
+
+    # compute R1 * R2.T, if prediction and target match, this will be the identity matrix
+    r = np.matmul(r1, r2t)
+
+    angles = []
+    # Convert rotation matrix to axis angle representation and find the angle
+    for i in range(r1.shape[0]):
+        aa, _ = cv2.Rodrigues(r[i])
+        angles.append(np.linalg.norm(aa))
+
+    return np.mean(np.array(angles))
+```
+
+### Explanation:
+1. **First refactor**: 
+   - We used multiple target assignment in the line:
+     ```python
+     r1, r2 = np.reshape(pred_mat, [-1, 3, 3]), np.reshape(gt_mat, [-1, 3, 3])
+     ```
+   - This assigns `r1` and `r2` in a single line by reshaping `pred_mat` and `gt_mat`, respectively.
+
+### Number of refactorings:
+- **One** refactoring made (since `r1` and `r2` are assigned in one line)."
+https://github.com/KurtBestor/Hitomi-Downloader/tree/master/src/extractor/danbooru_downloader.py,"def get_imgs(url, title=None, range_=None, cw=None):
+    if 'donmai.us/artists' in url:
+        raise NotImplementedError('Not Implemented')
+    if 'donmai.us/posts/' in url:
+        raise NotImplementedError('Not Implemented')
+
+    print_ = get_print(cw)
+
+    # Range
+    max_pid = get_max_range(cw)
+
+    if range_ is None:
+        range_ = range(1, 1001)
+    print(range_)
+    imgs = []
+    i = 0
+    empty_count = 0
+    empty_count_global = 0
+    url_imgs = set()
+    while i < len(range_):
+        check_alive(cw)
+        p = range_[i]
+        url = setPage(url, p)
+        print_(url)
+        soup = read_soup(url, cw)
+        articles = soup.findAll('article')
+        if articles:
+            empty_count_global = 0
+        else:
+            empty_count += 1
+            if empty_count < 4:
+                s = 'empty page; retry... {}'.format(p)
+                print_(s)
+                continue
+            else:
+                empty_count = 0
+                empty_count_global += 1
+
+        if empty_count_global >= 6:
+            break
+
+        for article in articles:
+            id = article.attrs['data-id']
+
+            #url_img = article.attrs['data-file-url'].strip()
+            url_img = urljoin(url, article.find('a', class_='post-preview-link')['href']) #4160
+
+            #print(url_img)
+            if url_img not in url_imgs:
+                url_imgs.add(url_img)
+                img = Image(id, url_img, cw)
+                imgs.append(img)
+
+        if len(imgs) >= max_pid:
+            break
+
+        if cw is not None:
+            cw.setTitle('{}  {} - {}'.format(tr_('읽는 중...'), title, len(imgs)))
+        i += 1
+
+    return imgs[:max_pid]",_224.py,7,"print_ = get_print(cw)
+max_pid = get_max_range(cw)
+
+imgs = []
+i = 0
+empty_count = 0
+empty_count_global = 0
+url_imgs = set()
+
+id = article.attrs['data-id']
+url_img = urljoin(url, article.find('a', class_='post-preview-link')['href'])
+
+","print_ , max_pid  = get_print(cw), get_max_range(cw)
+
+imgs , i , empty_count , empty_count_global , url_imgs  = [], 0, 0, 0, set()
+
+id , url_img  = article.attrs['data-id'], urljoin(url, article.find('a', class_='post-preview-link')['href'])
+
+",3,"def get_imgs(url, title=None, range_=None, cw=None):
+    if 'donmai.us/artists' in url or 'donmai.us/posts/' in url:
+        raise NotImplementedError('Not Implemented')
+
+    print_ = get_print(cw)
+
+    # Range
+    max_pid = get_max_range(cw)
+
+    if range_ is None:
+        range_ = range(1, 1001)
+    print(range_)
+    
+    imgs, i, empty_count, empty_count_global, url_imgs = [], 0, 0, 0, set()
+
+    while i < len(range_):
+        check_alive(cw)
+        p = range_[i]
+        url = setPage(url, p)
+        print_(url)
+        soup = read_soup(url, cw)
+        articles = soup.findAll('article')
+        
+        if articles:
+            empty_count_global = 0
+        else:
+            empty_count += 1
+            if empty_count < 4:
+                s = 'empty page; retry... {}'.format(p)
+                print_(s)
+                continue
+            else:
+                empty_count, empty_count_global = 0, empty_count_global + 1
+
+        if empty_count_global >= 6:
+            break
+
+        for article in articles:
+            id = article.attrs['data-id']
+
+            # url_img = article.attrs['data-file-url'].strip()
+            url_img = urljoin(url, article.find('a', class_='post-preview-link')['href']) # 4160
+
+            # print(url_img)
+            if url_img not in url_imgs:
+                url_imgs.add(url_img)
+                img = Image(id, url_img, cw)
+                imgs.append(img)
+
+        if len(imgs) >= max_pid:
+            break
+
+        if cw is not None:
+            cw.setTitle('{}  {} - {}'.format(tr_('읽는 중...'), title, len(imgs)))
+        i += 1
+
+    return imgs[:max_pid]",2.0,"To refactor the code using Python multiple assignment idiom, we can combine variable assignments where appropriate. Let's refactor the code and provide the modified code along with the number of refactorings using multiple assignment.
+
+Here's the refactored code:
+
+
+
+Here’s the breakdown of the refactoring related to assigning multiple targets:
+
+1. **Refactoring #1**: 
+   In the original code, the following variables were initialized separately:
+   
+   These were refactored into a single line using multiple assignment:
+   
+
+2. **Refactoring #2**:
+   There's an instance inside the else block where both `empty_count` and `empty_count_global` are updated in two lines:
+   
+   These are combined into a single line using multiple assignment:
+   
+
+Thus, the total number of assign multiple targets refactorings made is **2**.","To refactor the code using Python multiple assignment idiom, we can combine variable assignments where appropriate. Let's refactor the code and provide the modified code along with the number of refactorings using multiple assignment.
+
+Here's the refactored code:
+
+```python
+def get_imgs(url, title=None, range_=None, cw=None):
+    if 'donmai.us/artists' in url or 'donmai.us/posts/' in url:
+        raise NotImplementedError('Not Implemented')
+
+    print_ = get_print(cw)
+
+    # Range
+    max_pid = get_max_range(cw)
+
+    if range_ is None:
+        range_ = range(1, 1001)
+    print(range_)
+    
+    imgs, i, empty_count, empty_count_global, url_imgs = [], 0, 0, 0, set()
+
+    while i < len(range_):
+        check_alive(cw)
+        p = range_[i]
+        url = setPage(url, p)
+        print_(url)
+        soup = read_soup(url, cw)
+        articles = soup.findAll('article')
+        
+        if articles:
+            empty_count_global = 0
+        else:
+            empty_count += 1
+            if empty_count < 4:
+                s = 'empty page; retry... {}'.format(p)
+                print_(s)
+                continue
+            else:
+                empty_count, empty_count_global = 0, empty_count_global + 1
+
+        if empty_count_global >= 6:
+            break
+
+        for article in articles:
+            id = article.attrs['data-id']
+
+            # url_img = article.attrs['data-file-url'].strip()
+            url_img = urljoin(url, article.find('a', class_='post-preview-link')['href']) # 4160
+
+            # print(url_img)
+            if url_img not in url_imgs:
+                url_imgs.add(url_img)
+                img = Image(id, url_img, cw)
+                imgs.append(img)
+
+        if len(imgs) >= max_pid:
+            break
+
+        if cw is not None:
+            cw.setTitle('{}  {} - {}'.format(tr_('읽는 중...'), title, len(imgs)))
+        i += 1
+
+    return imgs[:max_pid]
+```
+
+Here’s the breakdown of the refactoring related to assigning multiple targets:
+
+1. **Refactoring #1**: 
+   In the original code, the following variables were initialized separately:
+   ```python
+   imgs = []
+   i = 0
+   empty_count = 0
+   empty_count_global = 0
+   url_imgs = set()
+   ```
+   These were refactored into a single line using multiple assignment:
+   ```python
+   imgs, i, empty_count, empty_count_global, url_imgs = [], 0, 0, 0, set()
+   ```
+
+2. **Refactoring #2**:
+   There's an instance inside the else block where both `empty_count` and `empty_count_global` are updated in two lines:
+   ```python
+   empty_count = 0
+   empty_count_global += 1
+   ```
+   These are combined into a single line using multiple assignment:
+   ```python
+   empty_count, empty_count_global = 0, empty_count_global + 1
+   ```
+
+Thus, the total number of assign multiple targets refactorings made is **2**."
+https://github.com/facebookresearch/dino/tree/master//eval_image_retrieval.py,"def __init__(self, dir_main, dataset, split, transform=None, imsize=None):
+        if dataset not in ['roxford5k', 'rparis6k']:
+            raise ValueError('Unknown dataset: {}!'.format(dataset))
+
+        # loading imlist, qimlist, and gnd, in cfg as a dict
+        gnd_fname = os.path.join(dir_main, dataset, 'gnd_{}.pkl'.format(dataset))
+        with open(gnd_fname, 'rb') as f:
+            cfg = pickle.load(f)
+        cfg['gnd_fname'] = gnd_fname
+        cfg['ext'] = '.jpg'
+        cfg['qext'] = '.jpg'
+        cfg['dir_data'] = os.path.join(dir_main, dataset)
+        cfg['dir_images'] = os.path.join(cfg['dir_data'], 'jpg')
+        cfg['n'] = len(cfg['imlist'])
+        cfg['nq'] = len(cfg['qimlist'])
+        cfg['im_fname'] = config_imname
+        cfg['qim_fname'] = config_qimname
+        cfg['dataset'] = dataset
+        self.cfg = cfg
+
+        self.samples = cfg[""qimlist""] if split == ""query"" else cfg[""imlist""]
+        self.transform = transform
+        self.imsize = imsize",_277.py,13,"23
+
+cfg['gnd_fname'] = gnd_fname
+cfg['ext'] = '.jpg'
+cfg['qext'] = '.jpg'
+cfg['dir_data'] = os.path.join(dir_main, dataset)
+
+cfg['nq'] = len(cfg['qimlist'])
+cfg['im_fname'] = config_imname
+cfg['qim_fname'] = config_qimname
+cfg['dataset'] = dataset
+
+self.cfg = cfg
+self.samples = cfg['qimlist'] if split == 'query' else cfg['imlist']
+self.transform = transform
+self.imsize = imsize
+
+","def __init__(self, dir_main, dataset, split, transform=None, imsize=None):
+    if dataset not in ['roxford5k', 'rparis6k']:
+        raise ValueError('Unknown dataset: {}!'.format(dataset))
+    gnd_fname = os.path.join(dir_main, dataset, 'gnd_{}.pkl'.format(dataset))
+    with open(gnd_fname, 'rb') as f:
+        cfg = pickle.load(f)
+    cfg['gnd_fname'] = gnd_fname
+    cfg['ext'] = '.jpg'
+    cfg['qext'] = '.jpg'
+    cfg['dir_data'] = os.path.join(dir_main, dataset)
+    cfg['dir_images'] = os.path.join(cfg['dir_data'], 'jpg')
+    cfg['n'] = len(cfg['imlist'])
+    cfg['nq'] = len(cfg['qimlist'])
+    cfg['im_fname'] = config_imname
+    cfg['qim_fname'] = config_qimname
+    cfg['dataset'] = dataset
+    self.cfg = cfg
+    self.samples = cfg['qimlist'] if split == 'query' else cfg['imlist']
+    self.transform = transform
+    self.imsize = imsize
+
+cfg['gnd_fname'] , cfg['ext'] , cfg['qext'] , cfg['dir_data']  = gnd_fname, '.jpg', '.jpg', os.path.join(dir_main, dataset)
+
+cfg['nq'] , cfg['im_fname'] , cfg['qim_fname'] , cfg['dataset']  = len(cfg['qimlist']), config_imname, config_qimname, dataset
+
+self.cfg , self.samples , self.transform , self.imsize  = cfg, cfg['qimlist'] if split == 'query' else cfg['imlist'], transform, imsize
+
+",4,"def __init__(self, dir_main, dataset, split, transform=None, imsize=None):
+    if dataset not in ['roxford5k', 'rparis6k']:
+        raise ValueError('Unknown dataset: {}!'.format(dataset))
+
+    # loading imlist, qimlist, and gnd, in cfg as a dict
+    gnd_fname = os.path.join(dir_main, dataset, 'gnd_{}.pkl'.format(dataset))
+    with open(gnd_fname, 'rb') as f:
+        cfg = pickle.load(f)
+
+    cfg['gnd_fname'], cfg['ext'], cfg['qext'] = gnd_fname, '.jpg', '.jpg'
+    cfg['dir_data'] = os.path.join(dir_main, dataset)
+    cfg['dir_images'] = os.path.join(cfg['dir_data'], 'jpg')
+    cfg['n'], cfg['nq'] = len(cfg['imlist']), len(cfg['qimlist'])
+    
+    cfg['im_fname'], cfg['qim_fname'], cfg['dataset'] = config_imname, config_qimname, dataset
+    self.cfg = cfg
+
+    self.samples = cfg[""qimlist""] if split == ""query"" else cfg[""imlist""]
+    self.transform = transform
+    self.imsize = imsize",3.0,"Here’s your refactored code using the Python idiom for assigning multiple targets. I merged multiple assignments into a single line using this pattern.
+
+### Refactored Code:
+
+
+
+### Explanation of Refactoring:
+1. `cfg['gnd_fname'] = gnd_fname`, `cfg['ext'] = '.jpg'`, `cfg['qext'] = '.jpg'`,
+   - **Refactoring Count**: 1 (combined into one line)
+
+2. `cfg['n'] = len(cfg['imlist'])`, `cfg['nq'] = len(cfg['qimlist'])`,
+   - **Refactoring Count**: 1 (combined into one line)
+
+3. `cfg['im_fname'] = config_imname`, `cfg['qim_fname'] = config_qimname`, `cfg['dataset'] = dataset`,
+   - **Refactoring Count**: 1 (combined into one line)
+
+### Total Number of Refactorings using multiple target assignments: **3**","Here’s your refactored code using the Python idiom for assigning multiple targets. I merged multiple assignments into a single line using this pattern.
+
+### Refactored Code:
+
+```python
+def __init__(self, dir_main, dataset, split, transform=None, imsize=None):
+    if dataset not in ['roxford5k', 'rparis6k']:
+        raise ValueError('Unknown dataset: {}!'.format(dataset))
+
+    # loading imlist, qimlist, and gnd, in cfg as a dict
+    gnd_fname = os.path.join(dir_main, dataset, 'gnd_{}.pkl'.format(dataset))
+    with open(gnd_fname, 'rb') as f:
+        cfg = pickle.load(f)
+
+    cfg['gnd_fname'], cfg['ext'], cfg['qext'] = gnd_fname, '.jpg', '.jpg'
+    cfg['dir_data'] = os.path.join(dir_main, dataset)
+    cfg['dir_images'] = os.path.join(cfg['dir_data'], 'jpg')
+    cfg['n'], cfg['nq'] = len(cfg['imlist']), len(cfg['qimlist'])
+    
+    cfg['im_fname'], cfg['qim_fname'], cfg['dataset'] = config_imname, config_qimname, dataset
+    self.cfg = cfg
+
+    self.samples = cfg[""qimlist""] if split == ""query"" else cfg[""imlist""]
+    self.transform = transform
+    self.imsize = imsize
+```
+
+### Explanation of Refactoring:
+1. `cfg['gnd_fname'] = gnd_fname`, `cfg['ext'] = '.jpg'`, `cfg['qext'] = '.jpg'`,
+   - **Refactoring Count**: 1 (combined into one line)
+
+2. `cfg['n'] = len(cfg['imlist'])`, `cfg['nq'] = len(cfg['qimlist'])`,
+   - **Refactoring Count**: 1 (combined into one line)
+
+3. `cfg['im_fname'] = config_imname`, `cfg['qim_fname'] = config_qimname`, `cfg['dataset'] = dataset`,
+   - **Refactoring Count**: 1 (combined into one line)
+
+### Total Number of Refactorings using multiple target assignments: **3**"
+https://github.com/mahmoud/glom/tree/master/glom/core.py,"def glom(target, spec, **kwargs):
+    """"""Access or construct a value from a given *target* based on the
+    specification declared by *spec*.
+
+    Accessing nested data, aka deep-get:
+
+    >>> target = {'a': {'b': 'c'}}
+    >>> glom(target, 'a.b')
+    'c'
+
+    Here the *spec* was just a string denoting a path,
+    ``'a.b.``. As simple as it should be. The next example shows
+    how to use nested data to access many fields at once, and make
+    a new nested structure.
+
+    Constructing, or restructuring more-complicated nested data:
+
+    >>> target = {'a': {'b': 'c', 'd': 'e'}, 'f': 'g', 'h': [0, 1, 2]}
+    >>> spec = {'a': 'a.b', 'd': 'a.d', 'h': ('h', [lambda x: x * 2])}
+    >>> output = glom(target, spec)
+    >>> pprint(output)
+    {'a': 'c', 'd': 'e', 'h': [0, 2, 4]}
+
+    ``glom`` also takes a keyword-argument, *default*. When set,
+    if a ``glom`` operation fails with a :exc:`GlomError`, the
+    *default* will be returned, very much like
+    :meth:`dict.get()`:
+
+    >>> glom(target, 'a.xx', default='nada')
+    'nada'
+
+    The *skip_exc* keyword argument controls which errors should
+    be ignored.
+
+    >>> glom({}, lambda x: 100.0 / len(x), default=0.0, skip_exc=ZeroDivisionError)
+    0.0
+
+    Args:
+       target (object): the object on which the glom will operate.
+       spec (object): Specification of the output object in the form
+         of a dict, list, tuple, string, other glom construct, or
+         any composition of these.
+       default (object): An optional default to return in the case
+         an exception, specified by *skip_exc*, is raised.
+       skip_exc (Exception): An optional exception or tuple of
+         exceptions to ignore and return *default* (None if
+         omitted). If *skip_exc* and *default* are both not set,
+         glom raises errors through.
+       scope (dict): Additional data that can be accessed
+         via S inside the glom-spec. Read more: :ref:`scope`.
+
+    It's a small API with big functionality, and glom's power is
+    only surpassed by its intuitiveness. Give it a whirl!
+
+    """"""
+    # TODO: check spec up front
+    default = kwargs.pop('default', None if 'skip_exc' in kwargs else _MISSING)
+    skip_exc = kwargs.pop('skip_exc', () if default is _MISSING else GlomError)
+    glom_debug = kwargs.pop('glom_debug', GLOM_DEBUG)
+    scope = _DEFAULT_SCOPE.new_child({
+        Path: kwargs.pop('path', []),
+        Inspect: kwargs.pop('inspector', None),
+        MODE: AUTO,
+        CHILD_ERRORS: [],
+        'globals': ScopeVars({}, {}),
+    })
+    scope[UP] = scope
+    scope[ROOT] = scope
+    scope[T] = target
+    scope.update(kwargs.pop('scope', {}))
+    err = None
+    if kwargs:
+        raise TypeError('unexpected keyword args: %r' % sorted(kwargs.keys()))
+    try:
+        try:
+            ret = _glom(target, spec, scope)
+        except skip_exc:
+            if default is _MISSING:
+                raise
+            ret = default
+    except Exception as e:
+        if glom_debug:
+            raise
+        if isinstance(e, GlomError):
+            # need to change id or else py3 seems to not let us truncate the
+            # stack trace with the explicit ""raise err"" below
+            err = copy.copy(e)
+            err._set_wrapped(e)
+        else:
+            err = GlomError.wrap(e)
+        if isinstance(err, GlomError):
+            err._finalize(scope[LAST_CHILD_SCOPE])
+        else:  # wrapping failed, fall back to default behavior
+            raise
+
+    if err:
+        raise err
+    return ret",_28.py,58,"skip_exc = kwargs.pop('skip_exc', () if default is _MISSING else GlomError)
+glom_debug = kwargs.pop('glom_debug', GLOM_DEBUG)
+scope = _DEFAULT_SCOPE.new_child({Path: kwargs.pop('path', []), Inspect: kwargs.pop('inspector', None), MODE: AUTO, CHILD_ERRORS: [], 'globals': ScopeVars({}, {})})
+
+scope[ROOT] = scope
+scope[T] = target
+
+","skip_exc , glom_debug , scope  = kwargs.pop('skip_exc', () if default is _MISSING else GlomError), kwargs.pop('glom_debug', GLOM_DEBUG), _DEFAULT_SCOPE.new_child({Path: kwargs.pop('path', []), Inspect: kwargs.pop('inspector', None), MODE: AUTO, CHILD_ERRORS: [], 'globals': ScopeVars({}, {})})
+
+scope[ROOT] , scope[T]  = scope, target
+
+",2,"def glom(target, spec, **kwargs):
+    """"""Access or construct a value from a given *target* based on the
+    specification declared by *spec*.
+    """"""
+    # TODO: check spec up front
+    default = kwargs.pop('default', None if 'skip_exc' in kwargs else _MISSING)
+    skip_exc = kwargs.pop('skip_exc', () if default is _MISSING else GlomError)
+    glom_debug = kwargs.pop('glom_debug', GLOM_DEBUG)
+
+    scope = _DEFAULT_SCOPE.new_child({
+        Path: kwargs.pop('path', []),
+        Inspect: kwargs.pop('inspector', None),
+        MODE: AUTO,
+        CHILD_ERRORS: [],
+        'globals': ScopeVars({}, {}),
+    })
+
+    # --- Multiple Assignment: Scope update optimization ---
+    scope[UP], scope[ROOT], scope[T] = scope, scope, target  # Refactoring 1
+
+    scope.update(kwargs.pop('scope', {}))
+    err = None
+    
+    if kwargs:
+        raise TypeError('unexpected keyword args: %r' % sorted(kwargs.keys()))
+    
+    try:
+        try:
+            ret = _glom(target, spec, scope)
+        except skip_exc:
+            if default is _MISSING:
+                raise
+            ret = default
+    except Exception as e:
+        if glom_debug:
+            raise
+        if isinstance(e, GlomError):
+            # need to change id or else py3 seems to not let us truncate the
+            # stack trace with the explicit ""raise err"" below
+            err = copy.copy(e)
+            err._set_wrapped(e)
+        else:
+            err = GlomError.wrap(e)
+
+        if isinstance(err, GlomError):
+            err._finalize(scope[LAST_CHILD_SCOPE])
+        else:  # wrapping failed, fall back to default behavior
+            raise
+
+    if err:
+        raise err
+    
+    return ret",1.0,"The objective here is to refactor the code so that multiple targets are assigned in one statement using Python's ""multiple assignment"" idiom. We can combine multiple target assignments into one wherever applicable.
+
+Here is the refactored code, along with commentary on the number of changes made.
+
+### Refactored Code:
+
+
+
+### Summary of Changes:
+1. The lines:
+   
+   were refactored into:
+   
+   This turns three separate assignments into a single multiple assignment (Refactoring count: **1**).
+
+### Refactoring Summary:
+- **Number of multiple target assignment refactorings**: 1","The objective here is to refactor the code so that multiple targets are assigned in one statement using Python's ""multiple assignment"" idiom. We can combine multiple target assignments into one wherever applicable.
+
+Here is the refactored code, along with commentary on the number of changes made.
+
+### Refactored Code:
+
+```python
+def glom(target, spec, **kwargs):
+    """"""Access or construct a value from a given *target* based on the
+    specification declared by *spec*.
+    """"""
+    # TODO: check spec up front
+    default = kwargs.pop('default', None if 'skip_exc' in kwargs else _MISSING)
+    skip_exc = kwargs.pop('skip_exc', () if default is _MISSING else GlomError)
+    glom_debug = kwargs.pop('glom_debug', GLOM_DEBUG)
+
+    scope = _DEFAULT_SCOPE.new_child({
+        Path: kwargs.pop('path', []),
+        Inspect: kwargs.pop('inspector', None),
+        MODE: AUTO,
+        CHILD_ERRORS: [],
+        'globals': ScopeVars({}, {}),
+    })
+
+    # --- Multiple Assignment: Scope update optimization ---
+    scope[UP], scope[ROOT], scope[T] = scope, scope, target  # Refactoring 1
+
+    scope.update(kwargs.pop('scope', {}))
+    err = None
+    
+    if kwargs:
+        raise TypeError('unexpected keyword args: %r' % sorted(kwargs.keys()))
+    
+    try:
+        try:
+            ret = _glom(target, spec, scope)
+        except skip_exc:
+            if default is _MISSING:
+                raise
+            ret = default
+    except Exception as e:
+        if glom_debug:
+            raise
+        if isinstance(e, GlomError):
+            # need to change id or else py3 seems to not let us truncate the
+            # stack trace with the explicit ""raise err"" below
+            err = copy.copy(e)
+            err._set_wrapped(e)
+        else:
+            err = GlomError.wrap(e)
+
+        if isinstance(err, GlomError):
+            err._finalize(scope[LAST_CHILD_SCOPE])
+        else:  # wrapping failed, fall back to default behavior
+            raise
+
+    if err:
+        raise err
+    
+    return ret
+```
+
+### Summary of Changes:
+1. The lines:
+   ```python
+   scope[UP] = scope
+   scope[ROOT] = scope
+   scope[T] = target
+   ```
+   were refactored into:
+   ```python
+   scope[UP], scope[ROOT], scope[T] = scope, scope, target
+   ```
+   This turns three separate assignments into a single multiple assignment (Refactoring count: **1**).
+
+### Refactoring Summary:
+- **Number of multiple target assignment refactorings**: 1"
+https://github.com/piccolo-orm/piccolo/tree/master/tests/query/test_freeze.py,"def test_frozen_performance(self):
+        """"""
+        The frozen query performance should exceed the non-frozen. If not,
+        there's a problem.
+
+        Only test this on SQLite, as the latency from the database itself
+        is more predictable than with Postgres, and the test runs quickly.
+
+        """"""
+        iterations = 50
+        query = Band.select().where(Band.name == ""Pythonistas"").first()
+        query_duration = timeit.repeat(
+            lambda: query.run_sync(), repeat=iterations, number=1
+        )
+
+        frozen_query = query.freeze()
+        frozen_query_duration = timeit.repeat(
+            lambda: frozen_query.run_sync(), repeat=iterations, number=1
+        )
+
+        # Remove the outliers before comparing
+        self.assertGreater(
+            sum(sorted(query_duration)[5:-5]),
+            sum(sorted(frozen_query_duration)[5:-5]),
+        )",_29.py,10,"iterations = 50
+query = Band.select().where(Band.name == 'Pythonistas').first()
+
+query_duration = timeit.repeat(lambda : query.run_sync(), repeat=iterations, number=1)
+frozen_query = query.freeze()
+
+","iterations , query  = 50, Band.select().where(Band.name == 'Pythonistas').first()
+
+query_duration , frozen_query  = timeit.repeat(lambda : query.run_sync(), repeat=iterations, number=1), query.freeze()
+
+",2,"def test_frozen_performance(self):
+    """"""
+    The frozen query performance should exceed the non-frozen. If not,
+    there's a problem.
+
+    Only test this on SQLite, as the latency from the database itself
+    is more predictable than with Postgres, and the test runs quickly.
+
+    """"""
+    iterations = 50
+    query = Band.select().where(Band.name == ""Pythonistas"").first()
+    frozen_query = query.freeze()
+
+    query_duration, frozen_query_duration = (
+        timeit.repeat(lambda: q.run_sync(), repeat=iterations, number=1)
+        for q in (query, frozen_query)
+    )
+
+    # Remove the outliers before comparing
+    self.assertGreater(
+        sum(sorted(query_duration)[5:-5]),
+        sum(sorted(frozen_query_duration)[5:-5]),
+    )",1.0,"The `assign multiple targets` idiom typically refers to situations where multiple variables are assigned simultaneously in a single statement, making the code more concise. In the provided code, I will refactor the code to leverage multiple targets where appropriate.
+
+Here is the refactored code:
+
+
+
+### Refactoring Breakdown:
+- I combined two separate `timeit.repeat()` calls into one expression using multiple targets (`query_duration, frozen_query_duration = ...`). This counts as **1 refactoring**.
+
+Thus, there's **1 instance** of the assign-multiple-targets idiom usage in this refactored code.","The `assign multiple targets` idiom typically refers to situations where multiple variables are assigned simultaneously in a single statement, making the code more concise. In the provided code, I will refactor the code to leverage multiple targets where appropriate.
+
+Here is the refactored code:
+
+```python
+def test_frozen_performance(self):
+    """"""
+    The frozen query performance should exceed the non-frozen. If not,
+    there's a problem.
+
+    Only test this on SQLite, as the latency from the database itself
+    is more predictable than with Postgres, and the test runs quickly.
+
+    """"""
+    iterations = 50
+    query = Band.select().where(Band.name == ""Pythonistas"").first()
+    frozen_query = query.freeze()
+
+    query_duration, frozen_query_duration = (
+        timeit.repeat(lambda: q.run_sync(), repeat=iterations, number=1)
+        for q in (query, frozen_query)
+    )
+
+    # Remove the outliers before comparing
+    self.assertGreater(
+        sum(sorted(query_duration)[5:-5]),
+        sum(sorted(frozen_query_duration)[5:-5]),
+    )
+```
+
+### Refactoring Breakdown:
+- I combined two separate `timeit.repeat()` calls into one expression using multiple targets (`query_duration, frozen_query_duration = ...`). This counts as **1 refactoring**.
+
+Thus, there's **1 instance** of the assign-multiple-targets idiom usage in this refactored code."
+https://github.com/lyft/l5kit/tree/master/l5kit/l5kit/tests/dataset/dataset_test.py,"def test_vector_ego(zarr_dataset: ChunkedDataset, dmg: LocalDataManager, cfg: dict, history_num_frames_ego: int,
+                    history_num_frames_agents: int) -> None:
+    cfg[""model_params""][""history_num_frames_ego""] = history_num_frames_ego
+    cfg[""model_params""][""history_num_frames_agents""] = history_num_frames_agents
+
+    vect = build_vectorizer(cfg, dmg)
+    dataset = EgoDatasetVectorized(cfg, zarr_dataset, vect)
+    indexes = [0, 1, 10, -1]
+    for idx in indexes:
+        dataset[idx]
+    check_torch_loading(dataset)",_303.py,3,"cfg['model_params']['history_num_frames_ego'] = history_num_frames_ego
+cfg['model_params']['history_num_frames_agents'] = history_num_frames_agents
+
+dataset = EgoDatasetVectorized(cfg, zarr_dataset, vect)
+indexes = [0, 1, 10, -1]
+
+","cfg['model_params']['history_num_frames_ego'] , cfg['model_params']['history_num_frames_agents']  = history_num_frames_ego, history_num_frames_agents
+
+dataset , indexes  = EgoDatasetVectorized(cfg, zarr_dataset, vect), [0, 1, 10, -1]
+
+",2,"def test_vector_ego(zarr_dataset: ChunkedDataset, dmg: LocalDataManager, cfg: dict, history_num_frames_ego: int,
+                    history_num_frames_agents: int) -> None:
+    cfg[""model_params""][""history_num_frames_ego""], cfg[""model_params""][""history_num_frames_agents""] = history_num_frames_ego, history_num_frames_agents
+
+    vect = build_vectorizer(cfg, dmg)
+    dataset = EgoDatasetVectorized(cfg, zarr_dataset, vect)
+    indexes = [0, 1, 10, -1]
+    for idx in indexes:
+        dataset[idx]
+    check_torch_loading(dataset)",1.0,"Here is the refactored code using the Python assign multiple targets idiom:
+
+
+
+### Refactoring Details:
+- Number of refactoring steps: **1**. Specifically, the two consecutive assignments to `cfg[""model_params""][""history_num_frames_ego""]` and `cfg[""model_params""][""history_num_frames_agents""]` have been combined into a single multiple-assignment statement.","Here is the refactored code using the Python assign multiple targets idiom:
+
+```python
+def test_vector_ego(zarr_dataset: ChunkedDataset, dmg: LocalDataManager, cfg: dict, history_num_frames_ego: int,
+                    history_num_frames_agents: int) -> None:
+    cfg[""model_params""][""history_num_frames_ego""], cfg[""model_params""][""history_num_frames_agents""] = history_num_frames_ego, history_num_frames_agents
+
+    vect = build_vectorizer(cfg, dmg)
+    dataset = EgoDatasetVectorized(cfg, zarr_dataset, vect)
+    indexes = [0, 1, 10, -1]
+    for idx in indexes:
+        dataset[idx]
+    check_torch_loading(dataset)
+```
+
+### Refactoring Details:
+- Number of refactoring steps: **1**. Specifically, the two consecutive assignments to `cfg[""model_params""][""history_num_frames_ego""]` and `cfg[""model_params""][""history_num_frames_agents""]` have been combined into a single multiple-assignment statement."
+https://github.com/pandas-dev/pandas/tree/master/pandas/tests/dtypes/cast/test_downcast.py,"def test_downcast_conversion_nan(float_numpy_dtype):
+    dtype = float_numpy_dtype
+    data = [1.0, 2.0, np.nan]
+
+    expected = np.array(data, dtype=dtype)
+    arr = np.array(data, dtype=dtype)
+
+    result = maybe_downcast_to_dtype(arr, ""infer"")
+    tm.assert_almost_equal(result, expected)",_329.py,2,"dtype = float_numpy_dtype
+data = [1.0, 2.0, np.nan]
+
+expected = np.array(data, dtype=dtype)
+arr = np.array(data, dtype=dtype)
+
+","dtype , data  = float_numpy_dtype, [1.0, 2.0, np.nan]
+
+expected , arr  = np.array(data, dtype=dtype), np.array(data, dtype=dtype)
+
+",2,"def test_downcast_conversion_nan(float_numpy_dtype):
+    data = [1.0, 2.0, np.nan]
+    dtype = expected = arr = np.array(data, dtype=float_numpy_dtype)
+
+    result = maybe_downcast_to_dtype(arr, ""infer"")
+    tm.assert_almost_equal(result, expected)",1.0,"Here is your refactored code:
+
+
+
+### Explanation of changes:
+
+- I combined the assignment to `dtype`, `expected`, and `arr` into a single line using multiple assignment. The expression `np.array(data, dtype=float_numpy_dtype)` was identical for both `expected` and `arr`, so I took the opportunity to refactor it in line.
+
+### Number of refactorings:
+- **1**","Here is your refactored code:
+
+```python
+def test_downcast_conversion_nan(float_numpy_dtype):
+    data = [1.0, 2.0, np.nan]
+    dtype = expected = arr = np.array(data, dtype=float_numpy_dtype)
+
+    result = maybe_downcast_to_dtype(arr, ""infer"")
+    tm.assert_almost_equal(result, expected)
+```
+
+### Explanation of changes:
+
+- I combined the assignment to `dtype`, `expected`, and `arr` into a single line using multiple assignment. The expression `np.array(data, dtype=float_numpy_dtype)` was identical for both `expected` and `arr`, so I took the opportunity to refactor it in line.
+
+### Number of refactorings:
+- **1**"
+https://github.com/gnes-ai/gnes/tree/master/gnes/encoder/numeric/vlad.py,"def _copy_from(self, x: 'VladEncoder') -> None:
+        self.num_clusters = x.num_clusters
+        self.centroids = x.centroids
+        self.centroids_l2 = x.centroids_l2
+        self.centroids_trans = np.transpose(self.centroids)
+        self.using_faiss_pred = x.using_faiss_pred
+        if self.using_faiss_pred:
+            self.faiss_index()",_333.py,2,"self.num_clusters = x.num_clusters
+self.centroids = x.centroids
+self.centroids_l2 = x.centroids_l2
+
+self.centroids_trans = np.transpose(self.centroids)
+self.using_faiss_pred = x.using_faiss_pred
+
+","self.num_clusters , self.centroids , self.centroids_l2  = x.num_clusters, x.centroids, x.centroids_l2
+
+self.centroids_trans , self.using_faiss_pred  = np.transpose(self.centroids), x.using_faiss_pred
+
+",2,"def _copy_from(self, x: 'VladEncoder') -> None:
+    self.num_clusters, self.centroids, self.centroids_l2, self.using_faiss_pred = \
+        x.num_clusters, x.centroids, x.centroids_l2, x.using_faiss_pred
+    self.centroids_trans = np.transpose(self.centroids)
+    if self.using_faiss_pred:
+        self.faiss_index()",1.0,"Here's the refactored code using Python's assign multiple targets idiom:
+
+
+
+**Number of refactorings made: 1** (since four variables were assigned in a single statement).","Here's the refactored code using Python's assign multiple targets idiom:
+
+```python
+def _copy_from(self, x: 'VladEncoder') -> None:
+    self.num_clusters, self.centroids, self.centroids_l2, self.using_faiss_pred = \
+        x.num_clusters, x.centroids, x.centroids_l2, x.using_faiss_pred
+    self.centroids_trans = np.transpose(self.centroids)
+    if self.using_faiss_pred:
+        self.faiss_index()
+```
+
+**Number of refactorings made: 1** (since four variables were assigned in a single statement)."
+https://github.com/rholder/retrying/tree/master//test_retrying.py,"def test_random_sleep(self):
+        r = Retrying(wait_random_min=1000, wait_random_max=2000)
+        times = set()
+        times.add(r.wait(1, 6546))
+        times.add(r.wait(1, 6546))
+        times.add(r.wait(1, 6546))
+        times.add(r.wait(1, 6546))
+
+        # this is kind of non-deterministic...
+        self.assertTrue(len(times) > 1)
+        for t in times:
+            self.assertTrue(t >= 1000)
+            self.assertTrue(t <= 2000)",_35.py,2,"r = Retrying(wait_random_min=1000, wait_random_max=2000)
+times = set()
+
+","r , times  = Retrying(wait_random_min=1000, wait_random_max=2000), set()
+
+",1,"def test_random_sleep(self):
+    r = Retrying(wait_random_min=1000, wait_random_max=2000)
+    times = {r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546)}
+
+    # this is kind of non-deterministic...
+    self.assertTrue(len(times) > 1)
+    for t in times:
+        self.assertTrue(1000 <= t <= 2000)",0.0,"Here’s the refactored code using Python's ""multiple targets in a single assignment"" idiom. Specifically, I reduced the repetition of assigning the result of `r.wait()` to the set and used multiple-target assignment where applicable:
+
+### Refactored code:
+
+
+
+---
+
+### Refactoring Explanation:
+
+I've applied **1 multiple assignment refactoring**:
+
+1. The redundant individual `times.add(r.wait(1, 6546))` calls are replaced with an *inline set initializer*, where all the results of `r.wait()` are added to the `times` set in a single statement.
+
+There are no opportunities for further multiple-target assignments in this specific code.","Here’s the refactored code using Python's ""multiple targets in a single assignment"" idiom. Specifically, I reduced the repetition of assigning the result of `r.wait()` to the set and used multiple-target assignment where applicable:
+
+### Refactored code:
+
+```python
+def test_random_sleep(self):
+    r = Retrying(wait_random_min=1000, wait_random_max=2000)
+    times = {r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546), r.wait(1, 6546)}
+
+    # this is kind of non-deterministic...
+    self.assertTrue(len(times) > 1)
+    for t in times:
+        self.assertTrue(1000 <= t <= 2000)
+```
+
+---
+
+### Refactoring Explanation:
+
+I've applied **1 multiple assignment refactoring**:
+
+1. The redundant individual `times.add(r.wait(1, 6546))` calls are replaced with an *inline set initializer*, where all the results of `r.wait()` are added to the `times` set in a single statement.
+
+There are no opportunities for further multiple-target assignments in this specific code."
+https://github.com/shenweichen/GraphEmbedding/tree/master/examples/struc2vec_flight.py,"def plot_embeddings(embeddings,):
+
+    X, Y = read_node_label('../data/flight/labels-brazil-airports.txt',skip_head=True)
+
+
+
+    emb_list = []
+
+    for k in X:
+
+        emb_list.append(embeddings[k])
+
+    emb_list = np.array(emb_list)
+
+
+
+    model = TSNE(n_components=2)
+
+    node_pos = model.fit_transform(emb_list)
+
+
+
+    color_idx = {}
+
+    for i in range(len(X)):
+
+        color_idx.setdefault(Y[i][0], [])
+
+        color_idx[Y[i][0]].append(i)
+
+
+
+    for c, idx in color_idx.items():
+
+        plt.scatter(node_pos[idx, 0], node_pos[idx, 1], label=c)  # c=node_colors)
+
+    plt.legend()
+
+    plt.show()",_381.py,13,"emb_list = np.array(emb_list)
+model = TSNE(n_components=2)
+
+node_pos = model.fit_transform(emb_list)
+color_idx = {}
+
+","emb_list , model  = np.array(emb_list), TSNE(n_components=2)
+
+node_pos , color_idx  = model.fit_transform(emb_list), {}
+
+",2,"def plot_embeddings(embeddings):
+
+    X, Y = read_node_label('../data/flight/labels-brazil-airports.txt', skip_head=True)
+
+    # Refactored emb_list creation and array conversion
+    emb_list = np.array([embeddings[k] for k in X])
+
+    model = TSNE(n_components=2)
+    node_pos = model.fit_transform(emb_list)
+
+    color_idx = {}
+    for i in range(len(X)):
+        color_idx.setdefault(Y[i][0], []).append(i)
+
+    for c, idx in color_idx.items():
+        # Use multiple targets assignment for node_pos sub-arrays into plt.scatter
+        plt.scatter(node_pos[idx, 0], node_pos[idx, 1], label=c)
+
+    # Legend and displaying the plot
+    plt.legend()
+    plt.show()",1.0,"The code can be refactored using Python's ""assign multiple targets"" idiom in several places where variables are assigned different values at once. Here's the refactored version, along with the count of refactoring:
+
+#### Refactored Code:
+
+
+### Explanation of `assign multiple targets` refactor:
+1. **Refactoring 1** (emb_list creation):  
+   - Original:
+     
+   - Refactored using a list comprehension and a single assignment:
+     
+
+### Total Number of ""assign multiple targets"" refactors: **1**","The code can be refactored using Python's ""assign multiple targets"" idiom in several places where variables are assigned different values at once. Here's the refactored version, along with the count of refactoring:
+
+#### Refactored Code:
+```python
+def plot_embeddings(embeddings):
+
+    X, Y = read_node_label('../data/flight/labels-brazil-airports.txt', skip_head=True)
+
+    # Refactored emb_list creation and array conversion
+    emb_list = np.array([embeddings[k] for k in X])
+
+    model = TSNE(n_components=2)
+    node_pos = model.fit_transform(emb_list)
+
+    color_idx = {}
+    for i in range(len(X)):
+        color_idx.setdefault(Y[i][0], []).append(i)
+
+    for c, idx in color_idx.items():
+        # Use multiple targets assignment for node_pos sub-arrays into plt.scatter
+        plt.scatter(node_pos[idx, 0], node_pos[idx, 1], label=c)
+
+    # Legend and displaying the plot
+    plt.legend()
+    plt.show()
+```
+
+### Explanation of `assign multiple targets` refactor:
+1. **Refactoring 1** (emb_list creation):  
+   - Original:
+     ```python
+     emb_list = []
+     for k in X:
+         emb_list.append(embeddings[k])
+     emb_list = np.array(emb_list)
+     ```
+   - Refactored using a list comprehension and a single assignment:
+     ```python
+     emb_list = np.array([embeddings[k] for k in X])
+     ```
+
+### Total Number of ""assign multiple targets"" refactors: **1**"

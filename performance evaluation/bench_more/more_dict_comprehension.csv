@@ -1,0 +1,286 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/ivre/ivre/tree/master/ivre/parser/netflow.py,"def parse_line(cls, line: bytes) -> Dict[str, Any]:
+        fields: Dict[str, Any] = dict(
+            (name[0], val.strip())
+            for name, val in zip(cls.fields, line.decode().split("",""))
+        )
+        fields[""proto""] = fields[""proto""].lower()
+        srv_idx = None
+        if fields[""proto""] == ""icmp"":
+            # Looks like an nfdump anomaly, keeping ""0.8"" leads to nonsense
+            # flows, whereas switching to ""8.0"" makes it sane again.
+            if fields[""port2""] == ""0.8"":
+                fields[""port2""] = ""8.0""
+            fields[""type""], fields[""code""] = [
+                int(x) for x in fields.pop(""port2"").split(""."")
+            ]
+            # ICMP 0 is an answer to ICMP 8
+            if fields[""type""] == 0:
+                fields[""type""] = 8
+                srv_idx = 1
+            else:
+                srv_idx = 2
+            del fields[""port1""]
+        else:
+            for field in [""port1"", ""port2""]:
+                fields[field] = int(fields[field])
+        for field in [""start_time"", ""end_time""]:
+            fields[field] = datetime.datetime.strptime(fields[field], cls.timefmt)
+        if srv_idx is None:
+            srv_idx = (
+                1
+                if utils.guess_srv_port(
+                    fields[""port1""], fields[""port2""], proto=fields[""proto""]
+                )
+                >= 0
+                else 2
+            )
+        cli_idx = 1 if srv_idx == 2 else 2
+        fields[""src""] = fields.pop(""addr%d"" % cli_idx)
+        fields[""dst""] = fields.pop(""addr%d"" % srv_idx)
+        if ""port%s"" % cli_idx in fields:
+            fields[""sport""] = fields.pop(""port%d"" % cli_idx)
+        if ""port%s"" % srv_idx in fields:
+            fields[""dport""] = fields.pop(""port%d"" % srv_idx)
+            fields[""flow_name""] = ""%(proto)s %(dport)s"" % fields
+        elif ""type"" in fields:
+            fields[""flow_name""] = ""%(proto)s %(type)s"" % fields
+        else:
+            fields[""flow_name""] = fields[""proto""]
+        fields[""scbytes""] = cls.str2int(fields.pop(""bytes%d"" % cli_idx))
+        fields[""scpkts""] = cls.str2int(fields.pop(""pkts%d"" % cli_idx))
+        fields[""csbytes""] = cls.str2int(fields.pop(""bytes%d"" % srv_idx))
+        fields[""cspkts""] = cls.str2int(fields.pop(""pkts%d"" % srv_idx))
+        return fields",_9075.py,26,"for field in ['start_time', 'end_time']:
+    fields[field] = datetime.datetime.strptime(fields[field], cls.timefmt)
+
+for field in ['port1', 'port2']:
+    fields[field] = int(fields[field])
+
+","fields.update({field: datetime.datetime.strptime(fields[field], cls.timefmt)
+for field in ['start_time', 'end_time']})
+
+fields.update({field: int(fields[field])  for field in ['port1', 'port2']})
+
+",2,"def parse_line(cls, line: bytes) -> Dict[str, Any]:
+    fields: Dict[str, Any] = {
+        name[0]: val.strip() for name, val in zip(cls.fields, line.decode().split("",""))
+    }
+    fields[""proto""] = fields[""proto""].lower()
+    srv_idx = None
+    if fields[""proto""] == ""icmp"":
+        # Looks like an nfdump anomaly, keeping ""0.8"" leads to nonsense
+        # flows, whereas switching to ""8.0"" makes it sane again.
+        if fields[""port2""] == ""0.8"":
+            fields[""port2""] = ""8.0""
+        fields[""type""], fields[""code""] = [
+            int(x) for x in fields.pop(""port2"").split(""."")
+        ]
+        # ICMP 0 is an answer to ICMP 8
+        if fields[""type""] == 0:
+            fields[""type""] = 8
+            srv_idx = 1
+        else:
+            srv_idx = 2
+        del fields[""port1""]
+    else:
+        for field in [""port1"", ""port2""]:
+            fields[field] = int(fields[field])
+    for field in [""start_time"", ""end_time""]:
+        fields[field] = datetime.datetime.strptime(fields[field], cls.timefmt)
+    if srv_idx is None:
+        srv_idx = (
+            1
+            if utils.guess_srv_port(
+                fields[""port1""], fields[""port2""], proto=fields[""proto""]
+            )
+            >= 0
+            else 2
+        )
+    cli_idx = 1 if srv_idx == 2 else 2
+    fields[""src""] = fields.pop(""addr%d"" % cli_idx)
+    fields[""dst""] = fields.pop(""addr%d"" % srv_idx)
+    if ""port%s"" % cli_idx in fields:
+        fields[""sport""] = fields.pop(""port%d"" % cli_idx)
+    if ""port%s"" % srv_idx in fields:
+        fields[""dport""] = fields.pop(""port%d"" % srv_idx)
+        fields[""flow_name""] = ""%(proto)s %(dport)s"" % fields
+    elif ""type"" in fields:
+        fields[""flow_name""] = ""%(proto)s %(type)s"" % fields
+    else:
+        fields[""flow_name""] = fields[""proto""]
+    fields[""scbytes""] = cls.str2int(fields.pop(""bytes%d"" % cli_idx))
+    fields[""scpkts""] = cls.str2int(fields.pop(""pkts%d"" % cli_idx))
+    fields[""csbytes""] = cls.str2int(fields.pop(""bytes%d"" % srv_idx))
+    fields[""cspkts""] = cls.str2int(fields.pop(""pkts%d"" % srv_idx))
+    return fields",1,"The existing code contains some parts that can be refactored using Python's PEP 274 – Dictionary Comprehensions, specifically in the segment that builds the `fields` dictionary at the beginning. The original code uses the `dict()` constructor with a generator expression, which we can refactor into a dictionary comprehension for better readability and performance.
+
+### Here's the refactored code:
+
+
+
+### Refactoring done:
+- **One refactoring using dictionary comprehension**:
+    - This part of the code:
+      
+      Is replaced with:
+      
+
+### Total count of PEP 274 – Dictionary Comprehensions uses: **1**","The existing code contains some parts that can be refactored using Python's PEP 274 – Dictionary Comprehensions, specifically in the segment that builds the `fields` dictionary at the beginning. The original code uses the `dict()` constructor with a generator expression, which we can refactor into a dictionary comprehension for better readability and performance.
+
+### Here's the refactored code:
+
+```python
+def parse_line(cls, line: bytes) -> Dict[str, Any]:
+    fields: Dict[str, Any] = {
+        name[0]: val.strip() for name, val in zip(cls.fields, line.decode().split("",""))
+    }
+    fields[""proto""] = fields[""proto""].lower()
+    srv_idx = None
+    if fields[""proto""] == ""icmp"":
+        # Looks like an nfdump anomaly, keeping ""0.8"" leads to nonsense
+        # flows, whereas switching to ""8.0"" makes it sane again.
+        if fields[""port2""] == ""0.8"":
+            fields[""port2""] = ""8.0""
+        fields[""type""], fields[""code""] = [
+            int(x) for x in fields.pop(""port2"").split(""."")
+        ]
+        # ICMP 0 is an answer to ICMP 8
+        if fields[""type""] == 0:
+            fields[""type""] = 8
+            srv_idx = 1
+        else:
+            srv_idx = 2
+        del fields[""port1""]
+    else:
+        for field in [""port1"", ""port2""]:
+            fields[field] = int(fields[field])
+    for field in [""start_time"", ""end_time""]:
+        fields[field] = datetime.datetime.strptime(fields[field], cls.timefmt)
+    if srv_idx is None:
+        srv_idx = (
+            1
+            if utils.guess_srv_port(
+                fields[""port1""], fields[""port2""], proto=fields[""proto""]
+            )
+            >= 0
+            else 2
+        )
+    cli_idx = 1 if srv_idx == 2 else 2
+    fields[""src""] = fields.pop(""addr%d"" % cli_idx)
+    fields[""dst""] = fields.pop(""addr%d"" % srv_idx)
+    if ""port%s"" % cli_idx in fields:
+        fields[""sport""] = fields.pop(""port%d"" % cli_idx)
+    if ""port%s"" % srv_idx in fields:
+        fields[""dport""] = fields.pop(""port%d"" % srv_idx)
+        fields[""flow_name""] = ""%(proto)s %(dport)s"" % fields
+    elif ""type"" in fields:
+        fields[""flow_name""] = ""%(proto)s %(type)s"" % fields
+    else:
+        fields[""flow_name""] = fields[""proto""]
+    fields[""scbytes""] = cls.str2int(fields.pop(""bytes%d"" % cli_idx))
+    fields[""scpkts""] = cls.str2int(fields.pop(""pkts%d"" % cli_idx))
+    fields[""csbytes""] = cls.str2int(fields.pop(""bytes%d"" % srv_idx))
+    fields[""cspkts""] = cls.str2int(fields.pop(""pkts%d"" % srv_idx))
+    return fields
+```
+
+### Refactoring done:
+- **One refactoring using dictionary comprehension**:
+    - This part of the code:
+      ```python
+      dict(
+          (name[0], val.strip())
+          for name, val in zip(cls.fields, line.decode().split("",""))
+      )
+      ```
+      Is replaced with:
+      ```python
+      {
+          name[0]: val.strip() for name, val in zip(cls.fields, line.decode().split("",""))
+      }
+      ```
+
+### Total count of PEP 274 – Dictionary Comprehensions uses: **1**"
+https://github.com/PaddlePaddle/PGL/tree/master/pgl/graph.py,"def _apply_to_numpy(self, key, value, inplace=True):
+        if value is None:
+            return value
+
+        if key == '_is_tensor':
+            # set is_tensor to True
+            return False
+
+        if isinstance(value, EdgeIndex):
+            value = value.numpy(inplace=inplace)
+        elif isinstance(value, dict):
+            if inplace:
+                for k, v in value.items():
+                    value[k] = v.numpy()
+            else:
+                new_value = {}
+                for k, v in value.items():
+                    new_value[k] = v.numpy()
+                value = new_value
+        else:
+            value = value.numpy()
+        return value",_12640.py,13,"for (k, v) in value.items():
+    value[k] = v.numpy()
+
+for (k, v) in value.items():
+    new_value[k] = v.numpy()
+
+","value.update({k: v.numpy() for (k, v) in value.items()})
+
+new_value.update({k: v.numpy() for (k, v) in value.items()})
+
+",2,"def _apply_to_numpy(self, key, value, inplace=True):
+    if value is None:
+        return value
+
+    if key == '_is_tensor':
+        # set is_tensor to True
+        return False
+
+    if isinstance(value, EdgeIndex):
+        value = value.numpy(inplace=inplace)
+    elif isinstance(value, dict):
+        if inplace:
+            for k, v in value.items():
+                value[k] = v.numpy()
+        else:
+            value = {k: v.numpy() for k, v in value.items()}
+    else:
+        value = value.numpy()
+    return value",1,"Below is the refactored code using **PEP 274** — Dictionary Comprehensions idiom. I replaced the sections where dictionaries are being generated by iterating over `value.items()` with dictionary comprehensions.
+
+
+
+### Refactoring Count:
+- **One** refactoring using dictionary comprehensions where the dictionary `new_value` was generated via a loop.","Below is the refactored code using **PEP 274** — Dictionary Comprehensions idiom. I replaced the sections where dictionaries are being generated by iterating over `value.items()` with dictionary comprehensions.
+
+```python
+def _apply_to_numpy(self, key, value, inplace=True):
+    if value is None:
+        return value
+
+    if key == '_is_tensor':
+        # set is_tensor to True
+        return False
+
+    if isinstance(value, EdgeIndex):
+        value = value.numpy(inplace=inplace)
+    elif isinstance(value, dict):
+        if inplace:
+            for k, v in value.items():
+                value[k] = v.numpy()
+        else:
+            value = {k: v.numpy() for k, v in value.items()}
+    else:
+        value = value.numpy()
+    return value
+```
+
+### Refactoring Count:
+- **One** refactoring using dictionary comprehensions where the dictionary `new_value` was generated via a loop.
+
+"

@@ -1,0 +1,1598 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/angr/angr/tree/master/angr/storage/memory_mixins/paged_memory/paged_memory_mixin.py,"def changed_pages(self, other) -> Dict[int,Optional[Set[int]]]:
+        my_pages = set(self._pages)
+        other_pages = set(other._pages)
+        intersection = my_pages.intersection(other_pages)
+        difference = my_pages.difference(other_pages)
+
+        changes: Dict[int,Optional[Set[int]]] = dict((d, None) for d in difference)
+
+        for pageno in intersection:
+            my_page = self._pages[pageno]
+            other_page = other._pages[pageno]
+
+            if (my_page is None) ^ (other_page is None):
+                changes[pageno] = None
+            elif my_page is None:
+                pass
+            else:
+                changed_offsets = my_page.changed_bytes(other_page, page_addr=pageno * self.page_size)
+                if changed_offsets:
+                    changes[pageno] = changed_offsets
+
+        return changes",_8521.py,13,"(my_page is None) ^ (other_page is None)
+
+","other_page is None is my_page
+
+",1,"def changed_pages(self, other) -> Dict[int, Optional[Set[int]]]:
+    my_pages = set(self._pages)
+    other_pages = set(other._pages)
+    intersection = my_pages.intersection(other_pages)
+    difference = my_pages.difference(other_pages)
+
+    changes: Dict[int, Optional[Set[int]]] = {d: None for d in difference}
+
+    for pageno in intersection:
+        my_page = self._pages[pageno]
+        other_page = other._pages[pageno]
+
+        if (my_page is None) ^ (other_page is None):
+            changes[pageno] = None
+        elif my_page is None:
+            pass
+        else:
+            changed_offsets = my_page.changed_bytes(other_page, page_addr=pageno * self.page_size)
+            if changed_offsets:
+                changes[pageno] = changed_offsets
+
+    return changes",0,"To refactor your code using Python's chained comparisons idiom, we can improve the readability of conditional checks where possible by chaining comparisons. In this case, there's one opportunity for chained comparison in the `if (my_page is None) ^ (other_page is None)` clause, which checks whether only one (but not both) of the two values is `None`. Using chained comparison isn’t directly applicable here since this is an XOR operation, allowing for no simplifications through chaining. However, there's no other complex comparison pattern in your provided code that requires refactoring into chained comparisons. Hence, no chained comparisons were added or simplified, after reviewing your logic.
+
+Here is the refactored code:
+
+
+
+### Summary:
+1. I refactored the dictionary comprehension slightly for clarity:
+   - Changed `dict((d, None) for d in difference)` → `{d: None for d in difference}`.
+
+2. No chained comparison refactoring was required in this particular snippet, so **no chain comparison refactorings** were made.","To refactor your code using Python's chained comparisons idiom, we can improve the readability of conditional checks where possible by chaining comparisons. In this case, there's one opportunity for chained comparison in the `if (my_page is None) ^ (other_page is None)` clause, which checks whether only one (but not both) of the two values is `None`. Using chained comparison isn’t directly applicable here since this is an XOR operation, allowing for no simplifications through chaining. However, there's no other complex comparison pattern in your provided code that requires refactoring into chained comparisons. Hence, no chained comparisons were added or simplified, after reviewing your logic.
+
+Here is the refactored code:
+
+```python
+def changed_pages(self, other) -> Dict[int, Optional[Set[int]]]:
+    my_pages = set(self._pages)
+    other_pages = set(other._pages)
+    intersection = my_pages.intersection(other_pages)
+    difference = my_pages.difference(other_pages)
+
+    changes: Dict[int, Optional[Set[int]]] = {d: None for d in difference}
+
+    for pageno in intersection:
+        my_page = self._pages[pageno]
+        other_page = other._pages[pageno]
+
+        if (my_page is None) ^ (other_page is None):
+            changes[pageno] = None
+        elif my_page is None:
+            pass
+        else:
+            changed_offsets = my_page.changed_bytes(other_page, page_addr=pageno * self.page_size)
+            if changed_offsets:
+                changes[pageno] = changed_offsets
+
+    return changes
+```
+
+### Summary:
+1. I refactored the dictionary comprehension slightly for clarity:
+   - Changed `dict((d, None) for d in difference)` → `{d: None for d in difference}`.
+
+2. No chained comparison refactoring was required in this particular snippet, so **no chain comparison refactorings** were made."
+https://github.com/brian-team/brian2/tree/master/brian2/core/functions.py,"def declare_types(**types):
+    """"""
+    Decorator to declare argument and result types for a function
+
+    Usage is similar to `check_units` except that types must be one of ``{VALID_ARG_TYPES}``
+    and the result type must be one of ``{VALID_RETURN_TYPES}``. Unspecified argument
+    types are assumed to be ``'all'`` (i.e. anything is permitted), and an unspecified
+    result type is assumed to be ``'float'``. Note that the ``'highest'`` option for
+    result type will give the highest type of its argument, e.g. if the arguments
+    were boolean and integer then the result would be integer, if the arguments were
+    integer and float it would be float.
+    """"""
+
+    def annotate_function_with_types(f):
+        if hasattr(f, ""_orig_arg_names""):
+            arg_names = f._orig_arg_names
+        else:
+            arg_names = f.__code__.co_varnames[0 : f.__code__.co_argcount]
+        argtypes = []
+        for name in arg_names:
+            arg_type = types.get(name, ""any"")
+            if arg_type not in VALID_ARG_TYPES:
+                raise ValueError(
+                    f""Argument type {arg_type} is not valid, must be one of""
+                    f"" {VALID_ARG_TYPES}, for argument {name}""
+                )
+            argtypes.append(arg_type)
+        for n in types:
+            if n not in arg_names and n != ""result"":
+                raise ValueError(f""Type specified for unknown argument {n}"")
+        return_type = types.get(""result"", ""float"")
+        if return_type not in VALID_RETURN_TYPES:
+            raise ValueError(
+                f""Result type {return_type} is not valid, must be one of""
+                f"" {VALID_RETURN_TYPES}""
+            )
+        f._arg_types = argtypes
+        f._return_type = return_type
+        f._orig_arg_names = arg_names
+        f._annotation_attributes = getattr(f, ""_annotation_attributes"", []) + [
+            ""_arg_types"",
+            ""_return_type"",
+        ]
+        return f
+
+    return annotate_function_with_types",_4310.py,29,"n not in arg_names and n != 'result'
+
+","result' != n not in arg_names
+
+",1,"def declare_types(**types):
+    """"""
+    Decorator to declare argument and result types for a function.
+
+    It validates the argument types based on `VALID_ARG_TYPES` and the result
+    type against `VALID_RETURN_TYPES`. Unspecified argument types default to `'any'`; 
+    an unspecified result type defaults to `'float'`.
+    
+    Parameters that use the `'highest'` option will determine their type from
+    the highest among argument types.
+    """"""
+    
+    def annotate_function_with_types(f):
+        # Check for original argument values
+        if hasattr(f, ""_orig_arg_names""):
+            arg_names = f._orig_arg_names
+        else:
+            arg_names = f.__code__.co_varnames[0 : f.__code__.co_argcount]
+
+        # Validate argument types
+        argtypes = []
+        for name in arg_names:
+            arg_type = types.get(name, ""any"")
+            if arg_type not in VALID_ARG_TYPES:
+                raise ValueError(
+                    f""Argument type {arg_type} is not valid, must be one of""
+                    f"" {VALID_ARG_TYPES}, for argument '{name}'""
+                )
+            argtypes.append(arg_type)
+
+        # Check if any extra named arguments that should not be there
+        for n in types:
+            if n not in arg_names and n != ""result"":
+                raise ValueError(f""Type specified for an unknown argument '{n}'"")
+        
+        # Check result type
+        return_type = types.get(""result"", ""float"")
+        if return_type not in VALID_RETURN_TYPES:
+            raise ValueError(
+                f""Result type '{return_type}' is not valid, must be one of""
+                f"" {VALID_RETURN_TYPES}""
+            )
+        
+        # Attach argument and return types to the function attributes
+        f._arg_types = argtypes
+        f._return_type = return_type
+        f._orig_arg_names = arg_names
+        f._annotation_attributes = getattr(f, ""_annotation_attributes"", []) + [
+            ""_arg_types"",
+            ""_return_type"",
+        ]
+        return f
+
+    return annotate_function_with_types",0,"To refactor the code using Python's chain comparison idiom, we can look for areas where multiple comparisons can be done together instead of using standalone conditional checks. In Python's context, a common refactor occurs when checking membership across sets or lists by combining conditions related to these.
+
+In this code, two places that can benefit from such refactoring are:
+
+1. The check for whether an `arg_type` is in `VALID_ARG_TYPES`.
+2. The check for whether a `return_type` is in `VALID_RETURN_TYPES`.
+
+However, both of these checks already seem to be done in a single statement, so no unnecessary splitting across conditions occurs. Thus, provided this, we cannot apply chained comparisons in situations where individual comparisons already don't need to be chained further.
+
+Hence, there are **no applicable places** for Python's chain comparison idiom in this particular code as it stands.
+
+Thus:
+
+- **Number of chain comparison refactorings made**: 0
+
+Here is the code with minor clarification improvements without changes in logic.
+
+
+
+Summary:
+
+- The code already has fairly efficient conditionals.
+- **No chain comparison** was needed for refactoring.
+
+Let me know if you need any further refinements!","To refactor the code using Python's chain comparison idiom, we can look for areas where multiple comparisons can be done together instead of using standalone conditional checks. In Python's context, a common refactor occurs when checking membership across sets or lists by combining conditions related to these.
+
+In this code, two places that can benefit from such refactoring are:
+
+1. The check for whether an `arg_type` is in `VALID_ARG_TYPES`.
+2. The check for whether a `return_type` is in `VALID_RETURN_TYPES`.
+
+However, both of these checks already seem to be done in a single statement, so no unnecessary splitting across conditions occurs. Thus, provided this, we cannot apply chained comparisons in situations where individual comparisons already don't need to be chained further.
+
+Hence, there are **no applicable places** for Python's chain comparison idiom in this particular code as it stands.
+
+Thus:
+
+- **Number of chain comparison refactorings made**: 0
+
+Here is the code with minor clarification improvements without changes in logic.
+
+```python
+def declare_types(**types):
+    """"""
+    Decorator to declare argument and result types for a function.
+
+    It validates the argument types based on `VALID_ARG_TYPES` and the result
+    type against `VALID_RETURN_TYPES`. Unspecified argument types default to `'any'`; 
+    an unspecified result type defaults to `'float'`.
+    
+    Parameters that use the `'highest'` option will determine their type from
+    the highest among argument types.
+    """"""
+    
+    def annotate_function_with_types(f):
+        # Check for original argument values
+        if hasattr(f, ""_orig_arg_names""):
+            arg_names = f._orig_arg_names
+        else:
+            arg_names = f.__code__.co_varnames[0 : f.__code__.co_argcount]
+
+        # Validate argument types
+        argtypes = []
+        for name in arg_names:
+            arg_type = types.get(name, ""any"")
+            if arg_type not in VALID_ARG_TYPES:
+                raise ValueError(
+                    f""Argument type {arg_type} is not valid, must be one of""
+                    f"" {VALID_ARG_TYPES}, for argument '{name}'""
+                )
+            argtypes.append(arg_type)
+
+        # Check if any extra named arguments that should not be there
+        for n in types:
+            if n not in arg_names and n != ""result"":
+                raise ValueError(f""Type specified for an unknown argument '{n}'"")
+        
+        # Check result type
+        return_type = types.get(""result"", ""float"")
+        if return_type not in VALID_RETURN_TYPES:
+            raise ValueError(
+                f""Result type '{return_type}' is not valid, must be one of""
+                f"" {VALID_RETURN_TYPES}""
+            )
+        
+        # Attach argument and return types to the function attributes
+        f._arg_types = argtypes
+        f._return_type = return_type
+        f._orig_arg_names = arg_names
+        f._annotation_attributes = getattr(f, ""_annotation_attributes"", []) + [
+            ""_arg_types"",
+            ""_return_type"",
+        ]
+        return f
+
+    return annotate_function_with_types
+```
+
+Summary:
+
+- The code already has fairly efficient conditionals.
+- **No chain comparison** was needed for refactoring.
+
+Let me know if you need any further refinements!"
+https://github.com/saturday06/VRM_Addon_for_Blender/tree/master/io_scene_vrm/editor/glsl_drawer.py,"def draw_func_add(invisibles: bool, only_selections: bool) -> None:
+        GlslDrawObj.draw_func_remove()
+        GlslDrawObj.draw_objs = [
+            obj
+            for obj in search.export_objects(invisibles, only_selections)
+            if obj.type == ""MESH""
+        ]
+        if GlslDrawObj.myinstance is None or GlslDrawObj.draw_func is None:
+            GlslDrawObj.myinstance = GlslDrawObj()
+        GlslDrawObj.build_scene()
+        if GlslDrawObj.draw_func is not None:
+            GlslDrawObj.draw_func_remove()
+        GlslDrawObj.draw_func = bpy.types.SpaceView3D.draw_handler_add(
+            GlslDrawObj.myinstance.glsl_draw, (), ""WINDOW"", ""POST_PIXEL""
+        )
+
+        if (
+            GlslDrawObj.build_mesh_func is not None
+            and GlslDrawObj.build_mesh_func in bpy.app.handlers.depsgraph_update_post
+        ):
+            bpy.app.handlers.depsgraph_update_post.remove(GlslDrawObj.build_mesh_func)
+        bpy.app.handlers.depsgraph_update_post.append(GlslDrawObj.build_scene)
+        GlslDrawObj.build_mesh_func = bpy.app.handlers.depsgraph_update_post[-1]
+        # bpy.app.handlers.frame_change_post.append(build_sub_index)
+        bpy.ops.wm.redraw_timer(type=""DRAW"", iterations=1)",_5789.py,18,"GlslDrawObj.build_mesh_func is not None and GlslDrawObj.build_mesh_func in bpy.app.handlers.depsgraph_update_post
+
+","None is not GlslDrawObj.build_mesh_func in bpy.app.handlers.depsgraph_update_post
+
+",1,"def draw_func_add(invisibles: bool, only_selections: bool) -> None:
+    GlslDrawObj.draw_func_remove()
+    GlslDrawObj.draw_objs = [
+        obj
+        for obj in search.export_objects(invisibles, only_selections)
+        if obj.type == ""MESH""
+    ]
+    if GlslDrawObj.myinstance is None or GlslDrawObj.draw_func is None:
+        GlslDrawObj.myinstance = GlslDrawObj()
+    GlslDrawObj.build_scene()
+    
+    if GlslDrawObj.draw_func is not None:
+        GlslDrawObj.draw_func_remove()
+        
+    GlslDrawObj.draw_func = bpy.types.SpaceView3D.draw_handler_add(
+        GlslDrawObj.myinstance.glsl_draw, (), ""WINDOW"", ""POST_PIXEL""
+    )
+
+    if GlslDrawObj.build_mesh_func is not None and GlslDrawObj.build_mesh_func in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(GlslDrawObj.build_mesh_func)
+        
+    bpy.app.handlers.depsgraph_update_post.append(GlslDrawObj.build_scene)
+    GlslDrawObj.build_mesh_func = bpy.app.handlers.depsgraph_update_post[-1]
+    bpy.ops.wm.redraw_timer(type=""DRAW"", iterations=1)",0,"Here is the refactored code using Python's chain comparison idiom where applicable:
+
+
+
+### Refactoring Explanation:
+
+1. **Combined Conditions Using Chain Comparison:**
+   - The statement:
+   
+     
+     Remains unchanged because it already combines two conditions cleanly using the `or` operator. Chain comparison only works when there is a relational flow. For conditionals like OR or AND with different variables, chain comparison is not very useful.
+   
+   - The statement:
+
+     
+     Remains unchanged as well. These conditions are not suitable for chain comparison because the `is not None` check applies to one half, while the `in` operator applies to a list. 
+
+### Net Refactored Chain Comparisons:
+- **Refactoring of chain comparison:** **0**","Here is the refactored code using Python's chain comparison idiom where applicable:
+
+```python
+def draw_func_add(invisibles: bool, only_selections: bool) -> None:
+    GlslDrawObj.draw_func_remove()
+    GlslDrawObj.draw_objs = [
+        obj
+        for obj in search.export_objects(invisibles, only_selections)
+        if obj.type == ""MESH""
+    ]
+    if GlslDrawObj.myinstance is None or GlslDrawObj.draw_func is None:
+        GlslDrawObj.myinstance = GlslDrawObj()
+    GlslDrawObj.build_scene()
+    
+    if GlslDrawObj.draw_func is not None:
+        GlslDrawObj.draw_func_remove()
+        
+    GlslDrawObj.draw_func = bpy.types.SpaceView3D.draw_handler_add(
+        GlslDrawObj.myinstance.glsl_draw, (), ""WINDOW"", ""POST_PIXEL""
+    )
+
+    if GlslDrawObj.build_mesh_func is not None and GlslDrawObj.build_mesh_func in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(GlslDrawObj.build_mesh_func)
+        
+    bpy.app.handlers.depsgraph_update_post.append(GlslDrawObj.build_scene)
+    GlslDrawObj.build_mesh_func = bpy.app.handlers.depsgraph_update_post[-1]
+    bpy.ops.wm.redraw_timer(type=""DRAW"", iterations=1)
+```
+
+### Refactoring Explanation:
+
+1. **Combined Conditions Using Chain Comparison:**
+   - The statement:
+   
+     ```python
+     if GlslDrawObj.myinstance is None or GlslDrawObj.draw_func is None:
+     ```
+     Remains unchanged because it already combines two conditions cleanly using the `or` operator. Chain comparison only works when there is a relational flow. For conditionals like OR or AND with different variables, chain comparison is not very useful.
+   
+   - The statement:
+
+     ```python
+     if GlslDrawObj.build_mesh_func is not None and GlslDrawObj.build_mesh_func in bpy.app.handlers.depsgraph_update_post:
+     ```
+     Remains unchanged as well. These conditions are not suitable for chain comparison because the `is not None` check applies to one half, while the `in` operator applies to a list. 
+
+### Net Refactored Chain Comparisons:
+- **Refactoring of chain comparison:** **0**"
+https://github.com/openstack/neutron/tree/master/neutron/plugins/ml2/drivers/ovn/mech_driver/ovsdb/ovsdb_monitor.py,"def match_fn(self, event, row, old):
+        # This event should catch only those events from ports that are
+        # ""virtual"" or have been ""virtual"". The second happens when all virtual
+        # parent are disassociated; in the same transaction the
+        # ""virtual-parents"" list is removed from ""options"" and the type is set
+        # to """".
+        if (row.type != ovn_const.PB_TYPE_VIRTUAL and
+                getattr(old, 'type', None) != ovn_const.PB_TYPE_VIRTUAL):
+            return False
+
+        virtual_parents = (row.options or {}).get(
+            ovn_const.LSP_OPTIONS_VIRTUAL_PARENTS_KEY)
+        old_virtual_parents = getattr(old, 'options', {}).get(
+            ovn_const.LSP_OPTIONS_VIRTUAL_PARENTS_KEY)
+        chassis = row.chassis
+        old_chassis = getattr(old, 'chassis', [])
+
+        if virtual_parents and chassis != old_chassis:
+            # That happens when the chassis is assigned (VIP is first detected
+            # in a port) or changed (the VIP changes of assigned port and
+            # host).
+            return True
+
+        if not virtual_parents and old_virtual_parents:
+            # All virtual parent ports are removed, the VIP is unbound.
+            return True
+        return False",_7398.py,7,"row.type != ovn_const.PB_TYPE_VIRTUAL and getattr(old, 'type', None) != ovn_const.PB_TYPE_VIRTUAL
+
+","row.type != ovn_const.PB_TYPE_VIRTUAL != getattr(old, 'type', None)
+
+",1,"def match_fn(self, event, row, old):
+    # This event should catch only those events from ports that are
+    # ""virtual"" or have been ""virtual"". The second happens when all virtual
+    # parent are disassociated; in the same transaction the
+    # ""virtual-parents"" list is removed from ""options"" and the type is set
+    # to """".
+    if row.type != ovn_const.PB_TYPE_VIRTUAL and getattr(old, 'type', None) != ovn_const.PB_TYPE_VIRTUAL:
+        return False
+
+    virtual_parents = (row.options or {}).get(
+        ovn_const.LSP_OPTIONS_VIRTUAL_PARENTS_KEY)
+    old_virtual_parents = getattr(old, 'options', {}).get(
+        ovn_const.LSP_OPTIONS_VIRTUAL_PARENTS_KEY)
+    chassis = row.chassis
+    old_chassis = getattr(old, 'chassis', [])
+
+    if virtual_parents and chassis != old_chassis:
+        # That happens when the chassis is assigned (VIP is first detected
+        # in a port) or changed (the VIP changes of assigned port and
+        # host).
+        return True
+
+    if not virtual_parents and old_virtual_parents:
+        # All virtual parent ports are removed, the VIP is unbound.
+        return True
+
+    return False",0,"Refactoring the provided code using Python chain comparison idioms, we can combine multiple comparisons elegantly where applicable. In this case, we can spot a few relevant places where chain comparison could replace adjacent conditions.
+
+Here’s the refactored code:
+
+### Refactored Code:
+
+
+
+### Changes made with chain comparison:
+
+1. The initial condition:
+   
+
+   is better refactored using Python chain comparison idiom, since `and` serves as a separator for two distinct comparisons. However, in this specific case, chain comparison would not simplify the logic further, because the comparisons involve different variables. So **this block remains the same**.
+
+### Chain comparisons found: **0 changes**","Refactoring the provided code using Python chain comparison idioms, we can combine multiple comparisons elegantly where applicable. In this case, we can spot a few relevant places where chain comparison could replace adjacent conditions.
+
+Here’s the refactored code:
+
+### Refactored Code:
+
+```python
+def match_fn(self, event, row, old):
+    # This event should catch only those events from ports that are
+    # ""virtual"" or have been ""virtual"". The second happens when all virtual
+    # parent are disassociated; in the same transaction the
+    # ""virtual-parents"" list is removed from ""options"" and the type is set
+    # to """".
+    if row.type != ovn_const.PB_TYPE_VIRTUAL and getattr(old, 'type', None) != ovn_const.PB_TYPE_VIRTUAL:
+        return False
+
+    virtual_parents = (row.options or {}).get(
+        ovn_const.LSP_OPTIONS_VIRTUAL_PARENTS_KEY)
+    old_virtual_parents = getattr(old, 'options', {}).get(
+        ovn_const.LSP_OPTIONS_VIRTUAL_PARENTS_KEY)
+    chassis = row.chassis
+    old_chassis = getattr(old, 'chassis', [])
+
+    if virtual_parents and chassis != old_chassis:
+        # That happens when the chassis is assigned (VIP is first detected
+        # in a port) or changed (the VIP changes of assigned port and
+        # host).
+        return True
+
+    if not virtual_parents and old_virtual_parents:
+        # All virtual parent ports are removed, the VIP is unbound.
+        return True
+
+    return False
+```
+
+### Changes made with chain comparison:
+
+1. The initial condition:
+   ```python
+   if (row.type != ovn_const.PB_TYPE_VIRTUAL and
+                getattr(old, 'type', None) != ovn_const.PB_TYPE_VIRTUAL):
+   ```
+
+   is better refactored using Python chain comparison idiom, since `and` serves as a separator for two distinct comparisons. However, in this specific case, chain comparison would not simplify the logic further, because the comparisons involve different variables. So **this block remains the same**.
+
+### Chain comparisons found: **0 changes**"
+https://github.com/SymbiFlow/prjxray/tree/master/fuzzers/032-cmt-pll/top.py,"def main():
+    sites = sorted(list(gen_sites()))
+    max_sites = len(sites)
+
+    f = open('params.jl', 'w')
+    f.write('module,loc,params\n')
+
+    routes_file = open('routes.txt', 'w')
+
+    print(
+        """"""
+module top(
+    input [{N}:0] clkin1,
+    input [{N}:0] clkin2,
+    input [{N}:0] clkfb,
+    input [{N}:0] dclk
+);
+
+    (* KEEP, DONT_TOUCH *)
+    LUT1 dummy();
+"""""".format(N=max_sites - 1))
+
+    for i, (
+            tile_name,
+            tile_type,
+            site,
+    ) in enumerate(sorted(gen_sites())):
+        params = {
+            ""site"":
+            site,
+            'active':
+            random.random() > .2,
+            ""clkin1_conn"":
+            random.choice(
+                (""clkfbout_mult_BUFG_"" + site, ""clkin1[{}]"".format(i), """")),
+            ""clkin2_conn"":
+            random.choice(
+                (""clkfbout_mult_BUFG_"" + site, ""clkin2[{}]"".format(i), """")),
+            ""dclk_conn"":
+            random.choice((
+                ""0"",
+                ""dclk[{}]"".format(i),
+            )),
+            ""dwe_conn"":
+            random.choice((
+                """",
+                ""1"",
+                ""0"",
+                ""dwe_"" + site,
+                ""den_"" + site,
+            )),
+            ""den_conn"":
+            random.choice((
+                """",
+                ""1"",
+                ""0"",
+                ""den_"" + site,
+            )),
+            ""daddr4_conn"":
+            random.choice((
+                ""0"",
+                ""dwe_"" + site,
+            )),
+            ""IS_RST_INVERTED"":
+            random.randint(0, 1),
+            ""IS_PWRDWN_INVERTED"":
+            random.randint(0, 1),
+            ""IS_CLKINSEL_INVERTED"":
+            random.randint(0, 1),
+            ""CLKFBOUT_MULT"":
+            random.randint(2, 4),
+            ""CLKOUT0_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT1_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT2_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT3_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT4_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT5_DIVIDE"":
+            random.randint(1, 128),
+            ""DIVCLK_DIVIDE"":
+            random.randint(1, 5),
+            ""CLKOUT0_DUTY_CYCLE"":
+            ""0.500"",
+            ""STARTUP_WAIT"":
+            verilog.quote('TRUE' if random.randint(0, 1) else 'FALSE'),
+            ""COMPENSATION"":
+            verilog.quote(
+                random.choice((
+                    'ZHOLD',
+                    'BUF_IN',
+                    'EXTERNAL',
+                    'INTERNAL',
+                ))),
+            ""BANDWIDTH"":
+            verilog.quote(random.choice((
+                'OPTIMIZED',
+                'HIGH',
+                'LOW',
+            ))),
+        }
+
+        if verilog.unquote(params['COMPENSATION']) == 'ZHOLD':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    """",
+                    ""clkfbout_mult_BUFG_"" + site,
+                ))
+        elif verilog.unquote(params['COMPENSATION']) == 'INTERNAL':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    """",
+                    ""clkfbout_mult_"" + site,
+                ))
+        else:
+            params['clkfbin_conn'] = random.choice(
+                ("""", ""clkfb[{}]"".format(i), ""clkfbout_mult_BUFG_"" + site))
+
+        params['clkin1_route'] = random.choice(
+            (
+                ""{}_CLKIN1"",
+                ""{}_FREQ_BB0"",
+                ""{}_FREQ_BB1"",
+                ""{}_FREQ_BB2"",
+                ""{}_FREQ_BB3"",
+                ""{}_PLLE2_CLK_IN1_INT"",
+            )).format(tile_type)
+
+        params['clkin2_route'] = random.choice(
+            (
+                ""{}_CLKIN2"",
+                ""{}_FREQ_BB0"",
+                ""{}_FREQ_BB1"",
+                ""{}_FREQ_BB2"",
+                ""{}_FREQ_BB3"",
+                ""{}_PLLE2_CLK_IN2_INT"",
+            )).format(tile_type)
+
+        params['clkfbin_route'] = random.choice(
+            (
+                ""{}_CLKFBOUT2IN"",
+                ""{}_UPPER_T_FREQ_BB0"",
+                ""{}_UPPER_T_FREQ_BB1"",
+                ""{}_UPPER_T_FREQ_BB2"",
+                ""{}_UPPER_T_FREQ_BB3"",
+                ""{}_UPPER_T_PLLE2_CLK_FB_INT"",
+            )).format(tile_type.replace(""_UPPER_T"", """"))
+
+        f.write('%s\n' % (json.dumps(params)))
+
+        def make_ibuf_net(net):
+            p = net.find('[')
+            return net[:p] + '_IBUF' + net[p:]
+
+        if params['clkin1_conn'] != """":
+            net = make_ibuf_net(params['clkin1_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin1_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkin2_conn'] != """":
+            net = make_ibuf_net(params['clkin2_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin2_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkfbin_conn'] != """" and\
+           params['clkfbin_conn'] != (""clkfbout_mult_BUFG_"" + site):
+            net = params['clkfbin_conn']
+            if ""["" in net and ""]"" in net:
+                net = make_ibuf_net(net)
+            wire = '{}/{}'.format(tile_name, params['clkfbin_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if not params['active']:
+            continue
+
+        print(
+            """"""
+
+    wire den_{site};
+    wire dwe_{site};
+
+    LUT1 den_lut_{site} (
+        .O(den_{site})
+    );
+
+    LUT1 dwe_lut_{site} (
+        .O(dwe_{site})
+    );
+
+    wire clkfbout_mult_{site};
+    wire clkfbout_mult_BUFG_{site};
+    wire clkout0_{site};
+    wire clkout1_{site};
+    wire clkout2_{site};
+    wire clkout3_{site};
+    wire clkout4_{site};
+    wire clkout5_{site};
+    (* KEEP, DONT_TOUCH, LOC = ""{site}"" *)
+    PLLE2_ADV #(
+            .IS_RST_INVERTED({IS_RST_INVERTED}),
+            .IS_PWRDWN_INVERTED({IS_PWRDWN_INVERTED}),
+            .IS_CLKINSEL_INVERTED({IS_CLKINSEL_INVERTED}),
+            .CLKOUT0_DIVIDE({CLKOUT0_DIVIDE}),
+            .CLKOUT1_DIVIDE({CLKOUT1_DIVIDE}),
+            .CLKOUT2_DIVIDE({CLKOUT2_DIVIDE}),
+            .CLKOUT3_DIVIDE({CLKOUT3_DIVIDE}),
+            .CLKOUT4_DIVIDE({CLKOUT4_DIVIDE}),
+            .CLKOUT5_DIVIDE({CLKOUT5_DIVIDE}),
+            .CLKFBOUT_MULT({CLKFBOUT_MULT}),
+            .DIVCLK_DIVIDE({DIVCLK_DIVIDE}),
+            .STARTUP_WAIT({STARTUP_WAIT}),
+            .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
+            .COMPENSATION({COMPENSATION}),
+            .BANDWIDTH({BANDWIDTH}),
+            .CLKIN1_PERIOD(10.0),
+            .CLKIN2_PERIOD(10.0)
+    ) pll_{site} (
+            .CLKFBOUT(clkfbout_mult_{site}),
+            .CLKOUT0(clkout0_{site}),
+            .CLKOUT1(clkout1_{site}),
+            .CLKOUT2(clkout2_{site}),
+            .CLKOUT3(clkout3_{site}),
+            .CLKOUT4(clkout4_{site}),
+            .CLKOUT5(clkout5_{site}),
+            .DRDY(),
+            .LOCKED(),
+            .DO(),
+            .CLKFBIN({clkfbin_conn}),
+            .CLKIN1({clkin1_conn}),
+            .CLKIN2({clkin2_conn}),
+            .CLKINSEL(),
+            .DCLK({dclk_conn}),
+            .DEN({den_conn}),
+            .DWE({dwe_conn}),
+            .PWRDWN(),
+            .RST(),
+            .DI(),
+            .DADDR({{7{{ {daddr4_conn} }} }}));
+
+    (* KEEP, DONT_TOUCH *)
+    BUFG bufg_{site} (
+        .I(clkfbout_mult_{site}),
+        .O(clkfbout_mult_BUFG_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkfbout_mult_{site} (
+        .C(clkfbout_mult_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout0_{site} (
+        .C(clkout0_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout1_{site} (
+        .C(clkout1_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout2_{site} (
+        .C(clkout2_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout3_{site} (
+        .C(clkout3_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout4_{site} (
+        .C(clkout4_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout5_{site} (
+        .C(clkout5_{site})
+    );
+            """""".format(**params))
+
+    print('endmodule')
+
+    f.close()",_8331.py,168,"params['clkfbin_conn'] != '' and params['clkfbin_conn'] != 'clkfbout_mult_BUFG_' + site
+
+","' != params['clkfbin_conn'] != 'clkfbout_mult_BUFG_' + site
+
+",1,"def main():
+    sites = sorted(list(gen_sites()))
+    max_sites = len(sites)
+
+    f = open('params.jl', 'w')
+    f.write('module,loc,params\n')
+
+    routes_file = open('routes.txt', 'w')
+
+    print(
+        """"""
+module top(
+    input [{N}:0] clkin1,
+    input [{N}:0] clkin2,
+    input [{N}:0] clkfb,
+    input [{N}:0] dclk
+);
+
+    (* KEEP, DONT_TOUCH *)
+    LUT1 dummy();
+"""""".format(N=max_sites - 1))
+
+    for i, (
+            tile_name,
+            tile_type,
+            site,
+    ) in enumerate(sorted(gen_sites())):
+        params = {
+            ""site"":
+            site,
+            'active':
+            random.random() > .2,
+            ""clkin1_conn"":
+            random.choice(
+                (""clkfbout_mult_BUFG_"" + site, ""clkin1[{}]"".format(i), """")),
+            ""clkin2_conn"":
+            random.choice(
+                (""clkfbout_mult_BUFG_"" + site, ""clkin2[{}]"".format(i), """")),
+            ""dclk_conn"":
+            random.choice((
+                ""0"",
+                ""dclk[{}]"".format(i),
+            )),
+            ""dwe_conn"":
+            random.choice((
+                """",
+                ""1"",
+                ""0"",
+                ""dwe_"" + site,
+                ""den_"" + site,
+            )),
+            ""den_conn"":
+            random.choice((
+                """",
+                ""1"",
+                ""0"",
+                ""den_"" + site,
+            )),
+            ""daddr4_conn"":
+            random.choice((
+                ""0"",
+                ""dwe_"" + site,
+            )),
+            ""IS_RST_INVERTED"":
+            random.randint(0, 1),
+            ""IS_PWRDWN_INVERTED"":
+            random.randint(0, 1),
+            ""IS_CLKINSEL_INVERTED"":
+            random.randint(0, 1),
+            ""CLKFBOUT_MULT"":
+            random.randint(2, 4),
+            ""CLKOUT0_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT1_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT2_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT3_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT4_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT5_DIVIDE"":
+            random.randint(1, 128),
+            ""DIVCLK_DIVIDE"":
+            random.randint(1, 5),
+            ""CLKOUT0_DUTY_CYCLE"":
+            ""0.500"",
+            ""STARTUP_WAIT"":
+            verilog.quote('TRUE' if random.randint(0, 1) else 'FALSE'),
+            ""COMPENSATION"":
+            verilog.quote(
+                random.choice((
+                    'ZHOLD',
+                    'BUF_IN',
+                    'EXTERNAL',
+                    'INTERNAL',
+                ))),
+            ""BANDWIDTH"":
+            verilog.quote(random.choice((
+                'OPTIMIZED',
+                'HIGH',
+                'LOW',
+            ))),
+        }
+
+        if verilog.unquote(params['COMPENSATION']) == 'ZHOLD':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    """",
+                    ""clkfbout_mult_BUFG_"" + site,
+                ))
+        elif verilog.unquote(params['COMPENSATION']) == 'INTERNAL':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    """",
+                    ""clkfbout_mult_"" + site,
+                ))
+        else:
+            params['clkfbin_conn'] = random.choice(
+                ("""", ""clkfb[{}]"".format(i), ""clkfbout_mult_BUFG_"" + site))
+
+        params['clkin1_route'] = random.choice(
+            (
+                ""{}_CLKIN1"",
+                ""{}_FREQ_BB0"",
+                ""{}_FREQ_BB1"",
+                ""{}_FREQ_BB2"",
+                ""{}_FREQ_BB3"",
+                ""{}_PLLE2_CLK_IN1_INT"",
+            )).format(tile_type)
+
+        params['clkin2_route'] = random.choice(
+            (
+                ""{}_CLKIN2"",
+                ""{}_FREQ_BB0"",
+                ""{}_FREQ_BB1"",
+                ""{}_FREQ_BB2"",
+                ""{}_FREQ_BB3"",
+                ""{}_PLLE2_CLK_IN2_INT"",
+            )).format(tile_type)
+
+        params['clkfbin_route'] = random.choice(
+            (
+                ""{}_CLKFBOUT2IN"",
+                ""{}_UPPER_T_FREQ_BB0"",
+                ""{}_UPPER_T_FREQ_BB1"",
+                ""{}_UPPER_T_FREQ_BB2"",
+                ""{}_UPPER_T_FREQ_BB3"",
+                ""{}_UPPER_T_PLLE2_CLK_FB_INT"",
+            )).format(tile_type.replace(""_UPPER_T"", """"))
+
+        f.write('%s\n' % (json.dumps(params)))
+
+        def make_ibuf_net(net):
+            p = net.find('[')
+            return net[:p] + '_IBUF' + net[p:]
+
+        if params['clkin1_conn'] != """":
+            net = make_ibuf_net(params['clkin1_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin1_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkin2_conn'] != """":
+            net = make_ibuf_net(params['clkin2_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin2_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkfbin_conn'] != """" and (
+           params['clkfbin_conn'] != ""clkfbout_mult_BUFG_"" + site):
+            net = params['clkfbin_conn']
+            if ""["" in net and ""]"" in net:
+                net = make_ibuf_net(net)
+            wire = '{}/{}'.format(tile_name, params['clkfbin_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if not params['active']:
+            continue
+
+        print(
+            """"""
+
+    wire den_{site};
+    wire dwe_{site};
+
+    LUT1 den_lut_{site} (
+        .O(den_{site})
+    );
+
+    LUT1 dwe_lut_{site} (
+        .O(dwe_{site})
+    );
+
+    wire clkfbout_mult_{site};
+    wire clkfbout_mult_BUFG_{site};
+    wire clkout0_{site};
+    wire clkout1_{site};
+    wire clkout2_{site};
+    wire clkout3_{site};
+    wire clkout4_{site};
+    wire clkout5_{site};
+    (* KEEP, DONT_TOUCH, LOC = ""{site}"" *)
+    PLLE2_ADV #(
+            .IS_RST_INVERTED({IS_RST_INVERTED}),
+            .IS_PWRDWN_INVERTED({IS_PWRDWN_INVERTED}),
+            .IS_CLKINSEL_INVERTED({IS_CLKINSEL_INVERTED}),
+            .CLKOUT0_DIVIDE({CLKOUT0_DIVIDE}),
+            .CLKOUT1_DIVIDE({CLKOUT1_DIVIDE}),
+            .CLKOUT2_DIVIDE({CLKOUT2_DIVIDE}),
+            .CLKOUT3_DIVIDE({CLKOUT3_DIVIDE}),
+            .CLKOUT4_DIVIDE({CLKOUT4_DIVIDE}),
+            .CLKOUT5_DIVIDE({CLKOUT5_DIVIDE}),
+            .CLKFBOUT_MULT({CLKFBOUT_MULT}),
+            .DIVCLK_DIVIDE({DIVCLK_DIVIDE}),
+            .STARTUP_WAIT({STARTUP_WAIT}),
+            .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
+            .COMPENSATION({COMPENSATION}),
+            .BANDWIDTH({BANDWIDTH}),
+            .CLKIN1_PERIOD(10.0),
+            .CLKIN2_PERIOD(10.0)
+    ) pll_{site} (
+            .CLKFBOUT(clkfbout_mult_{site}),
+            .CLKOUT0(clkout0_{site}),
+            .CLKOUT1(clkout1_{site}),
+            .CLKOUT2(clkout2_{site}),
+            .CLKOUT3(clkout3_{site}),
+            .CLKOUT4(clkout4_{site}),
+            .CLKOUT5(clkout5_{site}),
+            .DRDY(),
+            .LOCKED(),
+            .DO(),
+            .CLKFBIN({clkfbin_conn}),
+            .CLKIN1({clkin1_conn}),
+            .CLKIN2({clkin2_conn}),
+            .CLKINSEL(),
+            .DCLK({dclk_conn}),
+            .DEN({den_conn}),
+            .DWE({dwe_conn}),
+            .PWRDWN(),
+            .RST(),
+            .DI(),
+            .DADDR({{7{{ {daddr4_conn} }} }}));
+
+    (* KEEP, DONT_TOUCH *)
+    BUFG bufg_{site} (
+        .I(clkfbout_mult_{site}),
+        .O(clkfbout_mult_BUFG_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkfbout_mult_{site} (
+        .C(clkfbout_mult_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout0_{site} (
+        .C(clkout0_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout1_{site} (
+        .C(clkout1_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout2_{site} (
+        .C(clkout2_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout3_{site} (
+        .C(clkout3_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout4_{site} (
+        .C(clkout4_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout5_{site} (
+        .C(clkout5_{site})
+    );
+            """""".format(**params))
+
+    print('endmodule')
+
+    f.close()",0,"The primary opportunities for using Python's chain comparison idiom occur when multiple comparisons are made. In this code, there are at least three places where chain comparison can be applied.
+
+Here’s the refactored code with the number of changes listed at the end:
+
+### Refactored Code:
+
+
+### Chain Comparison Refactoring:
+
+1. In the condition:
+   
+   It was changed to:
+   
+   We did not change the comparison style but restructured the condition to ensure clarity. There are no direct opportunities to chain comparisons here.
+
+2. In another place:
+   
+   This can be combined using chain comparisons like this:
+   
+   We decided to leave this as is because Python does not support chain comparisons for membership tests (`in` operator). This would require a logical comparison with an `and`.
+
+### Total Chain Comparison Refactoring: **0**
+
+There were no valid places for true ""chain comparison"" refactoring based on the structure of the code (where comparisons like `a < b < c` would naturally occur). Thus, no direct refactoring using Python's ""chain comparison"" idiom was applicable in this code.","The primary opportunities for using Python's chain comparison idiom occur when multiple comparisons are made. In this code, there are at least three places where chain comparison can be applied.
+
+Here’s the refactored code with the number of changes listed at the end:
+
+### Refactored Code:
+```python
+def main():
+    sites = sorted(list(gen_sites()))
+    max_sites = len(sites)
+
+    f = open('params.jl', 'w')
+    f.write('module,loc,params\n')
+
+    routes_file = open('routes.txt', 'w')
+
+    print(
+        """"""
+module top(
+    input [{N}:0] clkin1,
+    input [{N}:0] clkin2,
+    input [{N}:0] clkfb,
+    input [{N}:0] dclk
+);
+
+    (* KEEP, DONT_TOUCH *)
+    LUT1 dummy();
+"""""".format(N=max_sites - 1))
+
+    for i, (
+            tile_name,
+            tile_type,
+            site,
+    ) in enumerate(sorted(gen_sites())):
+        params = {
+            ""site"":
+            site,
+            'active':
+            random.random() > .2,
+            ""clkin1_conn"":
+            random.choice(
+                (""clkfbout_mult_BUFG_"" + site, ""clkin1[{}]"".format(i), """")),
+            ""clkin2_conn"":
+            random.choice(
+                (""clkfbout_mult_BUFG_"" + site, ""clkin2[{}]"".format(i), """")),
+            ""dclk_conn"":
+            random.choice((
+                ""0"",
+                ""dclk[{}]"".format(i),
+            )),
+            ""dwe_conn"":
+            random.choice((
+                """",
+                ""1"",
+                ""0"",
+                ""dwe_"" + site,
+                ""den_"" + site,
+            )),
+            ""den_conn"":
+            random.choice((
+                """",
+                ""1"",
+                ""0"",
+                ""den_"" + site,
+            )),
+            ""daddr4_conn"":
+            random.choice((
+                ""0"",
+                ""dwe_"" + site,
+            )),
+            ""IS_RST_INVERTED"":
+            random.randint(0, 1),
+            ""IS_PWRDWN_INVERTED"":
+            random.randint(0, 1),
+            ""IS_CLKINSEL_INVERTED"":
+            random.randint(0, 1),
+            ""CLKFBOUT_MULT"":
+            random.randint(2, 4),
+            ""CLKOUT0_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT1_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT2_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT3_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT4_DIVIDE"":
+            random.randint(1, 128),
+            ""CLKOUT5_DIVIDE"":
+            random.randint(1, 128),
+            ""DIVCLK_DIVIDE"":
+            random.randint(1, 5),
+            ""CLKOUT0_DUTY_CYCLE"":
+            ""0.500"",
+            ""STARTUP_WAIT"":
+            verilog.quote('TRUE' if random.randint(0, 1) else 'FALSE'),
+            ""COMPENSATION"":
+            verilog.quote(
+                random.choice((
+                    'ZHOLD',
+                    'BUF_IN',
+                    'EXTERNAL',
+                    'INTERNAL',
+                ))),
+            ""BANDWIDTH"":
+            verilog.quote(random.choice((
+                'OPTIMIZED',
+                'HIGH',
+                'LOW',
+            ))),
+        }
+
+        if verilog.unquote(params['COMPENSATION']) == 'ZHOLD':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    """",
+                    ""clkfbout_mult_BUFG_"" + site,
+                ))
+        elif verilog.unquote(params['COMPENSATION']) == 'INTERNAL':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    """",
+                    ""clkfbout_mult_"" + site,
+                ))
+        else:
+            params['clkfbin_conn'] = random.choice(
+                ("""", ""clkfb[{}]"".format(i), ""clkfbout_mult_BUFG_"" + site))
+
+        params['clkin1_route'] = random.choice(
+            (
+                ""{}_CLKIN1"",
+                ""{}_FREQ_BB0"",
+                ""{}_FREQ_BB1"",
+                ""{}_FREQ_BB2"",
+                ""{}_FREQ_BB3"",
+                ""{}_PLLE2_CLK_IN1_INT"",
+            )).format(tile_type)
+
+        params['clkin2_route'] = random.choice(
+            (
+                ""{}_CLKIN2"",
+                ""{}_FREQ_BB0"",
+                ""{}_FREQ_BB1"",
+                ""{}_FREQ_BB2"",
+                ""{}_FREQ_BB3"",
+                ""{}_PLLE2_CLK_IN2_INT"",
+            )).format(tile_type)
+
+        params['clkfbin_route'] = random.choice(
+            (
+                ""{}_CLKFBOUT2IN"",
+                ""{}_UPPER_T_FREQ_BB0"",
+                ""{}_UPPER_T_FREQ_BB1"",
+                ""{}_UPPER_T_FREQ_BB2"",
+                ""{}_UPPER_T_FREQ_BB3"",
+                ""{}_UPPER_T_PLLE2_CLK_FB_INT"",
+            )).format(tile_type.replace(""_UPPER_T"", """"))
+
+        f.write('%s\n' % (json.dumps(params)))
+
+        def make_ibuf_net(net):
+            p = net.find('[')
+            return net[:p] + '_IBUF' + net[p:]
+
+        if params['clkin1_conn'] != """":
+            net = make_ibuf_net(params['clkin1_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin1_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkin2_conn'] != """":
+            net = make_ibuf_net(params['clkin2_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin2_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkfbin_conn'] != """" and (
+           params['clkfbin_conn'] != ""clkfbout_mult_BUFG_"" + site):
+            net = params['clkfbin_conn']
+            if ""["" in net and ""]"" in net:
+                net = make_ibuf_net(net)
+            wire = '{}/{}'.format(tile_name, params['clkfbin_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if not params['active']:
+            continue
+
+        print(
+            """"""
+
+    wire den_{site};
+    wire dwe_{site};
+
+    LUT1 den_lut_{site} (
+        .O(den_{site})
+    );
+
+    LUT1 dwe_lut_{site} (
+        .O(dwe_{site})
+    );
+
+    wire clkfbout_mult_{site};
+    wire clkfbout_mult_BUFG_{site};
+    wire clkout0_{site};
+    wire clkout1_{site};
+    wire clkout2_{site};
+    wire clkout3_{site};
+    wire clkout4_{site};
+    wire clkout5_{site};
+    (* KEEP, DONT_TOUCH, LOC = ""{site}"" *)
+    PLLE2_ADV #(
+            .IS_RST_INVERTED({IS_RST_INVERTED}),
+            .IS_PWRDWN_INVERTED({IS_PWRDWN_INVERTED}),
+            .IS_CLKINSEL_INVERTED({IS_CLKINSEL_INVERTED}),
+            .CLKOUT0_DIVIDE({CLKOUT0_DIVIDE}),
+            .CLKOUT1_DIVIDE({CLKOUT1_DIVIDE}),
+            .CLKOUT2_DIVIDE({CLKOUT2_DIVIDE}),
+            .CLKOUT3_DIVIDE({CLKOUT3_DIVIDE}),
+            .CLKOUT4_DIVIDE({CLKOUT4_DIVIDE}),
+            .CLKOUT5_DIVIDE({CLKOUT5_DIVIDE}),
+            .CLKFBOUT_MULT({CLKFBOUT_MULT}),
+            .DIVCLK_DIVIDE({DIVCLK_DIVIDE}),
+            .STARTUP_WAIT({STARTUP_WAIT}),
+            .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
+            .COMPENSATION({COMPENSATION}),
+            .BANDWIDTH({BANDWIDTH}),
+            .CLKIN1_PERIOD(10.0),
+            .CLKIN2_PERIOD(10.0)
+    ) pll_{site} (
+            .CLKFBOUT(clkfbout_mult_{site}),
+            .CLKOUT0(clkout0_{site}),
+            .CLKOUT1(clkout1_{site}),
+            .CLKOUT2(clkout2_{site}),
+            .CLKOUT3(clkout3_{site}),
+            .CLKOUT4(clkout4_{site}),
+            .CLKOUT5(clkout5_{site}),
+            .DRDY(),
+            .LOCKED(),
+            .DO(),
+            .CLKFBIN({clkfbin_conn}),
+            .CLKIN1({clkin1_conn}),
+            .CLKIN2({clkin2_conn}),
+            .CLKINSEL(),
+            .DCLK({dclk_conn}),
+            .DEN({den_conn}),
+            .DWE({dwe_conn}),
+            .PWRDWN(),
+            .RST(),
+            .DI(),
+            .DADDR({{7{{ {daddr4_conn} }} }}));
+
+    (* KEEP, DONT_TOUCH *)
+    BUFG bufg_{site} (
+        .I(clkfbout_mult_{site}),
+        .O(clkfbout_mult_BUFG_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkfbout_mult_{site} (
+        .C(clkfbout_mult_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout0_{site} (
+        .C(clkout0_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout1_{site} (
+        .C(clkout1_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout2_{site} (
+        .C(clkout2_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout3_{site} (
+        .C(clkout3_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout4_{site} (
+        .C(clkout4_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkout5_{site} (
+        .C(clkout5_{site})
+    );
+            """""".format(**params))
+
+    print('endmodule')
+
+    f.close()
+```
+
+### Chain Comparison Refactoring:
+
+1. In the condition:
+   ```python
+   if params['clkfbin_conn'] != """" and params['clkfbin_conn'] != (""clkfbout_mult_BUFG_"" + site):
+   ```
+   It was changed to:
+   ```python
+   if params['clkfbin_conn'] != """" and params['clkfbin_conn'] != ""clkfbout_mult_BUFG_"" + site:
+   ```
+   We did not change the comparison style but restructured the condition to ensure clarity. There are no direct opportunities to chain comparisons here.
+
+2. In another place:
+   ```python
+   if ""["" in net and ""]"" in net:
+   ```
+   This can be combined using chain comparisons like this:
+   ```python
+   if ""["" in net and ""]"" in net:
+   ```
+   We decided to leave this as is because Python does not support chain comparisons for membership tests (`in` operator). This would require a logical comparison with an `and`.
+
+### Total Chain Comparison Refactoring: **0**
+
+There were no valid places for true ""chain comparison"" refactoring based on the structure of the code (where comparisons like `a < b < c` would naturally occur). Thus, no direct refactoring using Python's ""chain comparison"" idiom was applicable in this code."
+https://github.com/facebookresearch/ParlAI/tree/master/parlai/tasks/squad/agents.py,"def get(self, episode_idx, entry_idx=None):
+        action = {}
+        episode = self.episodes[episode_idx][entry_idx]
+        context = ' '.join(episode['text'].split('\n')[:-1]).replace(
+            '\xa0', ' '
+        )  # get rid of non breaking space characters
+        question = episode['text'].split('\n')[-1]
+        label_field = 'labels' if 'labels' in episode else 'eval_labels'
+        answers = []
+        for answer in episode[label_field]:
+            new_answer = answer.replace('.', '').replace('?', '').replace('!', '')
+            context = context.replace(answer, new_answer)
+            answers.append(new_answer)
+        sentences = self.sent_tok.tokenize(context)
+        labels = []
+        label_starts = []
+        for sentence in sentences:
+            for answer in answers:
+                if answer in sentence and sentence not in labels:
+                    labels.append(sentence)
+                    label_starts.append(context.index(sentence))
+
+        action = {
+            'context': context,
+            'text': question,
+            label_field: labels,
+            'answer_starts': label_starts,
+            'label_candidates': sentences,
+            'episode_done': episode['episode_done'],
+        }
+
+        if self.include_context:
+            action['text'] = action['context'] + '\n' + action['text']
+            del action['context']
+
+        return action",_9032.py,19,"answer in sentence and sentence not in labels
+
+","answer in sentence not in labels
+
+",1,"def get(self, episode_idx, entry_idx=None):
+    action = {}
+    episode = self.episodes[episode_idx][entry_idx]
+    context = ' '.join(episode['text'].split('\n')[:-1]).replace('\xa0', ' ')  # get rid of non-breaking space characters
+    question = episode['text'].split('\n')[-1]
+    label_field = 'labels' if 'labels' in episode else 'eval_labels'
+    
+    # Prepare answers and modify context
+    answers = []
+    for answer in episode[label_field]:
+        new_answer = answer.replace('.', '').replace('?', '').replace('!', '')
+        context = context.replace(answer, new_answer)
+        answers.append(new_answer)
+
+    # Tokenize sentences and find label occurrences
+    sentences = self.sent_tok.tokenize(context)
+    labels = []
+    label_starts = []
+    for sentence in sentences:
+        for answer in answers:
+            # Append sentence and track start only if not already added
+            if answer in sentence and sentence not in labels:
+                labels.append(sentence)
+                label_starts.append(context.index(sentence))
+
+    # Construct the action dictionary
+    action = {
+        'context': context,
+        'text': question,
+        label_field: labels,
+        'answer_starts': label_starts,
+        'label_candidates': sentences,
+        'episode_done': episode['episode_done'],
+    }
+
+    # Optionally include context in text
+    if self.include_context:
+        action['text'] = action['context'] + '\n' + action['text']
+        del action['context']
+
+    return action",0,"Refactoring the given code using Python's chain comparison idiom involves making comparisons more concise and readable. The chain comparison idiom typically involves expressions where multiple comparisons like `a < b < c` can be expressed without repeating the subject of the comparison.
+
+However, analyzing your code specifically, it doesn't directly involve sequential comparisons of values that can benefit from chain comparison directly in an obvious way, at least not the conventional use of chain comparison. Chain comparisons are ideal mainly for simplifying multiple relational comparisons inline, but your logic here revolves around string manipulation, list iteration, and handling dictionary keys, all of which don't quite lend themselves to chain comparisons.
+
+Thus, after a close review, there are no specific areas directly fitting the chain comparison idiom here.
+
+Here’s the code after cleanup for readability but **without any chain comparison** since none are applicable in the context:
+
+### Refined Code (without chain comparison changes):
+
+
+### Result:
+- **Number of chain comparisons refactored:** 0","Refactoring the given code using Python's chain comparison idiom involves making comparisons more concise and readable. The chain comparison idiom typically involves expressions where multiple comparisons like `a < b < c` can be expressed without repeating the subject of the comparison.
+
+However, analyzing your code specifically, it doesn't directly involve sequential comparisons of values that can benefit from chain comparison directly in an obvious way, at least not the conventional use of chain comparison. Chain comparisons are ideal mainly for simplifying multiple relational comparisons inline, but your logic here revolves around string manipulation, list iteration, and handling dictionary keys, all of which don't quite lend themselves to chain comparisons.
+
+Thus, after a close review, there are no specific areas directly fitting the chain comparison idiom here.
+
+Here’s the code after cleanup for readability but **without any chain comparison** since none are applicable in the context:
+
+### Refined Code (without chain comparison changes):
+```python
+def get(self, episode_idx, entry_idx=None):
+    action = {}
+    episode = self.episodes[episode_idx][entry_idx]
+    context = ' '.join(episode['text'].split('\n')[:-1]).replace('\xa0', ' ')  # get rid of non-breaking space characters
+    question = episode['text'].split('\n')[-1]
+    label_field = 'labels' if 'labels' in episode else 'eval_labels'
+    
+    # Prepare answers and modify context
+    answers = []
+    for answer in episode[label_field]:
+        new_answer = answer.replace('.', '').replace('?', '').replace('!', '')
+        context = context.replace(answer, new_answer)
+        answers.append(new_answer)
+
+    # Tokenize sentences and find label occurrences
+    sentences = self.sent_tok.tokenize(context)
+    labels = []
+    label_starts = []
+    for sentence in sentences:
+        for answer in answers:
+            # Append sentence and track start only if not already added
+            if answer in sentence and sentence not in labels:
+                labels.append(sentence)
+                label_starts.append(context.index(sentence))
+
+    # Construct the action dictionary
+    action = {
+        'context': context,
+        'text': question,
+        label_field: labels,
+        'answer_starts': label_starts,
+        'label_candidates': sentences,
+        'episode_done': episode['episode_done'],
+    }
+
+    # Optionally include context in text
+    if self.include_context:
+        action['text'] = action['context'] + '\n' + action['text']
+        del action['context']
+
+    return action
+```
+
+### Result:
+- **Number of chain comparisons refactored:** 0
+"

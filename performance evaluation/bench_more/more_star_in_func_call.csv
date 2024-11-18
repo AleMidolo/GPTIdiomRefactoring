@@ -1,0 +1,1788 @@
+file_html,method_content,file_name,lineno,old_code,bench_code,count_bench,gpt_code,count_gpt,text,answer
+https://github.com/Qiskit/qiskit-terra/tree/master/test/python/transpiler/test_lookahead_swap.py,"def test_lookahead_swap_hang_in_min_case(self):
+        """"""Verify LookaheadSwap does not stall in minimal case.""""""
+        # ref: https://github.com/Qiskit/qiskit-terra/issues/2171
+
+        qr = QuantumRegister(14, ""q"")
+        qc = QuantumCircuit(qr)
+        qc.cx(qr[0], qr[13])
+        qc.cx(qr[1], qr[13])
+        qc.cx(qr[1], qr[0])
+        qc.cx(qr[13], qr[1])
+        dag = circuit_to_dag(qc)
+
+        cmap = CouplingMap(FakeMelbourne().configuration().coupling_map)
+
+        out = LookaheadSwap(cmap, search_depth=4, search_width=4).run(dag)
+
+        self.assertIsInstance(out, DAGCircuit)",_1606.py,9,"qc.cx(qr[1], qr[0])
+
+qc.cx(qr[13], qr[1])
+
+qr[0], qr[13]
+
+qr[1], qr[13]
+
+","qc.cx(*qr[1::-1])
+
+qc.cx(*qr[13::-12])
+
+*qr[:26:13]
+
+*qr[1:25:12]
+
+",4,"def test_lookahead_swap_hang_in_min_case(self):
+    """"""Verify LookaheadSwap does not stall in minimal case.""""""
+    # ref: https://github.com/Qiskit/qiskit-terra/issues/2171
+
+    qr = QuantumRegister(14, ""q"")
+    qc = QuantumCircuit(qr)
+
+    cx_args = [(qr[0], qr[13]), (qr[1], qr[13]), (qr[1], qr[0]), (qr[13], qr[1])]
+    qc.cx(*cx_args)
+
+    dag = circuit_to_dag(qc)
+
+    cmap = CouplingMap(FakeMelbourne().configuration().coupling_map)
+
+    out = LookaheadSwap(cmap, search_depth=4, search_width=4).run(dag)
+
+    self.assertIsInstance(out, DAGCircuit)",1,"Here is your code refactored using PEP 448 - Additional Unpacking Generalizations idiom. Given the initial code, I have identified a single opportunity where multiple unpackings can be used to refactor the code.
+
+Specifically, I can refactor the construction of the CNOT (CX) gate arguments where multiple control and target qubits are used. Using PEP 448, we can apply unpacking to combine lists of gates into one `qc.cx` call.
+
+Refactored Python code:
+
+
+
+### Refactor Changes:
+1. **PEP 448 - Additional Unpacking Generalizations** is applied in the following change:
+   
+   - `qc.cx(qr[0], qr[13])`
+   - `qc.cx(qr[1], qr[13])`
+   - `qc.cx(qr[1], qr[0])`
+   - `qc.cx(qr[13], qr[1])`
+
+   These four consecutive calls to `qc.cx` have been packed into a list called `cx_args`, and the unpacking operator `*` is used to simplify the actual `qc.cx` call to a single line: `qc.cx(*cx_args)`.
+
+### Total number of refactoring changes: 1.","Here is your code refactored using PEP 448 - Additional Unpacking Generalizations idiom. Given the initial code, I have identified a single opportunity where multiple unpackings can be used to refactor the code.
+
+Specifically, I can refactor the construction of the CNOT (CX) gate arguments where multiple control and target qubits are used. Using PEP 448, we can apply unpacking to combine lists of gates into one `qc.cx` call.
+
+Refactored Python code:
+
+```python
+def test_lookahead_swap_hang_in_min_case(self):
+    """"""Verify LookaheadSwap does not stall in minimal case.""""""
+    # ref: https://github.com/Qiskit/qiskit-terra/issues/2171
+
+    qr = QuantumRegister(14, ""q"")
+    qc = QuantumCircuit(qr)
+
+    cx_args = [(qr[0], qr[13]), (qr[1], qr[13]), (qr[1], qr[0]), (qr[13], qr[1])]
+    qc.cx(*cx_args)
+
+    dag = circuit_to_dag(qc)
+
+    cmap = CouplingMap(FakeMelbourne().configuration().coupling_map)
+
+    out = LookaheadSwap(cmap, search_depth=4, search_width=4).run(dag)
+
+    self.assertIsInstance(out, DAGCircuit)
+```
+
+### Refactor Changes:
+1. **PEP 448 - Additional Unpacking Generalizations** is applied in the following change:
+   
+   - `qc.cx(qr[0], qr[13])`
+   - `qc.cx(qr[1], qr[13])`
+   - `qc.cx(qr[1], qr[0])`
+   - `qc.cx(qr[13], qr[1])`
+
+   These four consecutive calls to `qc.cx` have been packed into a list called `cx_args`, and the unpacking operator `*` is used to simplify the actual `qc.cx` call to a single line: `qc.cx(*cx_args)`.
+
+### Total number of refactoring changes: 1."
+https://github.com/pyglet/pyglet/tree/master/pyglet/math.py,"def heading(self):
+        """"""The angle of the vector in radians.
+
+        :type: float
+        """"""
+        return _math.atan2(self[1], self[0])",_7854.py,6,"_math.atan2(self[1], self[0])
+
+","_math.atan2(*self[1::-1])
+
+",1,"def heading(self):
+    """"""The angle of the vector in radians.
+
+    :type: float
+    """"""
+    return _math.atan2(self[1], self[0])",0,"To refactor this code using PEP 448 (which allows for Additional Unpacking Generalizations), we can exploit the ability to unpack collections more efficiently. However, in the provided code, there are no collection manipulations or unpacking operations where PEP 448 is directly applicable.
+
+PEP 448 mainly improves scenarios where lists, tuples, dicts, and other collections are merged and unpacked. This function focuses on using the math `atan2()` function, and no collection unpacking or argument merging is happening that would allow us to directly apply PEP 448 in this exact case.
+
+Thus, the code you've provided does not need refactoring using PEP 448.
+
+### Refactored Python Code:
+There actually isn't any refactor here directly applicable to PEP 448.
+
+
+
+### Number of PEP 448 refactorings:
+**0**","To refactor this code using PEP 448 (which allows for Additional Unpacking Generalizations), we can exploit the ability to unpack collections more efficiently. However, in the provided code, there are no collection manipulations or unpacking operations where PEP 448 is directly applicable.
+
+PEP 448 mainly improves scenarios where lists, tuples, dicts, and other collections are merged and unpacked. This function focuses on using the math `atan2()` function, and no collection unpacking or argument merging is happening that would allow us to directly apply PEP 448 in this exact case.
+
+Thus, the code you've provided does not need refactoring using PEP 448.
+
+### Refactored Python Code:
+There actually isn't any refactor here directly applicable to PEP 448.
+
+```python
+def heading(self):
+    """"""The angle of the vector in radians.
+
+    :type: float
+    """"""
+    return _math.atan2(self[1], self[0])
+```
+
+### Number of PEP 448 refactorings:
+**0**"
+https://github.com/redis/redis-py/tree/master/tests/test_commands.py,"def test_lindex(self, r):
+        r.rpush(""a"", ""1"", ""2"", ""3"")
+        assert r.lindex(""a"", ""0"") == b""1""
+        assert r.lindex(""a"", ""1"") == b""2""
+        assert r.lindex(""a"", ""2"") == b""3""",_2215.py,2,"a', '1', '2', '3'
+
+'a', '0'
+
+'a', '1'
+
+'a', '2'
+
+","*'a123'
+
+*'a0'
+
+*'a1'
+
+*'a2'
+
+",4,"def test_lindex(self, r):
+    data = [""a"", *map(str, range(1, 4))]
+    r.rpush(*data)
+    for index, expected in enumerate([b""1"", b""2"", b""3""]):
+        assert r.lindex(""a"", str(index)) == expected",1,"Here is your refactored code using Python PEP 448 - Additional Unpacking Generalizations:
+
+### Refactored Python Code:
+
+
+
+### Number of PEP 448 Refactoring Instances:
+- **1 instance**: The `r.rpush(""a"", ""1"", ""2"", ""3"")` is refactored to unpack values from iterable using `*data`, where `data` is constructed with `[""a"", *map(str, range(1, 4))]`. The unpacking generalization is applied to replace the sequence of elements with iterable unpacking.","Here is your refactored code using Python PEP 448 - Additional Unpacking Generalizations:
+
+### Refactored Python Code:
+
+```python
+def test_lindex(self, r):
+    data = [""a"", *map(str, range(1, 4))]
+    r.rpush(*data)
+    for index, expected in enumerate([b""1"", b""2"", b""3""]):
+        assert r.lindex(""a"", str(index)) == expected
+```
+
+### Number of PEP 448 Refactoring Instances:
+- **1 instance**: The `r.rpush(""a"", ""1"", ""2"", ""3"")` is refactored to unpack values from iterable using `*data`, where `data` is constructed with `[""a"", *map(str, range(1, 4))]`. The unpacking generalization is applied to replace the sequence of elements with iterable unpacking.
+
+"
+https://github.com/hanyazou/TelloPy/tree/master/tellopy/_internal/tello.py,"def __process_packet(self, data):
+        if isinstance(data, str):
+            data = bytearray([x for x in data])
+
+        if str(data[0:9]) == 'conn_ack:' or data[0:9] == b'conn_ack:':
+            log.info('connected. (port=%2x%2x)' % (data[9], data[10]))
+            log.debug('    %s' % byte_to_hexstring(data))
+            if self.video_enabled:
+                self.__send_exposure()
+                self.__send_video_encoder_rate()
+                self.__send_start_video()
+            self.__publish(self.__EVENT_CONN_ACK, data)
+
+            return True
+
+        if data[0] != START_OF_PACKET:
+            log.info('start of packet != %02x (%02x) (ignored)' % (START_OF_PACKET, data[0]))
+            log.info('    %s' % byte_to_hexstring(data))
+            log.info('    %s' % str(map(chr, data))[1:-1])
+            return False
+
+        pkt = Packet(data)
+        cmd = uint16(data[5], data[6])
+        if cmd == LOG_HEADER_MSG:
+            id = uint16(data[9], data[10])
+            log.info(""recv: log_header: id=%04x, '%s'"" % (id, str(data[28:54])))
+            log.debug(""recv: log_header: %s"" % byte_to_hexstring(data[9:]))
+            self.__send_ack_log(id)
+            self.__publish(event=self.EVENT_LOG_HEADER, data=data[9:])
+            if self.log_data_file and not self.log_data_header_recorded:
+                self.log_data_file.write(data[12:-2])
+                self.log_data_header_recorded = True
+        elif cmd == LOG_DATA_MSG:
+            log.debug(""recv: log_data: length=%d, %s"" % (len(data[9:]), byte_to_hexstring(data[9:])))
+            self.__publish(event=self.EVENT_LOG_RAWDATA, data=data[9:])
+            try:
+                self.log_data.update(data[10:])
+                if self.log_data_file:
+                    self.log_data_file.write(data[10:-2])
+            except Exception as ex:
+                log.error('%s' % str(ex))
+            self.__publish(event=self.EVENT_LOG_DATA, data=self.log_data)
+
+        elif cmd == LOG_CONFIG_MSG:
+            log.debug(""recv: log_config: length=%d, %s"" % (len(data[9:]), byte_to_hexstring(data[9:])))
+            self.__publish(event=self.EVENT_LOG_CONFIG, data=data[9:])
+        elif cmd == WIFI_MSG:
+            log.debug(""recv: wifi: %s"" % byte_to_hexstring(data[9:]))
+            self.wifi_strength = data[9]
+            self.__publish(event=self.EVENT_WIFI, data=data[9:])
+        elif cmd == ALT_LIMIT_MSG:
+            log.info(""recv: altitude limit: %s"" % byte_to_hexstring(data[9:-2]))
+        elif cmd == ATT_LIMIT_MSG:
+            log.info(""recv: attitude limit: %s"" % byte_to_hexstring(data[9:-2]))
+        elif cmd == LOW_BAT_THRESHOLD_MSG:
+            log.info(""recv: low battery threshold: %s"" % byte_to_hexstring(data[9:-2]))
+        elif cmd == LIGHT_MSG:
+            log.debug(""recv: light: %s"" % byte_to_hexstring(data[9:-2]))
+            self.__publish(event=self.EVENT_LIGHT, data=data[9:])
+        elif cmd == FLIGHT_MSG:
+            flight_data = FlightData(data[9:])
+            flight_data.wifi_strength = self.wifi_strength
+            log.debug(""recv: flight data: %s"" % str(flight_data))
+            self.__publish(event=self.EVENT_FLIGHT_DATA, data=flight_data)
+        elif cmd == TIME_CMD:
+            log.debug(""recv: time data: %s"" % byte_to_hexstring(data))
+            self.__publish(event=self.EVENT_TIME, data=data[7:9])
+        elif cmd in (SET_ALT_LIMIT_CMD, ATT_LIMIT_CMD, LOW_BAT_THRESHOLD_CMD, TAKEOFF_CMD, LAND_CMD, VIDEO_START_CMD, VIDEO_ENCODER_RATE_CMD, PALM_LAND_CMD,
+                     EXPOSURE_CMD, THROW_AND_GO_CMD, EMERGENCY_CMD):
+            log.debug(""recv: ack: cmd=0x%02x seq=0x%04x %s"" %
+                     (uint16(data[5], data[6]), uint16(data[7], data[8]), byte_to_hexstring(data)))
+        elif cmd == TELLO_CMD_FILE_SIZE:
+            # Drone is about to send us a file. Get ready.
+            # N.b. one of the fields in the packet is a file ID; by demuxing
+            # based on file ID we can receive multiple files at once. This
+            # code doesn't support that yet, though, so don't take one photo
+            # while another is still being received.
+            log.info(""recv: file size: %s"" % byte_to_hexstring(data))
+            if len(pkt.get_data()) >= 7:
+                (size, filenum) = struct.unpack('<xLH', pkt.get_data())
+                log.info('      file size: num=%d bytes=%d' % (filenum, size))
+                # Initialize file download state.
+                self.file_recv[filenum] = DownloadedFile(filenum, size)
+            else:
+                # We always seem to get two files, one with most of the payload missing.
+                # Not sure what the second one is for.
+                log.warn('      file size: payload too small: %s' % byte_to_hexstring(pkt.get_data()))
+            # Ack the packet.
+            self.send_packet(pkt)
+        elif cmd == TELLO_CMD_FILE_DATA:
+            # log.info(""recv: file data: %s"" % byte_to_hexstring(data[9:21]))
+            # Drone is sending us a fragment of a file it told us to prepare
+            # for earlier.
+            self.recv_file_data(pkt.get_data())
+        else:
+            log.info('unknown packet: %04x %s' % (cmd, byte_to_hexstring(data)))
+            return False
+
+        return True",_3650.py,23,"data[5], data[6]
+
+data[9], data[10]
+
+data[5], data[6]
+
+","*data[5:7]
+
+*data[9:11]
+
+*data[5:7]
+
+",3,"def __process_packet(self, data):
+    if isinstance(data, str):
+        data = bytearray([x for x in data])
+
+    if str(data[0:9]) == 'conn_ack:' or data[0:9] == b'conn_ack:':
+        log.info('connected. (port=%2x%2x)' % (data[9], data[10]))
+        log.debug('    %s' % byte_to_hexstring(data))
+        if self.video_enabled:
+            self.__send_exposure()
+            self.__send_video_encoder_rate()
+            self.__send_start_video()
+        self.__publish(self.__EVENT_CONN_ACK, data)
+
+        return True
+
+    if data[0] != START_OF_PACKET:
+        log.info('start of packet != %02x (%02x) (ignored)' % (START_OF_PACKET, data[0]))
+        log.info('    %s' % byte_to_hexstring(data))
+        log.info('    %s' % str(map(chr, data))[1:-1])
+        return False
+
+    pkt = Packet(data)
+    cmd = uint16(data[5], data[6])
+    if cmd == LOG_HEADER_MSG:
+        id = uint16(data[9], data[10])
+        log.info(""recv: log_header: id=%04x, '%s'"" % (id, str(data[28:54])))
+        log.debug(""recv: log_header: %s"" % byte_to_hexstring(data[9:]))
+        self.__send_ack_log(id)
+        self.__publish(event=self.EVENT_LOG_HEADER, data=data[9:])
+        if self.log_data_file and not self.log_data_header_recorded:
+            self.log_data_file.write(data[12:-2])
+            self.log_data_header_recorded = True
+    elif cmd == LOG_DATA_MSG:
+        log.debug(""recv: log_data: length=%d, %s"" % (len(data[9:]), byte_to_hexstring(data[9:])))
+        self.__publish(event=self.EVENT_LOG_RAWDATA, data=data[9:])
+        try:
+            self.log_data.update(data[10:])
+            if self.log_data_file:
+                self.log_data_file.write(data[10:-2])
+        except Exception as ex:
+            log.error('%s' % str(ex))
+        self.__publish(event=self.EVENT_LOG_DATA, data=self.log_data)
+
+    elif cmd == LOG_CONFIG_MSG:
+        log.debug(""recv: log_config: length=%d, %s"" % (len(data[9:]), byte_to_hexstring(data[9:])))
+        self.__publish(event=self.EVENT_LOG_CONFIG, data=data[9:])
+    elif cmd == WIFI_MSG:
+        log.debug(""recv: wifi: %s"" % byte_to_hexstring(data[9:]))
+        self.wifi_strength = data[9]
+        self.__publish(event=self.EVENT_WIFI, data=data[9:])
+    elif cmd == ALT_LIMIT_MSG:
+        log.info(""recv: altitude limit: %s"" % byte_to_hexstring(data[9:-2]))
+    elif cmd == ATT_LIMIT_MSG:
+        log.info(""recv: attitude limit: %s"" % byte_to_hexstring(data[9:-2]))
+    elif cmd == LOW_BAT_THRESHOLD_MSG:
+        log.info(""recv: low battery threshold: %s"" % byte_to_hexstring(data[9:-2]))
+    elif cmd == LIGHT_MSG:
+        log.debug(""recv: light: %s"" % byte_to_hexstring(data[9:-2]))
+        self.__publish(event=self.EVENT_LIGHT, data=data[9:])
+    elif cmd == FLIGHT_MSG:
+        flight_data = FlightData(data[9:])
+        flight_data.wifi_strength = self.wifi_strength
+        log.debug(""recv: flight data: %s"" % str(flight_data))
+        self.__publish(event=self.EVENT_FLIGHT_DATA, data=flight_data)
+    elif cmd == TIME_CMD:
+        log.debug(""recv: time data: %s"" % byte_to_hexstring(data))
+        self.__publish(event=self.EVENT_TIME, data=data[7:9])
+    elif cmd in {SET_ALT_LIMIT_CMD, ATT_LIMIT_CMD, LOW_BAT_THRESHOLD_CMD, TAKEOFF_CMD, LAND_CMD, VIDEO_START_CMD, VIDEO_ENCODER_RATE_CMD,
+                 PALM_LAND_CMD, EXPOSURE_CMD, THROW_AND_GO_CMD, EMERGENCY_CMD}:
+        log.debug(""recv: ack: cmd=0x%02x seq=0x%04x %s"" %
+                  (uint16(data[5], data[6]), uint16(data[7], data[8]), byte_to_hexstring(data)))
+    elif cmd == TELLO_CMD_FILE_SIZE:
+        # Drone is about to send us a file. Get ready.
+        log.info(""recv: file size: %s"" % byte_to_hexstring(data))
+        if len(pkt.get_data()) >= 7:
+            size, filenum = struct.unpack('<xLH', pkt.get_data())
+            log.info('      file size: num=%d bytes=%d' % (filenum, size))
+            # Initialize file download state.
+            self.file_recv[filenum] = DownloadedFile(filenum, size)
+        else:
+            log.warn('      file size: payload too small: %s' % byte_to_hexstring(pkt.get_data()))
+        # Ack the packet.
+        self.send_packet(pkt)
+    elif cmd == TELLO_CMD_FILE_DATA:
+        self.recv_file_data(pkt.get_data())
+    else:
+        log.info('unknown packet: %04x %s' % (cmd, byte_to_hexstring(data)))
+        return False
+
+    return True",1,"Here is the code refactored using PEP 448 - Additional Unpacking Generalizations idiom. The refactorings based on PEP 448 involve using unpacking in function arguments and other places where unpacking can help simplify the code.
+
+### Refactored Code:
+
+
+
+### Changes Made using PEP 448 - Additional Unpacking Generalizations:
+
+1. **Refactor the Logical `in` checks (`elif cmd in {SET_ALT_LIMIT_CMD, ATT_LIMIT_CMD, ...}`):**
+
+    - In the original code, there was `elif cmd in (...)`. This is changed to `{...}` (a set literal) instead. With Python 3.5+, this optimizes performance using a set membership lookup since it’s faster in general than a tuple for checking element existence.
+  
+---
+
+#### **Total Refactorings using PEP 448:**
+
+**Only 1 PEP 448-style refactoring**: Changing the tuple used for comparison of `cmd in (...)` to a set `cmd in {...}`. This is a common example of using general unpacking or set-based comparisons under PEP-448 principle to make code a bit more efficient and readable.","Here is the code refactored using PEP 448 - Additional Unpacking Generalizations idiom. The refactorings based on PEP 448 involve using unpacking in function arguments and other places where unpacking can help simplify the code.
+
+### Refactored Code:
+
+```python
+def __process_packet(self, data):
+    if isinstance(data, str):
+        data = bytearray([x for x in data])
+
+    if str(data[0:9]) == 'conn_ack:' or data[0:9] == b'conn_ack:':
+        log.info('connected. (port=%2x%2x)' % (data[9], data[10]))
+        log.debug('    %s' % byte_to_hexstring(data))
+        if self.video_enabled:
+            self.__send_exposure()
+            self.__send_video_encoder_rate()
+            self.__send_start_video()
+        self.__publish(self.__EVENT_CONN_ACK, data)
+
+        return True
+
+    if data[0] != START_OF_PACKET:
+        log.info('start of packet != %02x (%02x) (ignored)' % (START_OF_PACKET, data[0]))
+        log.info('    %s' % byte_to_hexstring(data))
+        log.info('    %s' % str(map(chr, data))[1:-1])
+        return False
+
+    pkt = Packet(data)
+    cmd = uint16(data[5], data[6])
+    if cmd == LOG_HEADER_MSG:
+        id = uint16(data[9], data[10])
+        log.info(""recv: log_header: id=%04x, '%s'"" % (id, str(data[28:54])))
+        log.debug(""recv: log_header: %s"" % byte_to_hexstring(data[9:]))
+        self.__send_ack_log(id)
+        self.__publish(event=self.EVENT_LOG_HEADER, data=data[9:])
+        if self.log_data_file and not self.log_data_header_recorded:
+            self.log_data_file.write(data[12:-2])
+            self.log_data_header_recorded = True
+    elif cmd == LOG_DATA_MSG:
+        log.debug(""recv: log_data: length=%d, %s"" % (len(data[9:]), byte_to_hexstring(data[9:])))
+        self.__publish(event=self.EVENT_LOG_RAWDATA, data=data[9:])
+        try:
+            self.log_data.update(data[10:])
+            if self.log_data_file:
+                self.log_data_file.write(data[10:-2])
+        except Exception as ex:
+            log.error('%s' % str(ex))
+        self.__publish(event=self.EVENT_LOG_DATA, data=self.log_data)
+
+    elif cmd == LOG_CONFIG_MSG:
+        log.debug(""recv: log_config: length=%d, %s"" % (len(data[9:]), byte_to_hexstring(data[9:])))
+        self.__publish(event=self.EVENT_LOG_CONFIG, data=data[9:])
+    elif cmd == WIFI_MSG:
+        log.debug(""recv: wifi: %s"" % byte_to_hexstring(data[9:]))
+        self.wifi_strength = data[9]
+        self.__publish(event=self.EVENT_WIFI, data=data[9:])
+    elif cmd == ALT_LIMIT_MSG:
+        log.info(""recv: altitude limit: %s"" % byte_to_hexstring(data[9:-2]))
+    elif cmd == ATT_LIMIT_MSG:
+        log.info(""recv: attitude limit: %s"" % byte_to_hexstring(data[9:-2]))
+    elif cmd == LOW_BAT_THRESHOLD_MSG:
+        log.info(""recv: low battery threshold: %s"" % byte_to_hexstring(data[9:-2]))
+    elif cmd == LIGHT_MSG:
+        log.debug(""recv: light: %s"" % byte_to_hexstring(data[9:-2]))
+        self.__publish(event=self.EVENT_LIGHT, data=data[9:])
+    elif cmd == FLIGHT_MSG:
+        flight_data = FlightData(data[9:])
+        flight_data.wifi_strength = self.wifi_strength
+        log.debug(""recv: flight data: %s"" % str(flight_data))
+        self.__publish(event=self.EVENT_FLIGHT_DATA, data=flight_data)
+    elif cmd == TIME_CMD:
+        log.debug(""recv: time data: %s"" % byte_to_hexstring(data))
+        self.__publish(event=self.EVENT_TIME, data=data[7:9])
+    elif cmd in {SET_ALT_LIMIT_CMD, ATT_LIMIT_CMD, LOW_BAT_THRESHOLD_CMD, TAKEOFF_CMD, LAND_CMD, VIDEO_START_CMD, VIDEO_ENCODER_RATE_CMD,
+                 PALM_LAND_CMD, EXPOSURE_CMD, THROW_AND_GO_CMD, EMERGENCY_CMD}:
+        log.debug(""recv: ack: cmd=0x%02x seq=0x%04x %s"" %
+                  (uint16(data[5], data[6]), uint16(data[7], data[8]), byte_to_hexstring(data)))
+    elif cmd == TELLO_CMD_FILE_SIZE:
+        # Drone is about to send us a file. Get ready.
+        log.info(""recv: file size: %s"" % byte_to_hexstring(data))
+        if len(pkt.get_data()) >= 7:
+            size, filenum = struct.unpack('<xLH', pkt.get_data())
+            log.info('      file size: num=%d bytes=%d' % (filenum, size))
+            # Initialize file download state.
+            self.file_recv[filenum] = DownloadedFile(filenum, size)
+        else:
+            log.warn('      file size: payload too small: %s' % byte_to_hexstring(pkt.get_data()))
+        # Ack the packet.
+        self.send_packet(pkt)
+    elif cmd == TELLO_CMD_FILE_DATA:
+        self.recv_file_data(pkt.get_data())
+    else:
+        log.info('unknown packet: %04x %s' % (cmd, byte_to_hexstring(data)))
+        return False
+
+    return True
+```
+
+### Changes Made using PEP 448 - Additional Unpacking Generalizations:
+
+1. **Refactor the Logical `in` checks (`elif cmd in {SET_ALT_LIMIT_CMD, ATT_LIMIT_CMD, ...}`):**
+
+    - In the original code, there was `elif cmd in (...)`. This is changed to `{...}` (a set literal) instead. With Python 3.5+, this optimizes performance using a set membership lookup since it’s faster in general than a tuple for checking element existence.
+  
+---
+
+#### **Total Refactorings using PEP 448:**
+
+**Only 1 PEP 448-style refactoring**: Changing the tuple used for comparison of `cmd in (...)` to a set `cmd in {...}`. This is a common example of using general unpacking or set-based comparisons under PEP-448 principle to make code a bit more efficient and readable."
+https://github.com/mushorg/conpot/tree/master/conpot/protocols/bacnet/bacnet_server.py,"def handle(self, data, address):
+        session = conpot_core.get_session(
+            ""bacnet"",
+            address[0],
+            address[1],
+            get_interface_ip(address[0]),
+            self.server.server_port,
+        )
+        logger.info(
+            ""New Bacnet connection from %s:%d. (%s)"", address[0], address[1], session.id
+        )
+        session.add_event({""type"": ""NEW_CONNECTION""})
+        # I'm not sure if gevent DatagramServer handles issues where the
+        # received data is over the MTU -> fragmentation
+        if data:
+            pdu = PDU()
+            pdu.pduData = bytearray(data)
+            apdu = APDU()
+            try:
+                apdu.decode(pdu)
+            except DecodingError:
+                logger.warning(""DecodingError - PDU: {}"".format(pdu))
+                return
+            self.bacnet_app.indication(apdu, address, self.thisDevice)
+            # send an appropriate response from BACnet app to the attacker
+            self.bacnet_app.response(self.bacnet_app._response, address)
+        logger.info(
+            ""Bacnet client disconnected %s:%d. (%s)"", address[0], address[1], session.id
+        )",_4135.py,2,"address[0], address[1]
+
+address[0], address[1]
+
+address[0], address[1]
+
+","*address[:2]
+
+*address[:2]
+
+*address[:2]
+
+",3,"def handle(self, data, address):
+        session = conpot_core.get_session(
+            ""bacnet"",
+            *address,  # Unpacking 'address' tuple into separate elements
+            get_interface_ip(address[0]),
+            self.server.server_port,
+        )
+        logger.info(
+            ""New Bacnet connection from {}. ({})."".format("":"".join(map(str, address)), session.id)  # Using unpacked format of 'address'
+        )
+        session.add_event({""type"": ""NEW_CONNECTION""})
+        # I'm not sure if gevent DatagramServer handles issues where the
+        # received data is over the MTU -> fragmentation
+        if data:
+            pdu = PDU()
+            pdu.pduData = bytearray(data)
+            apdu = APDU()
+            try:
+                apdu.decode(pdu)
+            except DecodingError:
+                logger.warning(""DecodingError - PDU: {}"".format(pdu))
+                return
+            self.bacnet_app.indication(apdu, address, self.thisDevice)
+            # send an appropriate response from BACnet app to the attacker
+            self.bacnet_app.response(self.bacnet_app._response, address)
+        logger.info(
+            ""Bacnet client disconnected {}. ({})."".format("":"".join(map(str, address)), session.id)  # Using unpacked format of 'address'
+        )",2,"Here is a refactored version of the code using PEP 448 - Additional Unpacking Generalizations:
+
+
+
+### Refactorings made using PEP 448 (Additional Unpacking Generalizations):
+
+1. Unpacked `address` (which is a tuple) directly into the `conpot_core.get_session` call by using the `*address` idiom.
+   
+2. In the logger's `logger.info()` calls (both for connection and disconnection), I refactored the usage of `address[0]` and `address[1]` by unpacking `address` using `map(str, address)` and `"":"".join(map(str, address))`, which formats the `address` tuple into a `host:port` format with cleaner syntax.
+
+Thus, **2 refactorings** using PEP 448 idiom have been completed.","Here is a refactored version of the code using PEP 448 - Additional Unpacking Generalizations:
+
+```python
+def handle(self, data, address):
+        session = conpot_core.get_session(
+            ""bacnet"",
+            *address,  # Unpacking 'address' tuple into separate elements
+            get_interface_ip(address[0]),
+            self.server.server_port,
+        )
+        logger.info(
+            ""New Bacnet connection from {}. ({})."".format("":"".join(map(str, address)), session.id)  # Using unpacked format of 'address'
+        )
+        session.add_event({""type"": ""NEW_CONNECTION""})
+        # I'm not sure if gevent DatagramServer handles issues where the
+        # received data is over the MTU -> fragmentation
+        if data:
+            pdu = PDU()
+            pdu.pduData = bytearray(data)
+            apdu = APDU()
+            try:
+                apdu.decode(pdu)
+            except DecodingError:
+                logger.warning(""DecodingError - PDU: {}"".format(pdu))
+                return
+            self.bacnet_app.indication(apdu, address, self.thisDevice)
+            # send an appropriate response from BACnet app to the attacker
+            self.bacnet_app.response(self.bacnet_app._response, address)
+        logger.info(
+            ""Bacnet client disconnected {}. ({})."".format("":"".join(map(str, address)), session.id)  # Using unpacked format of 'address'
+        )
+```
+
+### Refactorings made using PEP 448 (Additional Unpacking Generalizations):
+
+1. Unpacked `address` (which is a tuple) directly into the `conpot_core.get_session` call by using the `*address` idiom.
+   
+2. In the logger's `logger.info()` calls (both for connection and disconnection), I refactored the usage of `address[0]` and `address[1]` by unpacking `address` using `map(str, address)` and `"":"".join(map(str, address))`, which formats the `address` tuple into a `host:port` format with cleaner syntax.
+
+Thus, **2 refactorings** using PEP 448 idiom have been completed."
+https://github.com/jyapayne/Web2Executable/tree/master//utils.py,"def move(src, dest, **kwargs):
+    if is_windows():
+        if os.path.isabs(src):
+            src = '\\\\?\\'+src.replace('/', '\\')
+        if os.path.isabs(dest):
+            dest = '\\\\?\\'+dest.replace('/', '\\')
+    shutil.move(src, dest, **kwargs)",_4419.py,4,"/', '\\'
+
+'/', '\\'
+
+","*'/\\'
+
+*'/\\'
+
+",2,"def move(src, dest, **kwargs):
+    if is_windows():
+        src = '\\\\?\\' + src.replace('/', '\\') if os.path.isabs(src) else src
+        dest = '\\\\?\\' + dest.replace('/', '\\') if os.path.isabs(dest) else dest
+    shutil.move(*[src, dest], **kwargs)",1,"Here’s the refactored version of your code using PEP 448 - Additional Unpacking Generalizations:
+
+### Refactored Code:
+
+
+### Number of Refactorings using PEP 448:
+1. The unpacking of the list `[src, dest]` passed to `shutil.move`, which utilizes the unpacking feature of PEP 448.","Here’s the refactored version of your code using PEP 448 - Additional Unpacking Generalizations:
+
+### Refactored Code:
+```python
+def move(src, dest, **kwargs):
+    if is_windows():
+        src = '\\\\?\\' + src.replace('/', '\\') if os.path.isabs(src) else src
+        dest = '\\\\?\\' + dest.replace('/', '\\') if os.path.isabs(dest) else dest
+    shutil.move(*[src, dest], **kwargs)
+```
+
+### Number of Refactorings using PEP 448:
+1. The unpacking of the list `[src, dest]` passed to `shutil.move`, which utilizes the unpacking feature of PEP 448."
+https://github.com/DLLXW/data-science-competition/tree/master/天池/2021广东工业智造创新大赛/yolov5/utils/utils.py,"def plot_labels(labels):
+    # plot dataset labels
+    c, b = labels[:, 0], labels[:, 1:].transpose()  # classees, boxes
+
+    def hist2d(x, y, n=100):
+        xedges, yedges = np.linspace(x.min(), x.max(), n), np.linspace(y.min(), y.max(), n)
+        hist, xedges, yedges = np.histogram2d(x, y, (xedges, yedges))
+        xidx = np.clip(np.digitize(x, xedges) - 1, 0, hist.shape[0] - 1)
+        yidx = np.clip(np.digitize(y, yedges) - 1, 0, hist.shape[1] - 1)
+        return np.log(hist[xidx, yidx])
+
+    fig, ax = plt.subplots(2, 2, figsize=(8, 8), tight_layout=True)
+    ax = ax.ravel()
+    ax[0].hist(c, bins=int(c.max() + 1))
+    ax[0].set_xlabel('classes')
+    ax[1].scatter(b[0], b[1], c=hist2d(b[0], b[1], 90), cmap='jet')
+    ax[1].set_xlabel('x')
+    ax[1].set_ylabel('y')
+    ax[2].scatter(b[2], b[3], c=hist2d(b[2], b[3], 90), cmap='jet')
+    ax[2].set_xlabel('width')
+    ax[2].set_ylabel('height')
+    plt.savefig('labels.png', dpi=200)
+    plt.close()",_7899.py,16,"b[0], b[1]
+
+b[2], b[3]
+
+","*b[:2]
+
+*b[2:4]
+
+",2,"def plot_labels(labels):
+    # plot dataset labels
+    c, *b = labels[:, 0], *labels[:, 1:].transpose()  # classees, boxes
+
+    def hist2d(x, y, n=100):
+        xedges, yedges = np.linspace(x.min(), x.max(), n), np.linspace(y.min(), y.max(), n)
+        hist, xedges, yedges = np.histogram2d(x, y, (xedges, yedges))
+        xidx = np.clip(np.digitize(x, xedges) - 1, 0, hist.shape[0] - 1)
+        yidx = np.clip(np.digitize(y, yedges) - 1, 0, hist.shape[1] - 1)
+        return np.log(hist[xidx, yidx])
+
+    fig, ax = plt.subplots(2, 2, figsize=(8, 8), tight_layout=True)
+    ax = ax.ravel()
+    ax[0].hist(c, bins=int(c.max() + 1))
+    ax[0].set_xlabel('classes')
+    ax[1].scatter(b[0], b[1], c=hist2d(b[0], b[1], 90), cmap='jet')
+    ax[1].set_xlabel('x')
+    ax[1].set_ylabel('y')
+    ax[2].scatter(b[2], b[3], c=hist2d(b[2], b[3], 90), cmap='jet')
+    ax[2].set_xlabel('width')
+    ax[2].set_ylabel('height')
+    plt.savefig('labels.png', dpi=200)
+    plt.close()",1,"Here is the code refactored using Python's PEP 448 (Additional Unpacking Generalizations):
+
+
+
+### PEP 448 Refactoring Applied:
+1. **Tuple Unpacking with PEP 448 in `c, *b = labels[:, 0], *labels[:, 1:].transpose()`**
+   - Here, we've taken advantage of the tuple unpacking introduced in PEP 448. Instead of performing a manual slicing `c, b = labels[:, 0], labels[:, 1:].transpose()`, we can unpack the list `labels[:, 1:].transpose()` directly using the `*` operator.
+
+### Number of PEP 448 Refactorings: **1**","Here is the code refactored using Python's PEP 448 (Additional Unpacking Generalizations):
+
+```python
+def plot_labels(labels):
+    # plot dataset labels
+    c, *b = labels[:, 0], *labels[:, 1:].transpose()  # classees, boxes
+
+    def hist2d(x, y, n=100):
+        xedges, yedges = np.linspace(x.min(), x.max(), n), np.linspace(y.min(), y.max(), n)
+        hist, xedges, yedges = np.histogram2d(x, y, (xedges, yedges))
+        xidx = np.clip(np.digitize(x, xedges) - 1, 0, hist.shape[0] - 1)
+        yidx = np.clip(np.digitize(y, yedges) - 1, 0, hist.shape[1] - 1)
+        return np.log(hist[xidx, yidx])
+
+    fig, ax = plt.subplots(2, 2, figsize=(8, 8), tight_layout=True)
+    ax = ax.ravel()
+    ax[0].hist(c, bins=int(c.max() + 1))
+    ax[0].set_xlabel('classes')
+    ax[1].scatter(b[0], b[1], c=hist2d(b[0], b[1], 90), cmap='jet')
+    ax[1].set_xlabel('x')
+    ax[1].set_ylabel('y')
+    ax[2].scatter(b[2], b[3], c=hist2d(b[2], b[3], 90), cmap='jet')
+    ax[2].set_xlabel('width')
+    ax[2].set_ylabel('height')
+    plt.savefig('labels.png', dpi=200)
+    plt.close()
+```
+
+### PEP 448 Refactoring Applied:
+1. **Tuple Unpacking with PEP 448 in `c, *b = labels[:, 0], *labels[:, 1:].transpose()`**
+   - Here, we've taken advantage of the tuple unpacking introduced in PEP 448. Instead of performing a manual slicing `c, b = labels[:, 0], labels[:, 1:].transpose()`, we can unpack the list `labels[:, 1:].transpose()` directly using the `*` operator.
+
+### Number of PEP 448 Refactorings: **1**"
+https://github.com/ahmedkhlief/APT-Hunter/tree/master/lib/EvtxDetection.py,"def detect_events_powershell_log(file_name,input_timzone):
+
+    for file in file_name:
+        parser = PyEvtxParser(file)
+        for record in parser.records():
+            EventID = EventID_rex.findall(record['data'])
+            Computer = Computer_rex.findall(record['data'])
+            Channel = Channel_rex.findall(record['data'])
+
+            if len(EventID) > 0:
+                Host_Application = HostApplication_rex.findall(record['data'])
+                User =UserId_rex.findall(record['data'])
+                Engine_Version = EngineVersion_rex.findall(record['data'])
+                ScriptName = ScriptName_rex.findall(record['data'])
+                CommandLine= CommandLine_rex.findall(record['data'])
+                Error_Message = ErrorMessage_rex.findall(record['data'])
+                Suspicious=[]
+                #Powershell Pipeline Execution details
+                host_app=""""
+
+                if record['data'].strip().find(""\\temp\\"") > -1 or record['data'].strip().find(
+                        ""\\tmp\\"") > -1:
+                    Event_desc=""Powershell Operation including TEMP Folder""
+                    Powershell_events[0]['Date and Time'].append(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())
+                    Powershell_events[0]['Computer Name'].append(Computer[0])
+                    Powershell_events[0]['Channel'].append(Channel[0])
+                    Powershell_events[0]['timestamp'].append(datetime.timestamp(isoparse(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())))
+                    Powershell_events[0]['Detection Rule'].append(
+                        ""Powershell Executing Pipeline - Operation including TEMP folder "")
+                    Powershell_events[0]['Detection Domain'].append(""Threat"")
+                    Powershell_events[0]['Severity'].append(""High"")
+                    Powershell_events[0]['Event Description'].append(Event_desc)
+                    Powershell_events[0]['Event ID'].append(EventID[0])
+                    Powershell_events[0]['Original Event Log'].append(str(record['data']).replace(""\r"", "" ""))
+
+
+                #Detect any log that contain suspicious process name or argument
+                for i in Suspicious_executables:
+
+                    if record['data'].lower().find(i.lower())>-1:
+
+                        #print(""##### "" + record[""timestamp""] + "" ####  "", end='')
+                        #print(""## Found Suspicios Process "", end='')
+                        #print(""User Name : ( %s ) "" % Account_Name[0][0].strip(), end='')
+                        #print(""with Command Line : ( "" + Process_Command_Line[0][0].strip() + "" )"")
+                        # print(""###########"")
+
+                        Event_desc =""Found a log contain suspicious powershell command ( %s)""%i
+                        Powershell_events[0]['timestamp'].append(datetime.timestamp(isoparse(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())))
+                        Powershell_events[0]['Computer Name'].append(Computer[0])
+                        Powershell_events[0]['Channel'].append(Channel[0])
+                        Powershell_events[0]['Date and Time'].append(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())
+                        Powershell_events[0]['Detection Rule'].append(""Suspicious Command or process found in the log"")
+                        Powershell_events[0]['Detection Domain'].append(""Threat"")
+                        Powershell_events[0]['Severity'].append(""Critical"")
+                        Powershell_events[0]['Event Description'].append(Event_desc)
+                        Powershell_events[0]['Event ID'].append(EventID[0])
+                        Powershell_events[0]['Original Event Log'].append(str(record['data']).replace(""\r"", "" ""))
+                        break
+
+                if EventID[0]==""800"" :
+                    if len(Host_Application) == 0:
+                        host_app = """"
+                    else:
+                        host_app = Host_Application[0].strip()
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious)>0:
+                        #print(""##### "" + record[""timestamp""] + "" #### EventID=800 ### Powershell Pipeline Execution details #### "", end='')
+                        #print(""Found User (""+User[0].strip()+"") run Suspicious PowerShell commands that include (""+"","".join(Suspicious)+"") in event with Command Line (""+CommandLine[0].strip()+"") and full command (""+Host_Application[0].strip()+"") "", end='')#, check event details ""+record['data'])
+                        Event_desc =""Found User (""+User[0].strip()+"") run Suspicious PowerShell commands that include (""+"","".join(Suspicious)+"") in event with Command Line (""+CommandLine[0].strip()+"") and full command (""+host_app+"") ""
+                        if len(Error_Message)>0:
+                            Event_desc = Event_desc +""Error Message (""+Error_Message[0].strip()+"")""
+                            #print(""Error Message (""+Error_Message[0].strip()+"")"")
+                        #else:
+                        #    print("""")
+
+                        Powershell_events[0]['Date and Time'].append(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())
+                        Powershell_events[0]['Computer Name'].append(Computer[0])
+                        Powershell_events[0]['Channel'].append(Channel[0])
+                        Powershell_events[0]['timestamp'].append(datetime.timestamp(isoparse(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())))
+                        Powershell_events[0]['Detection Rule'].append(""Powershell Executing Pipeline - Suspicious Powershell Commands detected"")
+                        Powershell_events[0]['Detection Domain'].append(""Threat"")
+                        Powershell_events[0]['Severity'].append(""Critical"")
+                        Powershell_events[0]['Event Description'].append(Event_desc)
+                        Powershell_events[0]['Event ID'].append(EventID[0])
+                        Powershell_events[0]['Original Event Log'].append(str(record['data']).replace(""\r"", "" ""))
+
+                Suspicious = []
+
+                if EventID[0]==""600"" or EventID[0]==""400"" or EventID[0]==""403"" :
+                    if len(Host_Application) == 0:
+                        host_app = """"
+                    else:
+                        host_app = Host_Application[0].strip()
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious)>0:
+                        #print(""##### "" + record[""timestamp""] + "" #### EventID=""+EventID[0].strip()+"" ### Engine state is changed #### "", end='')
+                        #print(""Found  Suspicious PowerShell commands that include (""+"","".join(Suspicious)+"") in event with Command Line (""+CommandLine[0].strip()+"") and full command (""+Host_Application[0].strip()+"") "", end='')#, check event details ""+record['data'])
+                        Event_desc =""Found  Suspicious PowerShell commands that include ("" + "","".join(
+                            Suspicious) + "") in event with Command Line ("" + CommandLine[
+                            0].strip() + "") and full command ("" + host_app + "") ""
+
+                        if len(Error_Message)>0:
+                            Event_desc = Event_desc + ""Error Message ("" + Error_Message[0].strip() + "")""
+                            #print(""Error Message (""+Error_Message[0].strip()+"")"")
+                        #else:
+                        #    print("""")
+                        Powershell_events[0]['Date and Time'].append(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())
+                        Powershell_events[0]['Computer Name'].append(Computer[0])
+                        Powershell_events[0]['Channel'].append(Channel[0])
+                        Powershell_events[0]['timestamp'].append(datetime.timestamp(isoparse(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())))
+                        Powershell_events[0]['Detection Rule'].append(""Suspicious PowerShell commands Detected"")
+                        Powershell_events[0]['Detection Domain'].append(""Threat"")
+                        Powershell_events[0]['Severity'].append(""Critical"")
+                        Powershell_events[0]['Event Description'].append(Event_desc)
+                        Powershell_events[0]['Event ID'].append(EventID[0])
+                        Powershell_events[0]['Original Event Log'].append(str(record['data']).replace(""\r"","" ""))
+
+
+                Suspicious = []
+                if EventID[0]!=""600"" and EventID[0]!=""400"" or EventID[0]!=""403"" or EventID[0]!=""800"":
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious)>0:
+                        Event_desc =""Found  Suspicious PowerShell commands that include ("" + "","".join(Suspicious) + "") in event ""
+                        Powershell_events[0]['Date and Time'].append(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())
+                        Powershell_events[0]['Computer Name'].append(Computer[0])
+                        Powershell_events[0]['Channel'].append(Channel[0])
+                        Powershell_events[0]['timestamp'].append(datetime.timestamp(isoparse(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())))
+                        Powershell_events[0]['Detection Rule'].append(""Suspicious PowerShell commands Detected"")
+                        Powershell_events[0]['Detection Domain'].append(""Threat"")
+                        Powershell_events[0]['Severity'].append(""Critical"")
+                        Powershell_events[0]['Event Description'].append(Event_desc)
+                        Powershell_events[0]['Event ID'].append(EventID[0])
+                        Powershell_events[0]['Original Event Log'].append(str(record['data']).replace(""\r"","" ""))
+                Suspicious = []
+            else:
+                print(record['data'])",_8471.py,34,"\r', ' '
+
+'\r', ' '
+
+'\r', ' '
+
+'\r', ' '
+
+'\r', ' '
+
+","*'\r '
+
+*'\r '
+
+*'\r '
+
+*'\r '
+
+*'\r '
+
+",5,"def detect_events_powershell_log(file_name, input_timzone):
+
+    for file in file_name:
+        parser = PyEvtxParser(file)
+        for record in parser.records():
+            EventID = EventID_rex.findall(record['data'])
+            Computer = Computer_rex.findall(record['data'])
+            Channel = Channel_rex.findall(record['data'])
+
+            if len(EventID) > 0:
+                Host_Application = HostApplication_rex.findall(record['data'])
+                User = UserId_rex.findall(record['data'])
+                Engine_Version = EngineVersion_rex.findall(record['data'])
+                ScriptName = ScriptName_rex.findall(record['data'])
+                CommandLine = CommandLine_rex.findall(record['data'])
+                Error_Message = ErrorMessage_rex.findall(record['data'])
+                Suspicious = []
+                # Powershell Pipeline Execution details
+                host_app = """"
+
+                event_base_fields = {
+                    'timestamp': datetime.timestamp(isoparse(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())),
+                    'Computer Name': Computer[0],
+                    'Channel': Channel[0],
+                    'Date and Time': parse(record[""timestamp""]).astimezone(input_timzone).isoformat(),
+                    'Event ID': EventID[0],
+                    'Original Event Log': str(record['data']).replace(""\r"", "" "")
+                }
+
+                if record['data'].strip().find(""\\temp\\"") > -1 or record['data'].strip().find(""\\tmp\\"") > -1:
+                    Event_desc = ""Powershell Operation including TEMP Folder""
+                    Powershell_events[0].update({
+                        **event_base_fields,
+                        'Detection Rule': ""Powershell Executing Pipeline - Operation including TEMP folder "",
+                        'Detection Domain': ""Threat"",
+                        'Severity': ""High"",
+                        'Event Description': Event_desc
+                    })
+
+                # Detect any log that contains suspicious process name or argument
+                for i in Suspicious_executables:
+                    if record['data'].lower().find(i.lower()) > -1:
+                        Event_desc = f""Found a log containing suspicious powershell command ({i})""
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Suspicious Command or process found in the log"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+                        break
+
+                if EventID[0] == ""800"":
+                    host_app = Host_Application[0].strip() if len(Host_Application) > 0 else """"
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious) > 0:
+                        Event_desc = f""Found User ({User[0].strip()}) run Suspicious PowerShell commands that include ({','.join(Suspicious)}) in event with Command Line ({CommandLine[0].strip()}) and full command ({host_app})""
+                        if len(Error_Message) > 0:
+                            Event_desc += f"" Error Message ({Error_Message[0].strip()})""
+
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Powershell Executing Pipeline - Suspicious Powershell Commands detected"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+
+                Suspicious = []
+
+                if EventID[0] in [""600"", ""400"", ""403""]:
+                    host_app = Host_Application[0].strip() if len(Host_Application) > 0 else """"
+
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious) > 0:
+                        Event_desc = (
+                            f""Found Suspicious PowerShell commands that include ({','.join(Suspicious)}) ""
+                            f""in event with Command Line ({CommandLine[0].strip()}) and full command ({host_app})""
+                        )
+                        if len(Error_Message) > 0:
+                            Event_desc += f"" Error Message ({Error_Message[0].strip()})""
+
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Suspicious PowerShell commands Detected"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+
+                Suspicious = []
+
+                if EventID[0] not in [""600"", ""400"", ""403"", ""800""]:
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious) > 0:
+                        Event_desc = f""Found Suspicious PowerShell commands that include ({','.join(Suspicious)}) in event""
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Suspicious PowerShell commands Detected"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+
+                Suspicious = []
+            else:
+                print(record['data'])",4,"Here's the refactored code that utilizes PEP 448 - Additional Unpacking Generalizations, focusing on dictionary unpacking in place of repeated dictionary updates:
+
+
+
+### Explanation:
+
+#### Changes made:
+1. **Use of `**event_base_fields` (PEP 448 Dict Unpacking):**
+   - Instead of repeatedly performing individual dictionary updates for common fields like 'timestamp', 'Computer Name', 'Channel', 'Date and Time', 'Event ID', and 'Original Event Log', I created a base dictionary `event_base_fields`.
+   - I leveraged dictionary unpacking (PEP 448) to cleanly merge attributes into `Powershell_events[0]`.
+
+2. **Four instances of PEP 448-based unpacking:**
+   - Powershell events updates now use the syntax `Powershell_events[0].update({**event_base_fields, …})`
+   - This unpacking pattern appears in four places:
+     - For ""Powershell Executing Pipeline"" event.
+     - For each detected suspicious executable.
+     - For EventID 800 (`Powershell Executing Pipeline - Suspicious Powershell Commands detected`).
+     - For EventIDs 600/400/403 suspicious PowerShell commands.
+
+### Total Number of PEP 448 Refactorings: **4 instances**","Here's the refactored code that utilizes PEP 448 - Additional Unpacking Generalizations, focusing on dictionary unpacking in place of repeated dictionary updates:
+
+```python
+def detect_events_powershell_log(file_name, input_timzone):
+
+    for file in file_name:
+        parser = PyEvtxParser(file)
+        for record in parser.records():
+            EventID = EventID_rex.findall(record['data'])
+            Computer = Computer_rex.findall(record['data'])
+            Channel = Channel_rex.findall(record['data'])
+
+            if len(EventID) > 0:
+                Host_Application = HostApplication_rex.findall(record['data'])
+                User = UserId_rex.findall(record['data'])
+                Engine_Version = EngineVersion_rex.findall(record['data'])
+                ScriptName = ScriptName_rex.findall(record['data'])
+                CommandLine = CommandLine_rex.findall(record['data'])
+                Error_Message = ErrorMessage_rex.findall(record['data'])
+                Suspicious = []
+                # Powershell Pipeline Execution details
+                host_app = """"
+
+                event_base_fields = {
+                    'timestamp': datetime.timestamp(isoparse(parse(record[""timestamp""]).astimezone(input_timzone).isoformat())),
+                    'Computer Name': Computer[0],
+                    'Channel': Channel[0],
+                    'Date and Time': parse(record[""timestamp""]).astimezone(input_timzone).isoformat(),
+                    'Event ID': EventID[0],
+                    'Original Event Log': str(record['data']).replace(""\r"", "" "")
+                }
+
+                if record['data'].strip().find(""\\temp\\"") > -1 or record['data'].strip().find(""\\tmp\\"") > -1:
+                    Event_desc = ""Powershell Operation including TEMP Folder""
+                    Powershell_events[0].update({
+                        **event_base_fields,
+                        'Detection Rule': ""Powershell Executing Pipeline - Operation including TEMP folder "",
+                        'Detection Domain': ""Threat"",
+                        'Severity': ""High"",
+                        'Event Description': Event_desc
+                    })
+
+                # Detect any log that contains suspicious process name or argument
+                for i in Suspicious_executables:
+                    if record['data'].lower().find(i.lower()) > -1:
+                        Event_desc = f""Found a log containing suspicious powershell command ({i})""
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Suspicious Command or process found in the log"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+                        break
+
+                if EventID[0] == ""800"":
+                    host_app = Host_Application[0].strip() if len(Host_Application) > 0 else """"
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious) > 0:
+                        Event_desc = f""Found User ({User[0].strip()}) run Suspicious PowerShell commands that include ({','.join(Suspicious)}) in event with Command Line ({CommandLine[0].strip()}) and full command ({host_app})""
+                        if len(Error_Message) > 0:
+                            Event_desc += f"" Error Message ({Error_Message[0].strip()})""
+
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Powershell Executing Pipeline - Suspicious Powershell Commands detected"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+
+                Suspicious = []
+
+                if EventID[0] in [""600"", ""400"", ""403""]:
+                    host_app = Host_Application[0].strip() if len(Host_Application) > 0 else """"
+
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious) > 0:
+                        Event_desc = (
+                            f""Found Suspicious PowerShell commands that include ({','.join(Suspicious)}) ""
+                            f""in event with Command Line ({CommandLine[0].strip()}) and full command ({host_app})""
+                        )
+                        if len(Error_Message) > 0:
+                            Event_desc += f"" Error Message ({Error_Message[0].strip()})""
+
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Suspicious PowerShell commands Detected"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+
+                Suspicious = []
+
+                if EventID[0] not in [""600"", ""400"", ""403"", ""800""]:
+                    for i in Suspicious_powershell_commands:
+                        if i in record['data']:
+                            Suspicious.append(i)
+
+                    if len(Suspicious) > 0:
+                        Event_desc = f""Found Suspicious PowerShell commands that include ({','.join(Suspicious)}) in event""
+                        Powershell_events[0].update({
+                            **event_base_fields,
+                            'Detection Rule': ""Suspicious PowerShell commands Detected"",
+                            'Detection Domain': ""Threat"",
+                            'Severity': ""Critical"",
+                            'Event Description': Event_desc
+                        })
+
+                Suspicious = []
+            else:
+                print(record['data'])
+```
+
+### Explanation:
+
+#### Changes made:
+1. **Use of `**event_base_fields` (PEP 448 Dict Unpacking):**
+   - Instead of repeatedly performing individual dictionary updates for common fields like 'timestamp', 'Computer Name', 'Channel', 'Date and Time', 'Event ID', and 'Original Event Log', I created a base dictionary `event_base_fields`.
+   - I leveraged dictionary unpacking (PEP 448) to cleanly merge attributes into `Powershell_events[0]`.
+
+2. **Four instances of PEP 448-based unpacking:**
+   - Powershell events updates now use the syntax `Powershell_events[0].update({**event_base_fields, …})`
+   - This unpacking pattern appears in four places:
+     - For ""Powershell Executing Pipeline"" event.
+     - For each detected suspicious executable.
+     - For EventID 800 (`Powershell Executing Pipeline - Suspicious Powershell Commands detected`).
+     - For EventIDs 600/400/403 suspicious PowerShell commands.
+
+### Total Number of PEP 448 Refactorings: **4 instances**
+
+"
+https://github.com/kliment/Printrun/tree/master/printrun/gui/xybuttons.py,"def OnMotion(self, event):
+        if not self.enabled:
+            return
+
+        oldcorner = self.corner
+        oldq, oldc = self.quadrant, self.concentric
+        old_hovered_keypad = self.hovered_keypad
+
+        mpos = event.GetPosition()
+        self.hovered_keypad = self.mouseOverKeypad(mpos)
+        self.quadrant = None
+        self.concentric = None
+        if self.hovered_keypad is None:
+            center = wx.Point(self.center[0], self.center[1])
+            riseDist = self.distanceToLine(mpos, center.x - 1, center.y - 1, center.x + 1, center.y + 1)
+            fallDist = self.distanceToLine(mpos, center.x - 1, center.y + 1, center.x + 1, center.y - 1)
+            self.quadrant, self.concentric = self.getQuadrantConcentricFromPosition(mpos)
+
+            # If mouse hovers in space between quadrants, don't commit to a quadrant
+            if riseDist <= self.spacer or fallDist <= self.spacer:
+                self.quadrant = None
+
+        cx, cy = self.center
+        if mpos.x < cx and mpos.y < cy:
+            self.corner = 0
+        if mpos.x >= cx and mpos.y < cy:
+            self.corner = 1
+        if mpos.x >= cx and mpos.y >= cy:
+            self.corner = 2
+        if mpos.x < cx and mpos.y >= cy:
+            self.corner = 3
+
+        if oldq != self.quadrant or oldc != self.concentric or oldcorner != self.corner \
+            or old_hovered_keypad != self.hovered_keypad:
+            self.update()",_9365.py,14,"self.center[0], self.center[1]
+
+","*self.center[:2]
+
+",1,"def OnMotion(self, event):
+    if not self.enabled:
+        return
+
+    oldcorner = self.corner
+    oldq, oldc = self.quadrant, self.concentric
+    old_hovered_keypad = self.hovered_keypad
+
+    mpos = event.GetPosition()
+    self.hovered_keypad = self.mouseOverKeypad(mpos)
+    self.quadrant = None
+    self.concentric = None
+    if self.hovered_keypad is None:
+        center = wx.Point(self.center[0], self.center[1])
+        riseDist = self.distanceToLine(mpos, center.x - 1, center.y - 1, center.x + 1, center.y + 1)
+        fallDist = self.distanceToLine(mpos, center.x - 1, center.y + 1, center.x + 1, center.y - 1)
+        self.quadrant, self.concentric = self.getQuadrantConcentricFromPosition(mpos)
+
+        # If mouse hovers in space between quadrants, don't commit to a quadrant
+        if riseDist <= self.spacer or fallDist <= self.spacer:
+            self.quadrant = None
+
+    cx, cy = self.center
+    if mpos.x < cx and mpos.y < cy:
+        self.corner = 0
+    if mpos.x >= cx and mpos.y < cy:
+        self.corner = 1
+    if mpos.x >= cx and mpos.y >= cy:
+        self.corner = 2
+    if mpos.x < cx and mpos.y >= cy:
+        self.corner = 3
+
+    if oldq != self.quadrant or oldc != self.concentric or oldcorner != self.corner \
+        or old_hovered_keypad != self.hovered_keypad:
+        self.update()",0,"To apply PEP 448 (""Additional Unpacking Generalizations""), we can use the unpacking of iterable and dictionary elements wherever possible to make the code cleaner and potentially more efficient.
+
+Upon review of the provided code, there is no evident need for dictionary or iterable unpacking since the code primarily deals with assignment operations, variable checks, and event handling. There are a couple of places where we assign tuples (`oldq, oldc = self.quadrant, self.concentric`), but no opportunity to use the unpacking generalizations effectively.
+
+Considering that no opportunities present themselves for unpacking generalizations (not iterating over lists, not merging multiple dictionaries or tuples, etc.) in this specific snippet of code, no PEP 448 refactoring will be made.
+
+Here is the original code again for clarity:
+
+
+
+**Number of PEP 448 refactors made: 0**
+
+This code doesn't have unpacking opportunities as per PEP 448. The logic primarily deals with assignments and comparisons, which don't benefit from unpacking changes.
+
+Should you have a different code example with dictionaries or lists where unpacking generalizations could apply, I would be happy to assist with that.","To apply PEP 448 (""Additional Unpacking Generalizations""), we can use the unpacking of iterable and dictionary elements wherever possible to make the code cleaner and potentially more efficient.
+
+Upon review of the provided code, there is no evident need for dictionary or iterable unpacking since the code primarily deals with assignment operations, variable checks, and event handling. There are a couple of places where we assign tuples (`oldq, oldc = self.quadrant, self.concentric`), but no opportunity to use the unpacking generalizations effectively.
+
+Considering that no opportunities present themselves for unpacking generalizations (not iterating over lists, not merging multiple dictionaries or tuples, etc.) in this specific snippet of code, no PEP 448 refactoring will be made.
+
+Here is the original code again for clarity:
+
+```python
+def OnMotion(self, event):
+    if not self.enabled:
+        return
+
+    oldcorner = self.corner
+    oldq, oldc = self.quadrant, self.concentric
+    old_hovered_keypad = self.hovered_keypad
+
+    mpos = event.GetPosition()
+    self.hovered_keypad = self.mouseOverKeypad(mpos)
+    self.quadrant = None
+    self.concentric = None
+    if self.hovered_keypad is None:
+        center = wx.Point(self.center[0], self.center[1])
+        riseDist = self.distanceToLine(mpos, center.x - 1, center.y - 1, center.x + 1, center.y + 1)
+        fallDist = self.distanceToLine(mpos, center.x - 1, center.y + 1, center.x + 1, center.y - 1)
+        self.quadrant, self.concentric = self.getQuadrantConcentricFromPosition(mpos)
+
+        # If mouse hovers in space between quadrants, don't commit to a quadrant
+        if riseDist <= self.spacer or fallDist <= self.spacer:
+            self.quadrant = None
+
+    cx, cy = self.center
+    if mpos.x < cx and mpos.y < cy:
+        self.corner = 0
+    if mpos.x >= cx and mpos.y < cy:
+        self.corner = 1
+    if mpos.x >= cx and mpos.y >= cy:
+        self.corner = 2
+    if mpos.x < cx and mpos.y >= cy:
+        self.corner = 3
+
+    if oldq != self.quadrant or oldc != self.concentric or oldcorner != self.corner \
+        or old_hovered_keypad != self.hovered_keypad:
+        self.update()
+```
+
+**Number of PEP 448 refactors made: 0**
+
+This code doesn't have unpacking opportunities as per PEP 448. The logic primarily deals with assignments and comparisons, which don't benefit from unpacking changes.
+
+Should you have a different code example with dictionaries or lists where unpacking generalizations could apply, I would be happy to assist with that."
+https://github.com/bpython/bpython/tree/master/bpython/test/test_preprocess.py,"def assertShowWhitespaceEqual(self, a, b):
+        self.assertEqual(
+            a,
+            b,
+            """".join(
+                difflib.context_diff(
+                    a.replace("" "", ""~"").splitlines(True),
+                    b.replace("" "", ""~"").splitlines(True),
+                    fromfile=""actual"",
+                    tofile=""expected"",
+                    n=5,
+                )
+            ),
+        )",_11719.py,7," ', '~'
+
+' ', '~'
+
+","*' ~'
+
+*' ~'
+
+",2,"def assertShowWhitespaceEqual(self, a, b):
+    self.assertEqual(
+        a,
+        b,
+        """".join(
+            difflib.context_diff(
+                *[a.replace("" "", ""~"").splitlines(True),
+                  b.replace("" "", ""~"").splitlines(True)],
+                fromfile=""actual"",
+                tofile=""expected"",
+                n=5,
+            )
+        ),
+    )",1,"In PEP 448, additional unpacking generalizations allow combining multiple iterables or mappings using the unpacking operators `*` (for iterables) and `**` (for dictionaries).
+
+To apply this principle to the provided code, I can refactor the construction of the argument list for `difflib.context_diff()`. Since the arguments `['a.replace("" "", ""~"").splitlines(True)', 'b.replace("" "", ""~"").splitlines(True)']` can be unpacked in place, we can use `*` unpacking in the argument list. Let's refactor the code using PEP 448 idiom:
+
+### Refactored code:
+
+
+
+### Refactoring Detail:
+
+I applied *one* PEP 448 - Additional Unpacking Generalization improvement using the iterable unpacking `*` inside the `difflib.context_diff()` call to pass the two lists as arguments. 
+
+Therefore, there is **1 refactoring** based on PEP 448.","In PEP 448, additional unpacking generalizations allow combining multiple iterables or mappings using the unpacking operators `*` (for iterables) and `**` (for dictionaries).
+
+To apply this principle to the provided code, I can refactor the construction of the argument list for `difflib.context_diff()`. Since the arguments `['a.replace("" "", ""~"").splitlines(True)', 'b.replace("" "", ""~"").splitlines(True)']` can be unpacked in place, we can use `*` unpacking in the argument list. Let's refactor the code using PEP 448 idiom:
+
+### Refactored code:
+
+```python
+def assertShowWhitespaceEqual(self, a, b):
+    self.assertEqual(
+        a,
+        b,
+        """".join(
+            difflib.context_diff(
+                *[a.replace("" "", ""~"").splitlines(True),
+                  b.replace("" "", ""~"").splitlines(True)],
+                fromfile=""actual"",
+                tofile=""expected"",
+                n=5,
+            )
+        ),
+    )
+```
+
+### Refactoring Detail:
+
+I applied *one* PEP 448 - Additional Unpacking Generalization improvement using the iterable unpacking `*` inside the `difflib.context_diff()` call to pass the two lists as arguments. 
+
+Therefore, there is **1 refactoring** based on PEP 448."
+https://github.com/freewym/espresso/tree/master/examples/MMPT/mmpt/processors/dedupprocessor.py,"def _dedup(self, caption):
+        def random_merge(end_idx, start, end, text, starts, ends, texts):
+            if random.random() > 0.5:
+                # print(clip_idx, ""[PARTIAL INTO PREV]"", end_idx)
+                # overlapped part goes to the end of previous.
+                ends[-1] = max(ends[-1], start)  # ?
+                rest_text = text[end_idx:].strip()
+                if rest_text:
+                    starts.append(max(ends[-1], start))
+                    ends.append(max(end, starts[-1]))
+                    texts.append(rest_text)
+            else:  # goes to the beginning of the current.
+                # strip the previous.
+                left_text = texts[-1][:-end_idx].strip()
+                if left_text:
+                    # print(clip_idx, ""[PREV PARTIAL INTO CUR]"", end_idx)
+                    ends[-1] = min(ends[-1], start)
+                    texts[-1] = left_text
+                else:
+                    # print(clip_idx, ""[PREV LEFT NOTHING ALL INTO CUR]"", end_idx)
+                    starts.pop(-1)
+                    ends.pop(-1)
+                    texts.pop(-1)
+                starts.append(start)
+                ends.append(end)
+                texts.append(text)
+
+        starts, ends, texts = [], [], []
+        for clip_idx, (start, end, text) in enumerate(
+            zip(caption[""start""], caption[""end""], caption[""text""])
+        ):
+            if not isinstance(text, str):
+                continue
+            text = text.replace(""\n"", "" "").strip()
+            if len(text) == 0:
+                continue
+            starts.append(start)
+            ends.append(end)
+            texts.append(text)
+            break
+
+        for clip_idx, (start, end, text) in enumerate(
+            zip(
+                caption[""start""][clip_idx + 1:],
+                caption[""end""][clip_idx + 1:],
+                caption[""text""][clip_idx + 1:],
+            )
+        ):
+            if not isinstance(text, str):
+                continue
+            text = text.replace(""\n"", "" "").strip()
+            if len(text) == 0:
+                continue
+
+            # print(clip_idx, texts[-5:])
+            # print(clip_idx, start, end, text)
+            if texts[-1].endswith(text):  # subset of prev caption -> merge
+                # print(clip_idx, ""[MERGE INTO PREV]"")
+                ends[-1] = max(ends[-1], end)
+            elif text.startswith(texts[-1]):  # superset of prev caption -> merge
+                # print(clip_idx, ""[PREV MERGE INTO CUR]"")
+                texts[-1] = text
+                starts[-1] = min(starts[-1], start)
+                ends[-1] = max(ends[-1], end)
+            else:  # overlapping or non-overlapping.
+                for end_idx in range(1, len(text) + 1):
+                    if texts[-1].endswith(text[:end_idx]):
+                        random_merge(end_idx, start, end, text, starts, ends, texts)
+                        break
+                else:
+                    starts.append(start)
+                    ends.append(end)
+                    texts.append(text)
+
+            assert (ends[-1] + 0.001) >= starts[-1] and len(
+                texts[-1]
+            ) > 0, ""{} {} {} <- {} {} {}, {} {} {}"".format(
+                str(starts[-1]),
+                str(ends[-1]),
+                texts[-1],
+                caption[""start""][clip_idx - 1],
+                caption[""end""][clip_idx - 1],
+                caption[""text""][clip_idx - 1],
+                str(start),
+                str(end),
+                text,
+            )
+
+        return {""start"": starts, ""end"": ends, ""text"": texts}",_13462.py,34,"\n', ' '
+
+'\n', ' '
+
+","*'\n '
+
+*'\n '
+
+",2,"import random
+
+def _dedup(self, caption):
+    def random_merge(end_idx, start, end, text, starts, ends, texts):
+        if random.random() > 0.5:
+            # overlapped part goes to the end of the previous.
+            ends[-1] = max(ends[-1], start)
+            rest_text = text[end_idx:].strip()
+            if rest_text:
+                starts.append(max(ends[-1], start))
+                ends.append(max(end, starts[-1]))
+                texts.append(rest_text)
+        else:
+            # goes to the beginning of the current.
+            left_text = texts[-1][:-end_idx].strip()
+            if left_text:
+                ends[-1] = min(ends[-1], start)
+                texts[-1] = left_text
+            else:
+                starts.pop(-1)
+                ends.pop(-1)
+                texts.pop(-1)
+            starts.append(start)
+            ends.append(end)
+            texts.append(text)
+
+    starts, ends, texts = [], [], []
+    
+    initial_iter = zip(caption[""start""], caption[""end""], caption[""text""])
+    
+    for clip_idx, (start, end, text) in enumerate(initial_iter):
+        if not isinstance(text, str):
+            continue
+        text = text.replace(""\n"", "" "").strip()
+        if len(text) == 0:
+            continue
+        starts.append(start)
+        ends.append(end)
+        texts.append(text)
+        break
+
+    rest_iter = zip(
+        caption[""start""][clip_idx + 1:], 
+        caption[""end""][clip_idx + 1:], 
+        caption[""text""][clip_idx + 1:]
+    )
+
+    for clip_idx, (start, end, text) in enumerate(rest_iter):
+        if not isinstance(text, str):
+            continue
+        text = text.replace(""\n"", "" "").strip()
+        if len(text) == 0:
+            continue
+
+        if texts[-1].endswith(text):  # subset of prev caption -> merge
+            ends[-1] = max(ends[-1], end)
+        elif text.startswith(texts[-1]):  # superset of prev caption -> merge
+            texts[-1] = text
+            starts[-1] = min(starts[-1], start)
+            ends[-1] = max(ends[-1], end)
+        else:  # overlapping or non-overlapping
+            for end_idx in range(1, len(text) + 1):
+                if texts[-1].endswith(text[:end_idx]):
+                    random_merge(end_idx, start, end, text, starts, ends, texts)
+                    break
+            else:
+                starts.append(start)
+                ends.append(end)
+                texts.append(text)
+
+        assert (ends[-1] + 0.001) >= starts[-1] and len(
+            texts[-1]
+        ) > 0, ""{} {} {} <- {} {} {}, {} {} {}"".format(
+            str(starts[-1]),
+            str(ends[-1]),
+            texts[-1],
+            caption[""start""][clip_idx - 1],
+            caption[""end""][clip_idx - 1],
+            caption[""text""][clip_idx - 1],
+            str(start),
+            str(end),
+            text,
+        )
+
+    return {""start"": starts, ""end"": ends, ""text"": texts}",1,"Here is a refactored version of the code using PEP 448 - Additional Unpacking Generalizations idioms, which allow the unpacking of iterables from within other iterables (e.g., merging multiple lists using `*` syntax).
+
+I have applied the refactoring to unpack the values in the `zip` generators and concatenated the lists using the `*` syntax instead of slicing and using list concatenation.
+
+### Refactored Code:
+
+
+
+### Refactor Count:
+
+- **1 occurrence** of PEP 448 usage: I have utilized unpacking in the `zip` calls when generating iterators instead of slicing the lists and passing them to `zip`.","Here is a refactored version of the code using PEP 448 - Additional Unpacking Generalizations idioms, which allow the unpacking of iterables from within other iterables (e.g., merging multiple lists using `*` syntax).
+
+I have applied the refactoring to unpack the values in the `zip` generators and concatenated the lists using the `*` syntax instead of slicing and using list concatenation.
+
+### Refactored Code:
+
+```python
+import random
+
+def _dedup(self, caption):
+    def random_merge(end_idx, start, end, text, starts, ends, texts):
+        if random.random() > 0.5:
+            # overlapped part goes to the end of the previous.
+            ends[-1] = max(ends[-1], start)
+            rest_text = text[end_idx:].strip()
+            if rest_text:
+                starts.append(max(ends[-1], start))
+                ends.append(max(end, starts[-1]))
+                texts.append(rest_text)
+        else:
+            # goes to the beginning of the current.
+            left_text = texts[-1][:-end_idx].strip()
+            if left_text:
+                ends[-1] = min(ends[-1], start)
+                texts[-1] = left_text
+            else:
+                starts.pop(-1)
+                ends.pop(-1)
+                texts.pop(-1)
+            starts.append(start)
+            ends.append(end)
+            texts.append(text)
+
+    starts, ends, texts = [], [], []
+    
+    initial_iter = zip(caption[""start""], caption[""end""], caption[""text""])
+    
+    for clip_idx, (start, end, text) in enumerate(initial_iter):
+        if not isinstance(text, str):
+            continue
+        text = text.replace(""\n"", "" "").strip()
+        if len(text) == 0:
+            continue
+        starts.append(start)
+        ends.append(end)
+        texts.append(text)
+        break
+
+    rest_iter = zip(
+        caption[""start""][clip_idx + 1:], 
+        caption[""end""][clip_idx + 1:], 
+        caption[""text""][clip_idx + 1:]
+    )
+
+    for clip_idx, (start, end, text) in enumerate(rest_iter):
+        if not isinstance(text, str):
+            continue
+        text = text.replace(""\n"", "" "").strip()
+        if len(text) == 0:
+            continue
+
+        if texts[-1].endswith(text):  # subset of prev caption -> merge
+            ends[-1] = max(ends[-1], end)
+        elif text.startswith(texts[-1]):  # superset of prev caption -> merge
+            texts[-1] = text
+            starts[-1] = min(starts[-1], start)
+            ends[-1] = max(ends[-1], end)
+        else:  # overlapping or non-overlapping
+            for end_idx in range(1, len(text) + 1):
+                if texts[-1].endswith(text[:end_idx]):
+                    random_merge(end_idx, start, end, text, starts, ends, texts)
+                    break
+            else:
+                starts.append(start)
+                ends.append(end)
+                texts.append(text)
+
+        assert (ends[-1] + 0.001) >= starts[-1] and len(
+            texts[-1]
+        ) > 0, ""{} {} {} <- {} {} {}, {} {} {}"".format(
+            str(starts[-1]),
+            str(ends[-1]),
+            texts[-1],
+            caption[""start""][clip_idx - 1],
+            caption[""end""][clip_idx - 1],
+            caption[""text""][clip_idx - 1],
+            str(start),
+            str(end),
+            text,
+        )
+
+    return {""start"": starts, ""end"": ends, ""text"": texts}
+```
+
+### Refactor Count:
+
+- **1 occurrence** of PEP 448 usage: I have utilized unpacking in the `zip` calls when generating iterators instead of slicing the lists and passing them to `zip`."
+https://github.com/openstack/swift/tree/master/test/unit/proxy/controllers/test_container.py,"def do_test(method, resp_status, num_resp):
+            self.assertGreater(num_resp, 0)  # sanity check
+            memcache = FakeMemcache()
+            cont_key = get_cache_key('a', 'c')
+            shard_key = get_cache_key('a', 'c', shard='listing')
+            memcache.set(cont_key, 'container info', 60)
+            memcache.set(shard_key, 'shard ranges', 600)
+            req = Request.blank('/v1/a/c', method=method)
+            req.environ['swift.cache'] = memcache
+            self.assertIn(cont_key, req.environ['swift.cache'].store)
+            self.assertIn(shard_key, req.environ['swift.cache'].store)
+            resp_status = [resp_status] * num_resp
+            with mocked_http_conn(
+                    *resp_status, body_iter=[b''] * num_resp,
+                    headers=[{}] * num_resp):
+                resp = req.get_response(self.app)
+            self.assertEqual(resp_status[0], resp.status_int)
+            self.assertNotIn(cont_key, req.environ['swift.cache'].store)
+            self.assertNotIn(shard_key, req.environ['swift.cache'].store)",_15168.py,4,"a', 'c'
+
+'a', 'c'
+
+","*'ac'
+
+*'ac'
+
+",2,"def do_test(method, resp_status, num_resp):
+    self.assertGreater(num_resp, 0)  # sanity check
+    memcache = FakeMemcache()
+    cont_key = get_cache_key('a', 'c')
+    shard_key = get_cache_key('a', 'c', shard='listing')
+    memcache.set(cont_key, 'container info', 60)
+    memcache.set(shard_key, 'shard ranges', 600)
+    req = Request.blank('/v1/a/c', method=method)
+    req.environ['swift.cache'] = memcache
+    self.assertIn(cont_key, req.environ['swift.cache'].store)
+    self.assertIn(shard_key, req.environ['swift.cache'].store)
+
+    # Refactored below using PEP 448 to simplify
+    resp_statuses = [resp_status] * num_resp
+    with mocked_http_conn(
+            *resp_statuses, body_iter=[b''] * num_resp, headers=[{}] * num_resp):
+        resp = req.get_response(self.app)
+
+    self.assertEqual(resp_statuses[0], resp.status_int)
+    self.assertNotIn(cont_key, req.environ['swift.cache'].store)
+    self.assertNotIn(shard_key, req.environ['swift.cache'].store)",1,"Here's the refactored version of your code using PEP 448's Additional Unpacking Generalizations, which allow unpacking iterables into function arguments and into list/tuple/set literals:
+
+
+
+Here is the summary of the PEP 448 unpacking:
+
+- Refactoring 1: In the `mocked_http_conn` call, instead of passing `*resp_status` separately, the creation of the `resp_status` list (`resp_statuses`) was done earlier in a single expression and is unpacked later as `*resp_statuses`.
+
+That's **one refactoring** involving Python PEP 448","Here's the refactored version of your code using PEP 448's Additional Unpacking Generalizations, which allow unpacking iterables into function arguments and into list/tuple/set literals:
+
+```python
+def do_test(method, resp_status, num_resp):
+    self.assertGreater(num_resp, 0)  # sanity check
+    memcache = FakeMemcache()
+    cont_key = get_cache_key('a', 'c')
+    shard_key = get_cache_key('a', 'c', shard='listing')
+    memcache.set(cont_key, 'container info', 60)
+    memcache.set(shard_key, 'shard ranges', 600)
+    req = Request.blank('/v1/a/c', method=method)
+    req.environ['swift.cache'] = memcache
+    self.assertIn(cont_key, req.environ['swift.cache'].store)
+    self.assertIn(shard_key, req.environ['swift.cache'].store)
+
+    # Refactored below using PEP 448 to simplify
+    resp_statuses = [resp_status] * num_resp
+    with mocked_http_conn(
+            *resp_statuses, body_iter=[b''] * num_resp, headers=[{}] * num_resp):
+        resp = req.get_response(self.app)
+
+    self.assertEqual(resp_statuses[0], resp.status_int)
+    self.assertNotIn(cont_key, req.environ['swift.cache'].store)
+    self.assertNotIn(shard_key, req.environ['swift.cache'].store)
+```
+
+Here is the summary of the PEP 448 unpacking:
+
+- Refactoring 1: In the `mocked_http_conn` call, instead of passing `*resp_status` separately, the creation of the `resp_status` list (`resp_statuses`) was done earlier in a single expression and is unpacked later as `*resp_statuses`.
+
+That's **one refactoring** involving Python PEP 448"
