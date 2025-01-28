@@ -21,6 +21,10 @@ def performanceEvaluation():
 
     Returns:
         None
+
+    Note:
+    Run the "main" function from the main.py file before calling this function to generate the required result files.
+    This evaluation must be performed after manually updating the 'count_gpt' column for all result files in the './Results/all_refactorings/' directory.
     """
     sourcePath = "./Results/all_refactorings/"
 
@@ -83,3 +87,6 @@ def performanceEvaluation():
 
     with open(file_path, 'w') as file:
         file.write(latex_table)
+
+if __name__ == "__main__":
+    performanceEvaluation()

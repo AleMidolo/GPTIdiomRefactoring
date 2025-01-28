@@ -38,7 +38,7 @@ def main():
         refactoring_type = getRefactoringType(file)
 
         for index, row in df.iterrows():
-            bench_code = row['old_code']
+            bench_code = row['method_content']
             result = ask_Gpt(bench_code, refactoring_type)
 
             text, gpt_code = extract_text_and_code(result)
@@ -49,8 +49,7 @@ def main():
 
         result_df.to_csv(f'./Results/all_refactorings/{refactoring_type}.csv', index=False)
     
-    # before performing this evaluation, make sure to manually update the 'count_gpt' column for all results file in ./results/all_refactorings/
-    performanceEvaluation()
+    # before performing the performance evaluation, make sure to manually update the 'count_gpt' column for all results file in ./results/all_refactorings/
 
 if __name__ == "__main__":
     main()
