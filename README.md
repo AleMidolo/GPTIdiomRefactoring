@@ -1,2 +1,6 @@
-# GPTIdiomRefactoring
-Automated Refactoring of Non-Idiomatic Python Code: A Differentiated Replication with LLMs
+# Automated Refactoring of Non-Idiomatic Python Code: A Differentiated Replication with LLMs
+
+## Abstract
+In the Python ecosystem, the adoption of idiomatic constructs has been fostered because of their expressiveness, increasing productivity and even efficiency, despite controversial arguments concerning familiarity or understandability issues. Recent research contributions have proposed approaches---based on static code analysis and transformation---to automatically identify and enact refactoring opportunities of non-idiomatic code into idiomatic ones.
+Given the potential recently offered by Large Language Models (LLMs) for code-related tasks, in this paper, we present the results of a replication study in which we investigate GPT-4 effectiveness in recommending and suggesting idiomatic refactoring actions.  Our results reveal that GPT-4 not only identifies idiomatic constructs effectively but frequently exceeds the benchmark in proposing refactoring actions where the existing baseline failed. A manual analysis of a random sample shows the correctness of the obtained recommendations. Overall, our findings underscore the potential of LLMs to achieve tasks where, in the past, implementing recommenders based on complex code analyses was required.
+
